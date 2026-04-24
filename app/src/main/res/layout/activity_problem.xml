@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background">
+
+    <!-- 顶部栏 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@color/primary"
+        android:paddingHorizontal="@dimen/padding_small">
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_arrow_back"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/back"
+            app:tint="@color/white" />
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="@dimen/text_size_title"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:gravity="center"
+            tools:text="死活题" />
+
+        <ImageButton
+            android:id="@+id/btnReset"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_refresh"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/reset"
+            app:tint="@color/white" />
+
+    </LinearLayout>
+
+    <!-- 题目信息 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/padding_medium"
+        android:background="@color/card_background"
+        android:elevation="2dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tvProblemNumber"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_size_large"
+                android:textColor="@color/text_primary"
+                android:textStyle="bold"
+                tools:text="第 1 题" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/tvDifficulty"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_size_medium"
+                android:textColor="@color/accent"
+                tools:text="难度: 3" />
+
+            <TextView
+                android:id="@+id/tvBoardSize"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/padding_medium"
+                android:textSize="@dimen/text_size_medium"
+                android:textColor="@color/text_secondary"
+                tools:text="9路" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvToPlay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textSize="@dimen/text_size_medium"
+            android:textColor="@color/text_secondary"
+            tools:text="黑方落子" />
+
+        <TextView
+            android:id="@+id/tvHint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_small"
+            android:textSize="@dimen/text_size_medium"
+            android:textColor="@color/hint_point"
+            android:visibility="gone"
+            tools:text="提示: 寻找眼位要点"
+            tools:visibility="visible" />
+
+    </LinearLayout>
+
+    <!-- 棋盘区域 -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="@dimen/board_margin">
+
+        <com.wangyu.gotsumego.ui.BoardView
+            android:id="@+id/boardView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center" />
+
+    </FrameLayout>
+
+    <!-- 反馈区域 -->
+    <TextView
+        android:id="@+id/tvFeedback"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/padding_medium"
+        android:textSize="@dimen/text_size_large"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:visibility="gone"
+        tools:text="正确!"
+        tools:visibility="visible" />
+
+    <!-- 底部按钮 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="@dimen/padding_medium"
+        android:background="@color/card_background"
+        android:elevation="4dp">
+
+        <Button
+            android:id="@+id/btnPrev"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/button_height"
+            android:layout_weight="1"
+            android:text="@string/prev_problem"
+            android:background="@drawable/button_outline_background"
+            android:textColor="@color/primary"
+            android:layout_marginEnd="@dimen/padding_small" />
+
+        <Button
+            android:id="@+id/btnHint"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/button_height"
+            android:layout_weight="1"
+            android:text="@string/show_hint"
+            android:background="@drawable/button_background"
+            android:textColor="@color/white"
+            android:layout_marginHorizontal="@dimen/padding_small" />
+
+        <Button
+            android:id="@+id/btnNext"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/button_height"
+            android:layout_weight="1"
+            android:text="@string/next_problem"
+            android:background="@drawable/button_background"
+            android:textColor="@color/white"
+            android:layout_marginStart="@dimen/padding_small" />
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">围棋死活题</string>
+    <string name="life_death">死活题</string>
+    <string name="tesuji">手筋题</string>
+    <string name="yose">官子题</string>
+    <string name="capture">吃子题</string>
+    <string name="all_problems">全部题目</string>
+    <string name="difficulty">难度</string>
+    <string name="problem_number">第 %d 题</string>
+    <string name="hint">提示</string>
+    <string name="show_hint">显示提示</string>
+    <string name="next_problem">下一题</string>
+    <string name="prev_problem">上一题</string>
+    <string name="correct">正确！</string>
+    <string name="incorrect">不正确，请再试一次</string>
+    <string name="black_to_play">黑方落子</string>
+    <string name="white_to_play">白方落子</string>
+    <string name="your_turn">轮到你下</string>
+    <string name="problem_solved">题目已解决！</string>
+    <string name="total_problems">共 %d 题</string>
+    <string name="board_size">%d 路棋盘</string>
+    <string name="back">返回</string>
+    <string name="reset">重置</string>
+    <string name="show_answer">显示答案</string>
+    <string name="answer_correct">回答正确</string>
+    <string name="answer_wrong">回答错误</string>
+</resources>

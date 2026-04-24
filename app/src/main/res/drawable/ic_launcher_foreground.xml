@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- 棋盘背景 -->
+    <path
+        android:fillColor="#DEB887"
+        android:pathData="M0,0h108v108h-108z"/>
+    <!-- 横线 -->
+    <path
+        android:strokeColor="#8B4513"
+        android:strokeWidth="1.5"
+        android:pathData="M30,30 L78,30 M30,42 L78,42 M30,54 L78,54 M30,66 L78,66 M30,78 L78,78"/>
+    <!-- 竖线 -->
+    <path
+        android:strokeColor="#8B4513"
+        android:strokeWidth="1.5"
+        android:pathData="M30,30 L30,78 M42,30 L42,78 M54,30 L54,78 M66,30 L66,78 M78,30 L78,78"/>
+    <!-- 星位 -->
+    <path
+        android:fillColor="#8B4513"
+        android:pathData="M54,54 m-3,0 a3,3 0 1,1 6,0 a3,3 0 1,1 -6,0"/>
+    <!-- 黑子 -->
+    <path
+        android:fillColor="#1A1A1A"
+        android:pathData="M42,42 m-6,0 a6,6 0 1,1 12,0 a6,6 0 1,1 -12,0"/>
+    <!-- 白子 -->
+    <path
+        android:fillColor="#FAFAFA"
+        android:strokeColor="#CCCCCC"
+        android:strokeWidth="0.5"
+        android:pathData="M66,42 m-6,0 a6,6 0 1,1 12,0 a6,6 0 1,1 -12,0"/>
+    <!-- 黑子 -->
+    <path
+        android:fillColor="#1A1A1A"
+        android:pathData="M42,66 m-6,0 a6,6 0 1,1 12,0 a6,6 0 1,1 -12,0"/>
+    <!-- 白子 -->
+    <path
+        android:fillColor="#FAFAFA"
+        android:strokeColor="#CCCCCC"
+        android:strokeWidth="0.5"
+        android:pathData="M66,66 m-6,0 a6,6 0 1,1 12,0 a6,6 0 1,1 -12,0"/>
+</vector>

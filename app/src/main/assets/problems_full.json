@@ -1,0 +1,122 @@
+[
+  {
+    "id": 1,
+    "type": "life_death",
+    "difficulty": 1,
+    "title": "一路虎的死活",
+    "boardSize": 9,
+    "stones": [[1, 1, 1], [2, 1, 1], [1, 2, 1], [2, 2, 1], [3, 1, 2], [3, 2, 2], [1, 3, 2], [2, 3, 2]],
+    "toPlay": 1,
+    "answer": [1, 0],
+    "solutions": [{"moves": [[1, 0]], "result": "correct", "comment": "黑1点入，白棋无法做出两眼，死棋"}],
+    "hint": "寻找白棋眼位的要点"
+  },
+  {
+    "id": 2,
+    "type": "life_death",
+    "difficulty": 1,
+    "title": "直三活棋",
+    "boardSize": 9,
+    "stones": [[3, 0, 1], [4, 0, 1], [5, 0, 1], [3, 1, 2], [4, 1, 2], [5, 1, 2], [2, 0, 2], [6, 0, 2]],
+    "toPlay": 1,
+    "answer": [4, 0],
+    "solutions": [{"moves": [[4, 0]], "result": "correct", "comment": "黑1中间做眼，活棋"}],
+    "hint": "在中间做眼"
+  },
+  {
+    "id": 3,
+    "type": "life_death",
+    "difficulty": 2,
+    "title": "角上死活",
+    "boardSize": 9,
+    "stones": [[0, 0, 1], [1, 0, 1], [0, 1, 1], [1, 1, 2], [2, 0, 2], [2, 1, 2]],
+    "toPlay": 1,
+    "answer": [0, 2],
+    "solutions": [{"moves": [[0, 2]], "result": "correct", "comment": "扩大眼位"}],
+    "hint": "扩大眼位做活"
+  },
+  {
+    "id": 4,
+    "type": "life_death",
+    "difficulty": 2,
+    "title": "边上死活",
+    "boardSize": 9,
+    "stones": [[3, 0, 1], [4, 0, 1], [5, 0, 1], [6, 0, 1], [2, 0, 2], [7, 0, 2], [3, 1, 2], [4, 1, 2], [5, 1, 2], [6, 1, 2]],
+    "toPlay": 1,
+    "answer": [4, 0],
+    "solutions": [{"moves": [[4, 0]], "result": "correct"}],
+    "hint": "找到眼位要点"
+  },
+  {
+    "id": 5,
+    "type": "life_death",
+    "difficulty": 3,
+    "title": "中腹死活",
+    "boardSize": 9,
+    "stones": [[3, 3, 1], [4, 3, 1], [5, 3, 1], [3, 4, 1], [5, 4, 1], [3, 5, 1], [4, 5, 1], [5, 5, 1], [2, 3, 2], [2, 4, 2], [2, 5, 2], [6, 3, 2], [6, 4, 2], [6, 5, 2]],
+    "toPlay": 1,
+    "answer": [4, 4],
+    "solutions": [{"moves": [[4, 4]], "result": "correct"}],
+    "hint": "占据中心要点"
+  },
+  {
+    "id": 6,
+    "type": "tesuji",
+    "difficulty": 2,
+    "title": "夹的手筋",
+    "boardSize": 9,
+    "stones": [[2, 2, 1], [3, 2, 2], [2, 3, 2]],
+    "toPlay": 1,
+    "answer": [3, 3],
+    "solutions": [{"moves": [[3, 3]], "result": "correct"}],
+    "hint": "使用夹的手筋"
+  },
+  {
+    "id": 7,
+    "type": "tesuji",
+    "difficulty": 3,
+    "title": "点的手筋",
+    "boardSize": 9,
+    "stones": [[1, 1, 1], [2, 1, 1], [3, 1, 2], [4, 1, 2], [1, 2, 2], [2, 2, 2]],
+    "toPlay": 1,
+    "answer": [2, 2],
+    "solutions": [{"moves": [[2, 2]], "result": "correct"}],
+    "hint": "点入对方阵地"
+  },
+  {
+    "id": 8,
+    "type": "yose",
+    "difficulty": 1,
+    "title": "简单官子",
+    "boardSize": 9,
+    "stones": [[0, 0, 1], [1, 0, 2]],
+    "toPlay": 1,
+    "answer": [0, 1],
+    "solutions": [{"moves": [[0, 1]], "result": "correct"}],
+    "hint": "收官先手"
+  },
+  {
+    "id": 9,
+    "type": "life_death",
+    "difficulty": 4,
+    "title": "大眼死活",
+    "boardSize": 9,
+    "stones": [[2, 2, 1], [3, 2, 1], [4, 2, 1], [5, 2, 1], [2, 3, 1], [5, 3, 1], [2, 4, 1], [3, 4, 1], [4, 4, 1], [5, 4, 1], [1, 2, 2], [1, 3, 2], [1, 4, 2], [6, 2, 2], [6, 3, 2], [6, 4, 2]],
+    "toPlay": 1,
+    "answer": [3, 3],
+    "solutions": [{"moves": [[3, 3]], "result": "correct"}],
+    "hint": "找到破眼要点"
+  },
+  {
+    "id": 10,
+    "type": "life_death",
+    "difficulty": 5,
+    "title": "复杂死活",
+    "boardSize": 9,
+    "stones": [[2, 2, 1], [3, 2, 1], [4, 2, 1], [2, 3, 1], [4, 3, 1], [2, 4, 1], [3, 4, 1], [4, 4, 1], [1, 2, 2], [1, 3, 2], [1, 4, 2], [5, 2, 2], [5, 3, 2], [5, 4, 2], [2, 5, 2], [3, 5, 2], [4, 5, 2]],
+    "toPlay": 1,
+    "answer": [3, 3],
+    "solutions": [{"moves": [[3, 3]], "result": "correct"}],
+    "hint": "中间是关键"
+  }
+]
