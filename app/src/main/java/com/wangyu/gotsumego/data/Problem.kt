@@ -147,23 +147,27 @@ data class Stone(
  * 从JsonProblem转换为Problem
  */
 fun JsonProblem.toProblem(): Problem {
-    // 转换棋子列表
+    // JSON坐标: y=0在棋盘底部，y增加向上
+    // 棋盘绘制: row=0在顶部，row增加向下
+    // 需要反转y坐标: row = boardSize - 1 - y
     val stoneList = stones.mapNotNull { stoneData ->
         if (stoneData.size >= 3) {
             val x = stoneData[0] // 列
-            val y = stoneData[1] // 行
+            val y = stoneData[1] // JSON中的y（从底部开始）
             val colorValue = stoneData[2]
             Stone(
                 col = x,
-                row = y,
+                row = boardSize - 1 - y, // 反转y坐标
                 color = StoneColor.fromValue(colorValue)
             )
         } else null
     }
     
-    // 转换正解位置
+    // 转换正解位置，同样需要反转y坐标
     val moves = if (answer.size >= 2) {
-        listOf(Position.fromJsonCoords(answer[0], answer[1]))
+        val x = answer[0]
+        val y = answer[1]
+        listOf(Position(col = x, row = boardSize - 1 - y))
     } else {
         emptyList()
     }
