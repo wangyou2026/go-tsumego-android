@@ -3,6 +3,7 @@ name: Build APK
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -27,19 +28,21 @@ jobs:
         gradle-version: '8.4'
     
     - name: Build Debug APK
-      run: gradle assembleDebug --no-daemon
+      run: ./gradlew assembleDebug --no-daemon --no-build-cache
     
     - name: Build Release APK
-      run: gradle assembleRelease --no-daemon
+      run: ./gradlew assembleRelease --no-daemon --no-build-cache
     
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
+      if: success()
       with:
         name: app-debug
         path: app/build/outputs/apk/debug/*.apk
     
     - name: Upload Release APK
       uses: actions/upload-artifact@v4
+      if: success()
       with:
         name: app-release
         path: app/build/outputs/apk/release/*.apk
