@@ -1,26 +1,101 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Material Design 3 主题 -->
     <style name="Theme.GoTsumego" parent="Theme.Material3.Light.NoActionBar">
+        <!-- Primary brand color -->
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
-        <item name="colorAccent">@color/accent</item>
+        <item name="colorPrimaryContainer">@color/primary_light</item>
+        <item name="colorOnPrimaryContainer">@color/white</item>
+        
+        <!-- Secondary brand color -->
+        <item name="colorSecondary">@color/accent</item>
+        <item name="colorSecondaryContainer">@color/accent</item>
+        
+        <!-- Tertiary brand color -->
+        <item name="colorTertiary">@color/hint_point</item>
+        
+        <!-- Background colors -->
         <item name="android:windowBackground">@color/background</item>
+        <item name="colorSurface">@color/card_background</item>
+        <item name="colorSurfaceVariant">@color/background_dark</item>
+        
+        <!-- Status bar -->
         <item name="android:statusBarColor">@color/primary_dark</item>
+        <item name="android:navigationBarColor">@color/primary_dark</item>
+        
+        <!-- Text colors -->
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
     </style>
 
+    <!-- Card Style -->
     <style name="CardStyle" parent="Widget.Material3.CardView.Elevated">
         <item name="cardBackgroundColor">@color/card_background</item>
-        <item name="cardCornerRadius">12dp</item>
+        <item name="cardCornerRadius">16dp</item>
         <item name="cardElevation">4dp</item>
+        <item name="strokeWidth">0dp</item>
     </style>
 
+    <!-- Card Style with outline -->
+    <style name="CardStyleOutline" parent="Widget.Material3.CardView.Outlined">
+        <item name="cardBackgroundColor">@color/card_background</item>
+        <item name="cardCornerRadius">16dp</item>
+        <item name="strokeColor">@color/primary_light</item>
+        <item name="strokeWidth">1dp</item>
+    </style>
+
+    <!-- Primary Button Style -->
     <style name="ButtonStyle" parent="Widget.Material3.Button">
         <item name="backgroundTint">@color/primary</item>
         <item name="android:textColor">@color/white</item>
+        <item name="cornerRadius">12dp</item>
     </style>
 
+    <!-- Outlined Button Style -->
     <style name="ButtonStyleOutlined" parent="Widget.Material3.Button.OutlinedButton">
         <item name="strokeColor">@color/primary</item>
         <item name="android:textColor">@color/primary</item>
+        <item name="cornerRadius">12dp</item>
+    </style>
+
+    <!-- Text Button Style -->
+    <style name="ButtonStyleText" parent="Widget.Material3.Button.TextButton">
+        <item name="android:textColor">@color/primary</item>
+    </style>
+
+    <!-- Icon Button Style -->
+    <style name="IconButtonStyle" parent="Widget.Material3.Button.IconButton">
+        <item name="iconTint">@color/primary</item>
+    </style>
+
+    <!-- Title Text Style -->
+    <style name="TitleTextStyle">
+        <item name="android:textSize">24sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- Subtitle Text Style -->
+    <style name="SubtitleTextStyle">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/text_secondary</item>
+    </style>
+
+    <!-- Body Text Style -->
+    <style name="BodyTextStyle">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <!-- Difficulty Badge Style -->
+    <style name="DifficultyBadgeStyle">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:paddingStart">8dp</item>
+        <item name="android:paddingEnd">8dp</item>
+        <item name="android:paddingTop">4dp</item>
+        <item name="android:paddingBottom">4dp</item>
     </style>
 </resources>

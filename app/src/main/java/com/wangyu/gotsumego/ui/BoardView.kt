@@ -12,9 +12,10 @@ import com.wangyu.gotsumego.util.GoBoard
 import kotlin.math.min
 
 /**
- * 围棋棋盘自定义View
+ * 围棋棋盘自定义View - 美化版
  * 支持绘制9路、13路、19路棋盘
  * 支持触摸落子
+ * 渐变色棋子和阴影效果
  */
 class BoardView @JvmOverloads constructor(
     context: Context,
@@ -58,27 +59,16 @@ class BoardView @JvmOverloads constructor(
     // 颜色定义
     private val boardColor = context.getColor(R.color.board_wood)
     private val lineColor = context.getColor(R.color.board_line)
-    private val blackStoneColor = context.getColor(R.color.stone_black)
-    private val whiteStoneColor = context.getColor(R.color.stone_white)
-    private val blackStrokeColor = context.getColor(R.color.stone_black_stroke)
-    private val whiteStrokeColor = context.getColor(R.color.stone_white_stroke)
     private val hintColor = context.getColor(R.color.hint_point)
     private val lastMoveColor = context.getColor(R.color.last_move)
     
-    // 画笔
-    private val boardPaint = Paint().apply {
-        color = boardColor
+    // 渐变色棋子画笔
+    private val blackStonePaint = Paint().apply {
+        isAntiAlias = true
         style = Paint.Style.FILL
     }
     
-    private val linePaint = Paint().apply {
-        color = lineColor
-        style = Paint.Style.STROKE
-        strokeWidth = 2f
-        isAntiAlias = true
-    }
-    
-    private val stonePaint = Paint().apply {
+    private val whiteStonePaint = Paint().apply {
         isAntiAlias = true
         style = Paint.Style.FILL
     }
@@ -89,10 +79,25 @@ class BoardView @JvmOverloads constructor(
         strokeWidth = 2f
     }
     
+    private val linePaint = Paint().apply {
+        color = lineColor
+        style = Paint.Style.STROKE
+        strokeWidth = 2f
+        isAntiAlias = true
+        strokeCap = Paint.Cap.ROUND
+    }
+    
     private val starPointPaint = Paint().apply {
         color = lineColor
         style = Paint.Style.FILL
         isAntiAlias = true
+    }
+    
+    private val shadowPaint = Paint().apply {
+        color = Color.argb(60, 0, 0, 0)
+        isAntiAlias = true
+        style = Paint.Style.FILL
+        maskFilter = BlurMaskFilter(8f, BlurMaskFilter.Blur.NORMAL)
     }
     
     private val hintPaint = Paint().apply {
@@ -115,6 +120,10 @@ class BoardView @JvmOverloads constructor(
     private var stoneRadius = 0f
     private var starPointRadius = 0f
     
+    // 渐变色
+    private var blackGradient: RadialGradient? = null
+    private var whiteGradient: RadialGradient? = null
+    
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val width = MeasureSpec.getSize(widthMeasureSpec)
         val height = MeasureSpec.getSize(heightMeasureSpec)
@@ -127,6 +136,7 @@ class BoardView @JvmOverloads constructor(
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
         calculateDimensions()
+        createGradients()
     }
     
     private fun calculateDimensions() {
@@ -139,12 +149,42 @@ class BoardView @JvmOverloads constructor(
         starPointRadius = cellSize * 0.12f
     }
     
+    private fun createGradients() {
+        // 创建黑子渐变 - 从深灰到黑色
+        val blackColors = intArrayOf(
+            Color.parseColor("#4A4A4A"),  // 高光区
+            Color.parseColor("#1A1A1A"),  // 中间区
+            Color.parseColor("#000000")   // 边缘
+        )
+        val blackPositions = floatArrayOf(0f, 0.3f, 1f)
+        
+        blackGradient = RadialGradient(
+            0f, 0f, stoneRadius,
+            blackColors, blackPositions,
+            Shader.TileMode.CLAMP
+        )
+        
+        // 创建白子渐变 - 从白色到浅灰
+        val whiteColors = intArrayOf(
+            Color.WHITE,                   // 高光区
+            Color.parseColor("#F5F5F5"),  // 中间区
+            Color.parseColor("#E0E0E0")   // 边缘
+        )
+        val whitePositions = floatArrayOf(0f, 0.5f, 1f)
+        
+        whiteGradient = RadialGradient(
+            0f, 0f, stoneRadius,
+            whiteColors, whitePositions,
+            Shader.TileMode.CLAMP
+        )
+    }
+    
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         
         calculateDimensions()
         
-        // 绘制棋盘背景（木质）
+        // 绘制棋盘背景（木质渐变）
         drawBoard(canvas)
         
         // 绘制网格线
@@ -170,23 +210,55 @@ class BoardView @JvmOverloads constructor(
     }
     
     /**
-     * 绘制棋盘背景
+     * 绘制棋盘背景 - 木质纹理效果
      */
     private fun drawBoard(canvas: Canvas) {
+        // 绘制木质渐变背景
+        val woodColors = intArrayOf(
+            Color.parseColor("#E8D4A8"),
+            Color.parseColor("#DEB887"),
+            Color.parseColor("#D4A76A")
+        )
+        val woodGradient = LinearGradient(
+            0f, 0f, width.toFloat(), height.toFloat(),
+            woodColors, null, Shader.TileMode.CLAMP
+        )
+        
+        val boardPaint = Paint().apply {
+            shader = woodGradient
+            style = Paint.Style.FILL
+        }
+        
         val rect = RectF(0f, 0f, width.toFloat(), height.toFloat())
         canvas.drawRect(rect, boardPaint)
         
-        // 绘制边框
-        strokePaint.color = lineColor
-        strokePaint.strokeWidth = 4f
-        canvas.drawRect(rect, strokePaint)
-        strokePaint.strokeWidth = 2f
+        // 绘制边框 - 深色木框效果
+        val framePaint = Paint().apply {
+            color = Color.parseColor("#5D4037")
+            style = Paint.Style.STROKE
+            strokeWidth = 12f
+            isAntiAlias = true
+        }
+        canvas.drawRect(rect, framePaint)
+        
+        // 内边框
+        val innerFramePaint = Paint().apply {
+            color = Color.parseColor("#8B4513")
+            style = Paint.Style.STROKE
+            strokeWidth = 4f
+            isAntiAlias = true
+        }
+        val innerRect = RectF(6f, 6f, width - 6f, height - 6f)
+        canvas.drawRect(innerRect, innerFramePaint)
     }
     
     /**
      * 绘制网格线
      */
     private fun drawGridLines(canvas: Canvas) {
+        linePaint.color = Color.parseColor("#6B4423")
+        linePaint.strokeWidth = 2f
+        
         // 绘制横线
         for (i in 0 until boardSize) {
             val y = padding + i * cellSize
@@ -205,6 +277,21 @@ class BoardView @JvmOverloads constructor(
      */
     private fun drawStarPoints(canvas: Canvas) {
         val starPoints = GoBoard.getStarPoints(boardSize)
+        
+        // 星位外圈
+        val outerPaint = Paint().apply {
+            color = Color.parseColor("#4A3520")
+            style = Paint.Style.FILL
+            isAntiAlias = true
+        }
+        
+        for (point in starPoints) {
+            val x = padding + point.col * cellSize
+            val y = padding + point.row * cellSize
+            canvas.drawCircle(x, y, starPointRadius * 1.3f, outerPaint)
+        }
+        
+        // 星位内部
         for (point in starPoints) {
             val x = padding + point.col * cellSize
             val y = padding + point.row * cellSize
@@ -231,7 +318,7 @@ class BoardView @JvmOverloads constructor(
     }
     
     /**
-     * 绘制单个棋子
+     * 绘制单个棋子 - 带渐变和阴影
      */
     private fun drawStone(canvas: Canvas, col: Int, row: Int, color: StoneColor) {
         val centerX = padding + col * cellSize
@@ -239,14 +326,79 @@ class BoardView @JvmOverloads constructor(
         
         when (color) {
             StoneColor.BLACK -> {
-                stonePaint.color = blackStoneColor
-                canvas.drawCircle(centerX, centerY, stoneRadius, stonePaint)
+                // 绘制阴影
+                canvas.drawCircle(centerX + 2f, centerY + 3f, stoneRadius, shadowPaint)
+                
+                // 创建渐变（高光在左上角）
+                val highlightX = centerX - stoneRadius * 0.3f
+                val highlightY = centerY - stoneRadius * 0.3f
+                
+                val blackGradient = RadialGradient(
+                    highlightX, highlightY, stoneRadius * 1.5f,
+                    intArrayOf(
+                        Color.parseColor("#5A5A5A"),
+                        Color.parseColor("#2A2A2A"),
+                        Color.parseColor("#000000")
+                    ),
+                    floatArrayOf(0f, 0.4f, 1f),
+                    Shader.TileMode.CLAMP
+                )
+                
+                blackStonePaint.shader = blackGradient
+                canvas.drawCircle(centerX, centerY, stoneRadius, blackStonePaint)
+                
+                // 添加高光
+                val highlightPaint = Paint().apply {
+                    color = Color.argb(80, 255, 255, 255)
+                    style = Paint.Style.FILL
+                    isAntiAlias = true
+                }
+                canvas.drawCircle(
+                    centerX - stoneRadius * 0.35f,
+                    centerY - stoneRadius * 0.35f,
+                    stoneRadius * 0.2f,
+                    highlightPaint
+                )
             }
             StoneColor.WHITE -> {
-                stonePaint.color = whiteStoneColor
-                strokePaint.color = whiteStrokeColor
-                canvas.drawCircle(centerX, centerY, stoneRadius, stonePaint)
-                canvas.drawCircle(centerX, centerY, stoneRadius, strokePaint)
+                // 绘制阴影
+                canvas.drawCircle(centerX + 2f, centerY + 3f, stoneRadius, shadowPaint)
+                
+                // 创建白子渐变（高光在左上角）
+                val highlightX = centerX - stoneRadius * 0.3f
+                val highlightY = centerY - stoneRadius * 0.3f
+                
+                val whiteGradient = RadialGradient(
+                    highlightX, highlightY, stoneRadius * 1.5f,
+                    intArrayOf(
+                        Color.WHITE,
+                        Color.parseColor("#F8F8F8"),
+                        Color.parseColor("#E0E0E0")
+                    ),
+                    floatArrayOf(0f, 0.5f, 1f),
+                    Shader.TileMode.CLAMP
+                )
+                
+                whiteStonePaint.shader = whiteGradient
+                canvas.drawCircle(centerX, centerY, stoneRadius, whiteStonePaint)
+                
+                // 绘制轮廓
+                strokePaint.color = Color.parseColor("#CCCCCC")
+                strokePaint.strokeWidth = 1.5f
+                canvas.drawCircle(centerX, centerY, stoneRadius - 0.75f, strokePaint)
+                
+                // 添加高光
+                val highlightPaint = Paint().apply {
+                    color = Color.argb(100, 255, 255, 255)
+                    style = Paint.Style.FILL
+                    isAntiAlias = true
+                }
+                canvas.drawCircle(
+                    centerX - stoneRadius * 0.35f,
+                    centerY - stoneRadius * 0.35f,
+                    stoneRadius * 0.25f,
+                    highlightPaint
+                )
             }
             StoneColor.EMPTY -> { /* 不绘制 */ }
         }
@@ -261,8 +413,22 @@ class BoardView @JvmOverloads constructor(
         val centerX = padding + col * cellSize
         val centerY = padding + row * cellSize
         
-        // 绘制一个小圆点标记
-        canvas.drawCircle(centerX, centerY, stoneRadius * 0.25f, lastMovePaint)
+        // 检查是黑子还是白子
+        val stoneColor = getStoneAt(index)
+        val markerColor = if (stoneColor == StoneColor.BLACK) {
+            Color.parseColor("#FF5252")
+        } else {
+            Color.parseColor("#FF1744")
+        }
+        
+        val markerPaint = Paint().apply {
+            color = markerColor
+            style = Paint.Style.FILL
+            isAntiAlias = true
+        }
+        
+        // 绘制最后一手小圆点
+        canvas.drawCircle(centerX, centerY, stoneRadius * 0.2f, markerPaint)
     }
     
     /**
@@ -275,8 +441,19 @@ class BoardView @JvmOverloads constructor(
         val centerY = padding + row * cellSize
         
         // 绘制提示圆圈
-        hintPaint.alpha = 180
-        canvas.drawCircle(centerX, centerY, stoneRadius * 0.4f, hintPaint)
+        val hintGradient = RadialGradient(
+            centerX, centerY, stoneRadius * 0.6f,
+            intArrayOf(
+                Color.parseColor("#FF9800"),
+                Color.parseColor("#FF5722")
+            ),
+            floatArrayOf(0f, 1f),
+            Shader.TileMode.CLAMP
+        )
+        
+        hintPaint.shader = hintGradient
+        hintPaint.alpha = 220
+        canvas.drawCircle(centerX, centerY, stoneRadius * 0.5f, hintPaint)
         
         // 绘制内部小点
         val innerPaint = Paint().apply {
@@ -285,6 +462,16 @@ class BoardView @JvmOverloads constructor(
             isAntiAlias = true
         }
         canvas.drawCircle(centerX, centerY, stoneRadius * 0.15f, innerPaint)
+        
+        // 添加呼吸动画效果的外圈
+        val outerPaint = Paint().apply {
+            color = Color.parseColor("#FF9800")
+            style = Paint.Style.STROKE
+            strokeWidth = 3f
+            alpha = 150
+            isAntiAlias = true
+        }
+        canvas.drawCircle(centerX, centerY, stoneRadius * 0.7f, outerPaint)
     }
     
     override fun onTouchEvent(event: MotionEvent): Boolean {

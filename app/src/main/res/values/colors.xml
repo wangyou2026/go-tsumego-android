@@ -1,23 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Primary Colors - 温暖木色调 -->
     <color name="primary">#5D4037</color>
     <color name="primary_dark">#3E2723</color>
     <color name="primary_light">#8D6E63</color>
     <color name="accent">#FF6F00</color>
+    
+    <!-- Basic Colors -->
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
+    
+    <!-- Board Colors - 木质纹理 -->
     <color name="board_wood">#DEB887</color>
-    <color name="board_line">#8B4513</color>
+    <color name="board_line">#6B4423</color>
+    <color name="board_frame">#5D4037</color>
+    
+    <!-- Stone Colors -->
     <color name="stone_black">#1A1A1A</color>
     <color name="stone_white">#FAFAFA</color>
     <color name="stone_black_stroke">#4A4A4A</color>
     <color name="stone_white_stroke">#CCCCCC</color>
+    
+    <!-- UI Colors -->
     <color name="hint_point">#FF5722</color>
     <color name="last_move">#E91E63</color>
     <color name="background">#FFF8E1</color>
+    <color name="background_dark">#FFECB3</color>
     <color name="card_background">#FFFFFF</color>
+    
+    <!-- Text Colors -->
     <color name="text_primary">#212121</color>
     <color name="text_secondary">#757575</color>
+    <color name="text_on_primary">#FFFFFF</color>
+    
+    <!-- Status Colors -->
     <color name="correct_green">#4CAF50</color>
+    <color name="correct_green_light">#81C784</color>
     <color name="incorrect_red">#F44336</color>
+    <color name="incorrect_red_light">#E57373</color>
+    
+    <!-- Difficulty Colors -->
+    <color name="difficulty_1">#81C784</color>
+    <color name="difficulty_2">#AED581</color>
+    <color name="difficulty_3">#FFD54F</color>
+    <color name="difficulty_4">#FFB74D</color>
+    <color name="difficulty_5">#E57373</color>
+    
+    <!-- Problem Type Colors -->
+    <color name="type_life_death">#FF5722</color>
+    <color name="type_tesuji">#2196F3</color>
+    <color name="type_yose">#4CAF50</color>
+    <color name="type_capture">#9C27B0</color>
 </resources>
