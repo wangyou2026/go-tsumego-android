@@ -1,52 +1,3510 @@
 [
-  {"id": 1, "type": "life_death", "difficulty": 1, "title": "一路虎的死活", "boardSize": 9, "stones": [[1, 1, 1], [2, 1, 1], [1, 2, 1], [2, 2, 1], [3, 1, 2], [3, 2, 2], [1, 3, 2], [2, 3, 2]], "toPlay": 1, "answer": [1, 0], "solutions": [{"moves": [[1, 0]], "result": "correct", "comment": "黑1点入，白棋无法做出两眼，死棋"}], "hint": "寻找白棋眼位的要点"},
-  {"id": 2, "type": "life_death", "difficulty": 1, "title": "直三活棋", "boardSize": 9, "stones": [[3, 0, 1], [4, 0, 1], [5, 0, 1], [3, 1, 2], [4, 1, 2], [5, 1, 2], [2, 0, 2], [6, 0, 2]], "toPlay": 1, "answer": [4, 0], "solutions": [{"moves": [[4, 0]], "result": "correct", "comment": "黑1中间做眼，活棋"}], "hint": "在中间做眼"},
-  {"id": 3, "type": "life_death", "difficulty": 2, "title": "角上死活", "boardSize": 9, "stones": [[0, 0, 1], [1, 0, 1], [0, 1, 1], [1, 1, 2], [2, 0, 2], [2, 1, 2]], "toPlay": 1, "answer": [0, 2], "solutions": [{"moves": [[0, 2]], "result": "correct", "comment": "扩大眼位"}], "hint": "扩大眼位做活"},
-  {"id": 4, "type": "life_death", "difficulty": 2, "title": "边上死活", "boardSize": 9, "stones": [[3, 0, 1], [4, 0, 1], [5, 0, 1], [6, 0, 1], [2, 0, 2], [7, 0, 2], [3, 1, 2], [4, 1, 2], [5, 1, 2], [6, 1, 2]], "toPlay": 1, "answer": [4, 0], "solutions": [{"moves": [[4, 0]], "result": "correct"}], "hint": "找到眼位要点"},
-  {"id": 5, "type": "life_death", "difficulty": 3, "title": "中腹死活", "boardSize": 9, "stones": [[3, 3, 1], [4, 3, 1], [5, 3, 1], [3, 4, 1], [5, 4, 1], [3, 5, 1], [4, 5, 1], [5, 5, 1], [2, 3, 2], [2, 4, 2], [2, 5, 2], [6, 3, 2], [6, 4, 2], [6, 5, 2]], "toPlay": 1, "answer": [4, 4], "solutions": [{"moves": [[4, 4]], "result": "correct"}], "hint": "占据中心要点"},
-  {"id": 6, "type": "tesuji", "difficulty": 2, "title": "夹的手筋", "boardSize": 9, "stones": [[2, 2, 1], [3, 2, 2], [2, 3, 2]], "toPlay": 1, "answer": [3, 3], "solutions": [{"moves": [[3, 3]], "result": "correct"}], "hint": "使用夹的手筋"},
-  {"id": 7, "type": "tesuji", "difficulty": 3, "title": "点的手筋", "boardSize": 9, "stones": [[1, 1, 1], [2, 1, 1], [3, 1, 2], [4, 1, 2], [1, 2, 2], [2, 2, 2]], "toPlay": 1, "answer": [2, 2], "solutions": [{"moves": [[2, 2]], "result": "correct"}], "hint": "点入对方阵地"},
-  {"id": 8, "type": "yose", "difficulty": 1, "title": "简单官子", "boardSize": 9, "stones": [[0, 0, 1], [1, 0, 2]], "toPlay": 1, "answer": [0, 1], "solutions": [{"moves": [[0, 1]], "result": "correct"}], "hint": "收官先手"},
-  {"id": 9, "type": "life_death", "difficulty": 4, "title": "大眼死活", "boardSize": 9, "stones": [[2, 2, 1], [3, 2, 1], [4, 2, 1], [5, 2, 1], [2, 3, 1], [5, 3, 1], [2, 4, 1], [3, 4, 1], [4, 4, 1], [5, 4, 1], [1, 2, 2], [1, 3, 2], [1, 4, 2], [6, 2, 2], [6, 3, 2], [6, 4, 2]], "toPlay": 1, "answer": [3, 3], "solutions": [{"moves": [[3, 3]], "result": "correct"}], "hint": "找到破眼要点"},
-  {"id": 10, "type": "life_death", "difficulty": 5, "title": "复杂死活", "boardSize": 9, "stones": [[2, 2, 1], [3, 2, 1], [4, 2, 1], [2, 3, 1], [4, 3, 1], [2, 4, 1], [3, 4, 1], [4, 4, 1], [1, 2, 2], [1, 3, 2], [1, 4, 2], [5, 2, 2], [5, 3, 2], [5, 4, 2], [2, 5, 2], [3, 5, 2], [4, 5, 2]], "toPlay": 1, "answer": [3, 3], "solutions": [{"moves": [[3, 3]], "result": "correct"}], "hint": "中间是关键"},
-  {"id": 101, "type": "life_death", "difficulty": 3, "title": "吴清源-角上板六", "boardSize": 9, "stones": [[0, 0, 1], [1, 0, 1], [2, 0, 1], [0, 1, 1], [2, 1, 2], [0, 2, 2], [1, 2, 2], [2, 2, 2], [3, 0, 2]], "toPlay": 1, "answer": [1, 1], "solutions": [{"moves": [[1, 1]], "result": "correct", "comment": "吴清源经典题目，黑1占据急所"}], "hint": "角部攻防的要点"},
-  {"id": 102, "type": "life_death", "difficulty": 4, "title": "吴清源-金鸡独立", "boardSize": 9, "stones": [[0, 0, 1], [1, 0, 1], [2, 0, 2], [3, 0, 2], [0, 1, 1], [0, 2, 1], [1, 2, 1], [1, 1, 2], [2, 1, 2], [2, 2, 1]], "toPlay": 1, "answer": [0, 3], "solutions": [{"moves": [[0, 3]], "result": "correct", "comment": "金鸡独立，利用对方的弱点"}], "hint": "利用对方的断点"},
-  {"id": 103, "type": "life_death", "difficulty": 5, "title": "吴清源-倒脱靴", "boardSize": 9, "stones": [[1, 0, 1], [2, 0, 1], [3, 0, 2], [1, 1, 1], [2, 1, 2], [3, 1, 2], [1, 2, 2], [2, 2, 1], [3, 2, 2], [0, 1, 2]], "toPlay": 1, "answer": [2, 2], "solutions": [{"moves": [[2, 2]], "result": "correct", "comment": "倒脱靴的经典形，先弃后取"}], "hint": "牺牲子力换取更大利益"},
-  {"id": 104, "type": "life_death", "difficulty": 4, "title": "吴清源-大猪嘴", "boardSize": 9, "stones": [[0, 0, 1], [1, 0, 1], [2, 0, 2], [3, 0, 2], [4, 0, 2], [0, 1, 1], [1, 1, 1], [2, 1, 2], [0, 2, 2], [1, 2, 2]], "toPlay": 1, "answer": [1, 1], "solutions": [{"moves": [[1, 1]], "result": "correct", "comment": "大猪嘴的破解方法"}], "hint": "利用对方气紧的弱点"},
-  {"id": 105, "type": "life_death", "difficulty": 3, "title": "吴清源-盘角曲四", "boardSize": 9, "stones": [[1, 0, 1], [2, 0, 1], [3, 0, 2], [4, 0, 2], [1, 1, 1], [4, 1, 2], [2, 1, 2], [3, 1, 1], [2, 2, 1]], "toPlay": 1, "answer": [2, 1], "solutions": [{"moves": [[2, 1]], "result": "correct", "comment": "盘角曲四劫尽棋亡"}], "hint": "曲四的弱点在哪里"},
-  {"id": 106, "type": "life_death", "difficulty": 4, "title": "吴清源-刀把五", "boardSize": 9, "stones": [[2, 0, 1], [3, 0, 1], [4, 0, 1], [2, 1, 2], [4, 1, 2], [2, 2, 2], [3, 2, 2], [4, 2, 2], [3, 1, 1]], "toPlay": 1, "answer": [3, 1], "solutions": [{"moves": [[3, 1]], "result": "correct", "comment": "刀把五的杀法"}], "hint": "攻击刀把五的要点"},
-  {"id": 107, "type": "life_death", "difficulty": 4, "title": "吴清源-梅花六", "boardSize": 9, "stones": [[2, 0, 1], [4, 0, 1], [2, 1, 2], [4, 1, 2], [1, 1, 1], [3, 1, 1], [5, 1, 1], [2, 2, 2], [4, 2, 2], [3, 2, 1]], "toPlay": 1, "answer": [3, 1], "solutions": [{"moves": [[3, 1]], "result": "correct", "comment": "梅花六的杀法"}], "hint": "聚杀要点"},
-  {"id": 108, "type": "life_death", "difficulty": 3, "title": "吴清源-直四活型", "boardSize": 9, "stones": [[1, 0, 1], [2, 0, 1], [3, 0, 1], [4, 0, 1], [1, 1, 2], [4, 1, 2], [2, 1, 2], [3, 1, 2], [0, 0, 2], [5, 0, 2]], "toPlay": 1, "answer": [2, 0], "solutions": [{"moves": [[2, 0]], "result": "correct", "comment": "直四做活的方法"}], "hint": "扩大眼位"},
-  {"id": 109, "type": "life_death", "difficulty": 4, "title": "吴清源-曲四活型", "boardSize": 9, "stones": [[1, 0, 1], [2, 0, 1], [3, 0, 2], [4, 0, 2], [1, 1, 1], [3, 1, 2], [2, 1, 2], [0, 0, 2], [5, 0, 2], [4, 1, 1]], "toPlay": 1, "answer": [3, 0], "solutions": [{"moves": [[3, 0]], "result": "correct", "comment": "曲四活棋要点"}], "hint": "曲四的特殊性"},
-  {"id": 110, "type": "life_death", "difficulty": 5, "title": "吴清源-万年劫", "boardSize": 9, "stones": [[0, 0, 1], [1, 0, 1], [2, 0, 2], [3, 0, 2], [0, 1, 1], [3, 1, 2], [1, 1, 2], [2, 1, 1], [1, 2, 2], [0, 2, 2], [2, 2, 2]], "toPlay": 1, "answer": [1, 1], "solutions": [{"moves": [[1, 1]], "result": "correct", "comment": "万年劫的应对"}], "hint": "劫的攻防"},
-  {"id": 111, "type": "tesuji", "difficulty": 3, "title": "吴清源-大头鬼", "boardSize": 9, "stones": [[2, 0, 1], [3, 0, 2], [4, 0, 2], [2, 1, 1], [3, 1, 2], [4, 1, 2], [1, 1, 2], [2, 2, 2]], "toPlay": 1, "answer": [2, 1], "solutions": [{"moves": [[2, 1]], "result": "correct", "comment": "大头鬼的手筋"}], "hint": "滚打包收"},
-  {"id": 112, "type": "tesuji", "difficulty": 4, "title": "吴清源-征子", "boardSize": 9, "stones": [[3, 0, 2], [4, 0, 1], [3, 1, 1], [4, 1, 2], [5, 1, 2], [2, 0, 2], [5, 0, 2]], "toPlay": 1, "answer": [5, 2], "solutions": [{"moves": [[5, 2]], "result": "correct", "comment": "经典征子"}], "hint": "追着跑"},
-  {"id": 113, "type": "life_death", "difficulty": 4, "title": "吴清源-涨牯牛", "boardSize": 9, "stones": [[0, 0, 1], [1, 0, 1], [2, 0, 2], [3, 0, 2], [0, 1, 1], [3, 1, 2], [1, 1, 2], [2, 1, 1], [1, 2, 1]], "toPlay": 1, "answer": [2, 1], "solutions": [{"moves": [[2, 1]], "result": "correct", "comment": "涨牯牛的杀法"}], "hint": "缩小眼位"},
-  {"id": 114, "type": "tesuji", "difficulty": 3, "title": "吴清源-枷吃", "boardSize": 9, "stones": [[2, 0, 2], [3, 0, 1], [4, 0, 1], [3, 1, 1], [4, 1, 2], [5, 0, 2], [2, 1, 2], [5, 1, 2]], "toPlay": 1, "answer": [4, 1], "solutions": [{"moves": [[4, 1]], "result": "correct", "comment": "枷吃的妙手"}], "hint": "封锁对方"},
-  {"id": 115, "type": "life_death", "difficulty": 5, "title": "吴清源-接不归", "boardSize": 9, "stones": [[1, 0, 1], [2, 0, 1], [3, 0, 2], [4, 0, 2], [1, 1, 1], [4, 1, 2], [2, 1, 2], [3, 1, 2], [0, 0, 2], [5, 0, 2]], "toPlay": 1, "answer": [3, 0], "solutions": [{"moves": [[3, 0]], "result": "correct", "comment": "利用接不归吃子"}], "hint": "让对方接不归"},
-  {"id": 116, "type": "life_death", "difficulty": 3, "title": "吴清源-小猪嘴", "boardSize": 9, "stones": [[0, 0, 1], [1, 0, 1], [2, 0, 2], [3, 0, 2], [0, 1, 1], [1, 1, 1], [2, 1, 2], [0, 2, 2]], "toPlay": 1, "answer": [1, 1], "solutions": [{"moves": [[1, 1]], "result": "correct", "comment": "小猪嘴的杀法"}], "hint": "点入急所"},
-  {"id": 117, "type": "yose", "difficulty": 3, "title": "吴清源-官子妙手", "boardSize": 9, "stones": [[0, 0, 1], [1, 0, 2], [2, 0, 2], [3, 0, 1], [0, 1, 2], [1, 1, 1], [2, 1, 1]], "toPlay": 1, "answer": [1, 1], "solutions": [{"moves": [[1, 1]], "result": "correct", "comment": "官子收束妙手"}], "hint": "最大化官子价值"},
-  {"id": 118, "type": "tesuji", "difficulty": 4, "title": "吴清源-倒扑", "boardSize": 9, "stones": [[2, 0, 1], [3, 0, 2], [4, 0, 2], [2, 1, 1], [3, 1, 2], [4, 1, 2], [2, 2, 2], [3, 2, 1]], "toPlay": 1, "answer": [3, 2], "solutions": [{"moves": [[3, 2]], "result": "correct", "comment": "倒扑的手筋"}], "hint": "牺牲换取更大利益"},
-  {"id": 119, "type": "life_death", "difficulty": 4, "title": "吴清源-有眼杀无眼", "boardSize": 9, "stones": [[1, 0, 1], [2, 0, 1], [3, 0, 2], [4, 0, 2], [1, 1, 1], [4, 1, 2], [2, 1, 2], [3, 1, 2], [1, 2, 2], [2, 2, 1]], "toPlay": 1, "answer": [2, 2], "solutions": [{"moves": [[2, 2]], "result": "correct", "comment": "有眼杀无眼的经典形"}], "hint": "利用眼位优势"},
-  {"id": 120, "type": "life_death", "difficulty": 5, "title": "吴清源-大头鬼变招", "boardSize": 9, "stones": [[3, 0, 1], [4, 0, 2], [5, 0, 2], [3, 1, 1], [4, 1, 2], [5, 1, 2], [2, 1, 2], [3, 2, 2], [6, 0, 2]], "toPlay": 1, "answer": [4, 1], "solutions": [{"moves": [[4, 1]], "result": "correct", "comment": "大头鬼的变招"}], "hint": "滚打包收的连续手筋"},
-  {"id": 121, "type": "capture", "difficulty": 2, "title": "吴清源-抱吃", "boardSize": 9, "stones": [[3, 0, 2], [4, 0, 1], [3, 1, 1], [4, 1, 2], [5, 0, 2], [2, 0, 1]], "toPlay": 1, "answer": [3, 0], "solutions": [{"moves": [[3, 0]], "result": "correct", "comment": "抱吃的简单应用"}], "hint": "让对方无路可逃"},
-  {"id": 122, "type": "capture", "difficulty": 3, "title": "吴清源-门吃", "boardSize": 9, "stones": [[2, 0, 2], [3, 0, 1], [4, 0, 1], [3, 1, 2], [2, 1, 2], [1, 0, 1]], "toPlay": 1, "answer": [3, 0], "solutions": [{"moves": [[3, 0]], "result": "correct", "comment": "门吃的妙手"}], "hint": "封锁对方的逃路"},
-  {"id": 123, "type": "tesuji", "difficulty": 4, "title": "吴清源-挖的手筋", "boardSize": 9, "stones": [[2, 0, 1], [3, 0, 2], [4, 0, 2], [2, 1, 2], [3, 1, 1], [4, 1, 2], [1, 0, 2]], "toPlay": 1, "answer": [3, 1], "solutions": [{"moves": [[3, 1]], "result": "correct", "comment": "挖入分割敌人"}], "hint": "分割包围"},
-  {"id": 124, "type": "life_death", "difficulty": 3, "title": "吴清源-胀牯牛活棋", "boardSize": 9, "stones": [[0, 0, 1], [1, 0, 1], [2, 0, 2], [3, 0, 2], [0, 1, 1], [3, 1, 2], [1, 1, 2], [2, 1, 1], [1, 2, 1]], "toPlay": 1, "answer": [2, 1], "solutions": [{"moves": [[2, 1]], "result": "correct", "comment": "胀牯牛做活"}], "hint": "利用气紧做活"},
-  {"id": 125, "type": "tesuji", "difficulty": 4, "title": "吴清源-点的手筋", "boardSize": 9, "stones": [[1, 0, 1], [2, 0, 1], [3, 0, 2], [4, 0, 2], [1, 1, 2], [2, 1, 2], [3, 1, 1], [4, 1, 2]], "toPlay": 1, "answer": [2, 1], "solutions": [{"moves": [[2, 1]], "result": "correct", "comment": "点入破眼的手筋"}], "hint": "破坏对方眼位"},
-  {"id": 126, "type": "life_death", "difficulty": 4, "title": "吴清源-金柜角", "boardSize": 9, "stones": [[0, 0, 1], [1, 0, 1], [2, 0, 1], [0, 1, 2], [2, 1, 2], [0, 2, 2], [1, 2, 2], [2, 2, 2], [3, 0, 2]], "toPlay": 1, "answer": [1, 0], "solutions": [{"moves": [[1, 0]], "result": "correct", "comment": "金柜角的攻防"}], "hint": "角部死活难题"},
-  {"id": 127, "type": "life_death", "difficulty": 5, "title": "吴清源-劫争", "boardSize": 9, "stones": [[0, 0, 1], [1, 0, 1], [2, 0, 2], [3, 0, 2], [0, 1, 1], [3, 1, 2], [1, 1, 2], [2, 1, 1], [1, 2, 1], [0, 2, 2]], "toPlay": 1, "answer": [2, 1], "solutions": [{"moves": [[2, 1]], "result": "correct", "comment": "制造劫材"}], "hint": "先制造劫材"},
-  {"id": 128, "type": "tesuji", "difficulty": 3, "title": "吴清源-嵌的手筋", "boardSize": 9, "stones": [[2, 0, 1], [4, 0, 2], [2, 1, 2], [3, 1, 1], [4, 1, 2], [1, 0, 2], [5, 0, 2]], "toPlay": 1, "answer": [3, 1], "solutions": [{"moves": [[3, 1]], "result": "correct", "comment": "嵌入敌人阵营"}], "hint": "利用对方的空隙"},
-  {"id": 129, "type": "life_death", "difficulty": 4, "title": "吴清源-聚杀", "boardSize": 9, "stones": [[2, 0, 1], [3, 0, 1], [4, 0, 1], [2, 1, 2], [4, 1, 2], [2, 2, 2], [3, 2, 2], [4, 2, 2], [3, 1, 1]], "toPlay": 1, "answer": [3, 1], "solutions": [{"moves": [[3, 1]], "result": "correct", "comment": "聚杀要点"}], "hint": "把对方聚成死形"},
-  {"id": 130, "type": "life_death", "difficulty": 5, "title": "吴清源-双倒扑", "boardSize": 9, "stones": [[3, 0, 1], [4, 0, 2], [5, 0, 2], [3, 1, 1], [4, 1, 2], [5, 1, 2], [3, 2, 2], [4, 2, 1], [6, 0, 2]], "toPlay": 1, "answer": [4, 2], "solutions": [{"moves": [[4, 2]], "result": "correct", "comment": "双倒扑的经典形"}], "hint": "连续倒扑"},
-  {"id": 131, "type": "yose", "difficulty": 4, "title": "吴清源-先手官子", "boardSize": 9, "stones": [[0, 0, 1], [1, 0, 1], [2, 0, 2], [3, 0, 2], [4, 0, 1], [0, 1, 2], [1, 1, 1], [2, 1, 2], [3, 1, 2]], "toPlay": 1, "answer": [3, 1], "solutions": [{"moves": [[3, 1]], "result": "correct", "comment": "先手官的收法"}], "hint": "追求先手"},
-  {"id": 132, "type": "tesuji", "difficulty": 3, "title": "吴清源-靠的手筋", "boardSize": 9, "stones": [[2, 0, 2], [3, 0, 1], [4, 0, 2], [3, 1, 2], [1, 0, 2], [5, 0, 2]], "toPlay": 1, "answer": [4, 0], "solutions": [{"moves": [[4, 0]], "result": "correct", "comment": "靠的腾挪手筋"}], "hint": "借力打力"},
-  {"id": 133, "type": "life_death", "difficulty": 3, "title": "吴清源-做活要点", "boardSize": 9, "stones": [[1, 0, 1], [2, 0, 1], [3, 0, 1], [1, 1, 2], [3, 1, 2], [1, 2, 2], [2, 2, 2], [3, 2, 2], [0, 0, 2]], "toPlay": 1, "answer": [2, 0], "solutions": [{"moves": [[2, 0]], "result": "correct", "comment": "做活的急所"}], "hint": "占据做眼要点"},
-  {"id": 134, "type": "capture", "difficulty": 3, "title": "吴清源-扑吃", "boardSize": 9, "stones": [[2, 0, 1], [3, 0, 2], [4, 0, 2], [2, 1, 1], [3, 1, 2], [4, 1, 2], [1, 0, 2]], "toPlay": 1, "answer": [3, 1], "solutions": [{"moves": [[3, 1]], "result": "correct", "comment": "扑吃的妙手"}], "hint": "先扑后吃"},
-  {"id": 135, "type": "tesuji", "difficulty": 4, "title": "吴清源-跳的手筋", "boardSize": 9, "stones": [[2, 0, 2], [3, 0, 1], [4, 0, 2], [2, 1, 2], [3, 1, 2], [1, 0, 2], [5, 0, 2]], "toPlay": 1, "answer": [4, 0], "solutions": [{"moves": [[4, 0]], "result": "correct", "comment": "跳的侵入手筋"}], "hint": "快速侵入"},
-  {"id": 136, "type": "life_death", "difficulty": 4, "title": "吴清源-二一路妙手", "boardSize": 9, "stones": [[0, 0, 1], [1, 0, 1], [2, 0, 2], [3, 0, 2], [0, 1, 1], [3, 1, 2], [1, 1, 2], [2, 1, 2]], "toPlay": 1, "answer": [0, 1], "solutions": [{"moves": [[0, 1]], "result": "correct", "comment": "二一路的妙手"}], "hint": "边角的特殊手段"},
-  {"id": 137, "type": "tesuji", "difficulty": 3, "title": "吴清源-托的手筋", "boardSize": 9, "stones": [[1, 0, 2], [2, 0, 2], [3, 0, 1], [4, 0, 1], [1, 1, 2], [4, 1, 1], [0, 0, 1]], "toPlay": 1, "answer": [2, 1], "solutions": [{"moves": [[2, 1]], "result": "correct", "comment": "托的手筋"}], "hint": "托角整形"},
-  {"id": 138, "type": "life_death", "difficulty": 5, "title": "吴清源-连环劫", "boardSize": 9, "stones": [[0, 0, 1], [1, 0, 1], [2, 0, 2], [3, 0, 2], [0, 1, 1], [3, 1, 2], [1, 1, 2], [2, 1, 1], [1, 2, 1], [2, 2, 2], [0, 2, 2]], "toPlay": 1, "answer": [2, 1], "solutions": [{"moves": [[2, 1]], "result": "correct", "comment": "制造连环劫"}], "hint": "复杂劫争"},
-  {"id": 139, "type": "tesuji", "difficulty": 4, "title": "吴清源-挤的手筋", "boardSize": 9, "stones": [[2, 0, 1], [3, 0, 2], [4, 0, 2], [2, 1, 2], [3, 1, 1], [4, 1, 2], [1, 0, 2], [5, 0, 2]], "toPlay": 1, "answer": [3, 1], "solutions": [{"moves": [[3, 1]], "result": "correct", "comment": "挤的妙手"}], "hint": "制造断点"},
-  {"id": 140, "type": "life_death", "difficulty": 4, "title": "吴清源-大头鬼收官", "boardSize": 9, "stones": [[3, 0, 1], [4, 0, 2], [5, 0, 2], [3, 1, 1], [4, 1, 2], [5, 1, 2], [2, 1, 2], [3, 2, 2], [6, 0, 2]], "toPlay": 1, "answer": [4, 1], "solutions": [{"moves": [[4, 1]], "result": "correct", "comment": "大头鬼收官"}], "hint": "滚打包收"}
+  {
+    "id": 1,
+    "type": "life_death",
+    "difficulty": 1,
+    "title": "一路虎的死活",
+    "boardSize": 19,
+    "stones": [
+      [
+        6,
+        6,
+        1
+      ],
+      [
+        7,
+        6,
+        1
+      ],
+      [
+        6,
+        7,
+        1
+      ],
+      [
+        7,
+        7,
+        1
+      ],
+      [
+        8,
+        6,
+        2
+      ],
+      [
+        8,
+        7,
+        2
+      ],
+      [
+        6,
+        8,
+        2
+      ],
+      [
+        7,
+        8,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      6,
+      5
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            6,
+            5
+          ]
+        ],
+        "result": "correct",
+        "comment": "黑1点入，白棋无法做出两眼，死棋"
+      }
+    ],
+    "hint": "寻找白棋眼位的要点"
+  },
+  {
+    "id": 2,
+    "type": "life_death",
+    "difficulty": 1,
+    "title": "直三活棋",
+    "boardSize": 19,
+    "stones": [
+      [
+        8,
+        5,
+        1
+      ],
+      [
+        9,
+        5,
+        1
+      ],
+      [
+        10,
+        5,
+        1
+      ],
+      [
+        8,
+        6,
+        2
+      ],
+      [
+        9,
+        6,
+        2
+      ],
+      [
+        10,
+        6,
+        2
+      ],
+      [
+        7,
+        5,
+        2
+      ],
+      [
+        11,
+        5,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      9,
+      5
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            9,
+            5
+          ]
+        ],
+        "result": "correct",
+        "comment": "黑1中间做眼，活棋"
+      }
+    ],
+    "hint": "在中间做眼"
+  },
+  {
+    "id": 3,
+    "type": "life_death",
+    "difficulty": 2,
+    "title": "角上死活",
+    "boardSize": 19,
+    "stones": [
+      [
+        5,
+        5,
+        1
+      ],
+      [
+        6,
+        5,
+        1
+      ],
+      [
+        5,
+        6,
+        1
+      ],
+      [
+        6,
+        6,
+        2
+      ],
+      [
+        7,
+        5,
+        2
+      ],
+      [
+        7,
+        6,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      5,
+      7
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            5,
+            7
+          ]
+        ],
+        "result": "correct",
+        "comment": "扩大眼位"
+      }
+    ],
+    "hint": "扩大眼位做活"
+  },
+  {
+    "id": 4,
+    "type": "life_death",
+    "difficulty": 2,
+    "title": "边上死活",
+    "boardSize": 19,
+    "stones": [
+      [
+        8,
+        5,
+        1
+      ],
+      [
+        9,
+        5,
+        1
+      ],
+      [
+        10,
+        5,
+        1
+      ],
+      [
+        11,
+        5,
+        1
+      ],
+      [
+        7,
+        5,
+        2
+      ],
+      [
+        12,
+        5,
+        2
+      ],
+      [
+        8,
+        6,
+        2
+      ],
+      [
+        9,
+        6,
+        2
+      ],
+      [
+        10,
+        6,
+        2
+      ],
+      [
+        11,
+        6,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      9,
+      5
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            9,
+            5
+          ]
+        ],
+        "result": "correct"
+      }
+    ],
+    "hint": "找到眼位要点"
+  },
+  {
+    "id": 5,
+    "type": "life_death",
+    "difficulty": 3,
+    "title": "中腹死活",
+    "boardSize": 19,
+    "stones": [
+      [
+        8,
+        8,
+        1
+      ],
+      [
+        9,
+        8,
+        1
+      ],
+      [
+        10,
+        8,
+        1
+      ],
+      [
+        8,
+        9,
+        1
+      ],
+      [
+        10,
+        9,
+        1
+      ],
+      [
+        8,
+        10,
+        1
+      ],
+      [
+        9,
+        10,
+        1
+      ],
+      [
+        10,
+        10,
+        1
+      ],
+      [
+        7,
+        8,
+        2
+      ],
+      [
+        7,
+        9,
+        2
+      ],
+      [
+        7,
+        10,
+        2
+      ],
+      [
+        11,
+        8,
+        2
+      ],
+      [
+        11,
+        9,
+        2
+      ],
+      [
+        11,
+        10,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      9,
+      9
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            9,
+            9
+          ]
+        ],
+        "result": "correct"
+      }
+    ],
+    "hint": "占据中心要点"
+  },
+  {
+    "id": 6,
+    "type": "tesuji",
+    "difficulty": 2,
+    "title": "夹的手筋",
+    "boardSize": 19,
+    "stones": [
+      [
+        7,
+        7,
+        1
+      ],
+      [
+        8,
+        7,
+        2
+      ],
+      [
+        7,
+        8,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      8,
+      8
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            8,
+            8
+          ]
+        ],
+        "result": "correct"
+      }
+    ],
+    "hint": "使用夹的手筋"
+  },
+  {
+    "id": 7,
+    "type": "tesuji",
+    "difficulty": 3,
+    "title": "点的手筋",
+    "boardSize": 19,
+    "stones": [
+      [
+        6,
+        6,
+        1
+      ],
+      [
+        7,
+        6,
+        1
+      ],
+      [
+        8,
+        6,
+        2
+      ],
+      [
+        9,
+        6,
+        2
+      ],
+      [
+        6,
+        7,
+        2
+      ],
+      [
+        7,
+        7,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      7,
+      7
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            7,
+            7
+          ]
+        ],
+        "result": "correct"
+      }
+    ],
+    "hint": "点入对方阵地"
+  },
+  {
+    "id": 8,
+    "type": "yose",
+    "difficulty": 1,
+    "title": "简单官子",
+    "boardSize": 19,
+    "stones": [
+      [
+        5,
+        5,
+        1
+      ],
+      [
+        6,
+        5,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      5,
+      6
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            5,
+            6
+          ]
+        ],
+        "result": "correct"
+      }
+    ],
+    "hint": "收官先手"
+  },
+  {
+    "id": 9,
+    "type": "life_death",
+    "difficulty": 4,
+    "title": "大眼死活",
+    "boardSize": 19,
+    "stones": [
+      [
+        7,
+        7,
+        1
+      ],
+      [
+        8,
+        7,
+        1
+      ],
+      [
+        9,
+        7,
+        1
+      ],
+      [
+        10,
+        7,
+        1
+      ],
+      [
+        7,
+        8,
+        1
+      ],
+      [
+        10,
+        8,
+        1
+      ],
+      [
+        7,
+        9,
+        1
+      ],
+      [
+        8,
+        9,
+        1
+      ],
+      [
+        9,
+        9,
+        1
+      ],
+      [
+        10,
+        9,
+        1
+      ],
+      [
+        6,
+        7,
+        2
+      ],
+      [
+        6,
+        8,
+        2
+      ],
+      [
+        6,
+        9,
+        2
+      ],
+      [
+        11,
+        7,
+        2
+      ],
+      [
+        11,
+        8,
+        2
+      ],
+      [
+        11,
+        9,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      8,
+      8
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            8,
+            8
+          ]
+        ],
+        "result": "correct"
+      }
+    ],
+    "hint": "找到破眼要点"
+  },
+  {
+    "id": 10,
+    "type": "life_death",
+    "difficulty": 5,
+    "title": "复杂死活",
+    "boardSize": 19,
+    "stones": [
+      [
+        7,
+        7,
+        1
+      ],
+      [
+        8,
+        7,
+        1
+      ],
+      [
+        9,
+        7,
+        1
+      ],
+      [
+        7,
+        8,
+        1
+      ],
+      [
+        9,
+        8,
+        1
+      ],
+      [
+        7,
+        9,
+        1
+      ],
+      [
+        8,
+        9,
+        1
+      ],
+      [
+        9,
+        9,
+        1
+      ],
+      [
+        6,
+        7,
+        2
+      ],
+      [
+        6,
+        8,
+        2
+      ],
+      [
+        6,
+        9,
+        2
+      ],
+      [
+        10,
+        7,
+        2
+      ],
+      [
+        10,
+        8,
+        2
+      ],
+      [
+        10,
+        9,
+        2
+      ],
+      [
+        7,
+        10,
+        2
+      ],
+      [
+        8,
+        10,
+        2
+      ],
+      [
+        9,
+        10,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      8,
+      8
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            8,
+            8
+          ]
+        ],
+        "result": "correct"
+      }
+    ],
+    "hint": "中间是关键"
+  },
+  {
+    "id": 101,
+    "type": "life_death",
+    "difficulty": 3,
+    "title": "吴清源-角上板六",
+    "boardSize": 19,
+    "stones": [
+      [
+        5,
+        5,
+        1
+      ],
+      [
+        6,
+        5,
+        1
+      ],
+      [
+        7,
+        5,
+        1
+      ],
+      [
+        5,
+        6,
+        1
+      ],
+      [
+        7,
+        6,
+        2
+      ],
+      [
+        5,
+        7,
+        2
+      ],
+      [
+        6,
+        7,
+        2
+      ],
+      [
+        7,
+        7,
+        2
+      ],
+      [
+        8,
+        5,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      6,
+      6
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            6,
+            6
+          ]
+        ],
+        "result": "correct",
+        "comment": "吴清源经典题目，黑1占据急所"
+      }
+    ],
+    "hint": "角部攻防的要点"
+  },
+  {
+    "id": 102,
+    "type": "life_death",
+    "difficulty": 4,
+    "title": "吴清源-金鸡独立",
+    "boardSize": 19,
+    "stones": [
+      [
+        5,
+        5,
+        1
+      ],
+      [
+        6,
+        5,
+        1
+      ],
+      [
+        7,
+        5,
+        2
+      ],
+      [
+        8,
+        5,
+        2
+      ],
+      [
+        5,
+        6,
+        1
+      ],
+      [
+        5,
+        7,
+        1
+      ],
+      [
+        6,
+        7,
+        1
+      ],
+      [
+        6,
+        6,
+        2
+      ],
+      [
+        7,
+        6,
+        2
+      ],
+      [
+        7,
+        7,
+        1
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      5,
+      8
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            5,
+            8
+          ]
+        ],
+        "result": "correct",
+        "comment": "金鸡独立，利用对方的弱点"
+      }
+    ],
+    "hint": "利用对方的断点"
+  },
+  {
+    "id": 103,
+    "type": "life_death",
+    "difficulty": 5,
+    "title": "吴清源-倒脱靴",
+    "boardSize": 19,
+    "stones": [
+      [
+        6,
+        5,
+        1
+      ],
+      [
+        7,
+        5,
+        1
+      ],
+      [
+        8,
+        5,
+        2
+      ],
+      [
+        6,
+        6,
+        1
+      ],
+      [
+        7,
+        6,
+        2
+      ],
+      [
+        8,
+        6,
+        2
+      ],
+      [
+        6,
+        7,
+        2
+      ],
+      [
+        7,
+        7,
+        1
+      ],
+      [
+        8,
+        7,
+        2
+      ],
+      [
+        5,
+        6,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      7,
+      7
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            7,
+            7
+          ]
+        ],
+        "result": "correct",
+        "comment": "倒脱靴的经典形，先弃后取"
+      }
+    ],
+    "hint": "牺牲子力换取更大利益"
+  },
+  {
+    "id": 104,
+    "type": "life_death",
+    "difficulty": 4,
+    "title": "吴清源-大猪嘴",
+    "boardSize": 19,
+    "stones": [
+      [
+        5,
+        5,
+        1
+      ],
+      [
+        6,
+        5,
+        1
+      ],
+      [
+        7,
+        5,
+        2
+      ],
+      [
+        8,
+        5,
+        2
+      ],
+      [
+        9,
+        5,
+        2
+      ],
+      [
+        5,
+        6,
+        1
+      ],
+      [
+        6,
+        6,
+        1
+      ],
+      [
+        7,
+        6,
+        2
+      ],
+      [
+        5,
+        7,
+        2
+      ],
+      [
+        6,
+        7,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      6,
+      6
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            6,
+            6
+          ]
+        ],
+        "result": "correct",
+        "comment": "大猪嘴的破解方法"
+      }
+    ],
+    "hint": "利用对方气紧的弱点"
+  },
+  {
+    "id": 105,
+    "type": "life_death",
+    "difficulty": 3,
+    "title": "吴清源-盘角曲四",
+    "boardSize": 19,
+    "stones": [
+      [
+        6,
+        5,
+        1
+      ],
+      [
+        7,
+        5,
+        1
+      ],
+      [
+        8,
+        5,
+        2
+      ],
+      [
+        9,
+        5,
+        2
+      ],
+      [
+        6,
+        6,
+        1
+      ],
+      [
+        9,
+        6,
+        2
+      ],
+      [
+        7,
+        6,
+        2
+      ],
+      [
+        8,
+        6,
+        1
+      ],
+      [
+        7,
+        7,
+        1
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      7,
+      6
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            7,
+            6
+          ]
+        ],
+        "result": "correct",
+        "comment": "盘角曲四劫尽棋亡"
+      }
+    ],
+    "hint": "曲四的弱点在哪里"
+  },
+  {
+    "id": 106,
+    "type": "life_death",
+    "difficulty": 4,
+    "title": "吴清源-刀把五",
+    "boardSize": 19,
+    "stones": [
+      [
+        7,
+        5,
+        1
+      ],
+      [
+        8,
+        5,
+        1
+      ],
+      [
+        9,
+        5,
+        1
+      ],
+      [
+        7,
+        6,
+        2
+      ],
+      [
+        9,
+        6,
+        2
+      ],
+      [
+        7,
+        7,
+        2
+      ],
+      [
+        8,
+        7,
+        2
+      ],
+      [
+        9,
+        7,
+        2
+      ],
+      [
+        8,
+        6,
+        1
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      8,
+      6
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            8,
+            6
+          ]
+        ],
+        "result": "correct",
+        "comment": "刀把五的杀法"
+      }
+    ],
+    "hint": "攻击刀把五的要点"
+  },
+  {
+    "id": 107,
+    "type": "life_death",
+    "difficulty": 4,
+    "title": "吴清源-梅花六",
+    "boardSize": 19,
+    "stones": [
+      [
+        7,
+        5,
+        1
+      ],
+      [
+        9,
+        5,
+        1
+      ],
+      [
+        7,
+        6,
+        2
+      ],
+      [
+        9,
+        6,
+        2
+      ],
+      [
+        6,
+        6,
+        1
+      ],
+      [
+        8,
+        6,
+        1
+      ],
+      [
+        10,
+        6,
+        1
+      ],
+      [
+        7,
+        7,
+        2
+      ],
+      [
+        9,
+        7,
+        2
+      ],
+      [
+        8,
+        7,
+        1
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      8,
+      6
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            8,
+            6
+          ]
+        ],
+        "result": "correct",
+        "comment": "梅花六的杀法"
+      }
+    ],
+    "hint": "聚杀要点"
+  },
+  {
+    "id": 108,
+    "type": "life_death",
+    "difficulty": 3,
+    "title": "吴清源-直四活型",
+    "boardSize": 19,
+    "stones": [
+      [
+        6,
+        5,
+        1
+      ],
+      [
+        7,
+        5,
+        1
+      ],
+      [
+        8,
+        5,
+        1
+      ],
+      [
+        9,
+        5,
+        1
+      ],
+      [
+        6,
+        6,
+        2
+      ],
+      [
+        9,
+        6,
+        2
+      ],
+      [
+        7,
+        6,
+        2
+      ],
+      [
+        8,
+        6,
+        2
+      ],
+      [
+        5,
+        5,
+        2
+      ],
+      [
+        10,
+        5,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      7,
+      5
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            7,
+            5
+          ]
+        ],
+        "result": "correct",
+        "comment": "直四做活的方法"
+      }
+    ],
+    "hint": "扩大眼位"
+  },
+  {
+    "id": 109,
+    "type": "life_death",
+    "difficulty": 4,
+    "title": "吴清源-曲四活型",
+    "boardSize": 19,
+    "stones": [
+      [
+        6,
+        5,
+        1
+      ],
+      [
+        7,
+        5,
+        1
+      ],
+      [
+        8,
+        5,
+        2
+      ],
+      [
+        9,
+        5,
+        2
+      ],
+      [
+        6,
+        6,
+        1
+      ],
+      [
+        8,
+        6,
+        2
+      ],
+      [
+        7,
+        6,
+        2
+      ],
+      [
+        5,
+        5,
+        2
+      ],
+      [
+        10,
+        5,
+        2
+      ],
+      [
+        9,
+        6,
+        1
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      8,
+      5
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            8,
+            5
+          ]
+        ],
+        "result": "correct",
+        "comment": "曲四活棋要点"
+      }
+    ],
+    "hint": "曲四的特殊性"
+  },
+  {
+    "id": 110,
+    "type": "life_death",
+    "difficulty": 5,
+    "title": "吴清源-万年劫",
+    "boardSize": 19,
+    "stones": [
+      [
+        5,
+        5,
+        1
+      ],
+      [
+        6,
+        5,
+        1
+      ],
+      [
+        7,
+        5,
+        2
+      ],
+      [
+        8,
+        5,
+        2
+      ],
+      [
+        5,
+        6,
+        1
+      ],
+      [
+        8,
+        6,
+        2
+      ],
+      [
+        6,
+        6,
+        2
+      ],
+      [
+        7,
+        6,
+        1
+      ],
+      [
+        6,
+        7,
+        2
+      ],
+      [
+        5,
+        7,
+        2
+      ],
+      [
+        7,
+        7,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      6,
+      6
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            6,
+            6
+          ]
+        ],
+        "result": "correct",
+        "comment": "万年劫的应对"
+      }
+    ],
+    "hint": "劫的攻防"
+  },
+  {
+    "id": 111,
+    "type": "tesuji",
+    "difficulty": 3,
+    "title": "吴清源-大头鬼",
+    "boardSize": 19,
+    "stones": [
+      [
+        7,
+        5,
+        1
+      ],
+      [
+        8,
+        5,
+        2
+      ],
+      [
+        9,
+        5,
+        2
+      ],
+      [
+        7,
+        6,
+        1
+      ],
+      [
+        8,
+        6,
+        2
+      ],
+      [
+        9,
+        6,
+        2
+      ],
+      [
+        6,
+        6,
+        2
+      ],
+      [
+        7,
+        7,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      7,
+      6
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            7,
+            6
+          ]
+        ],
+        "result": "correct",
+        "comment": "大头鬼的手筋"
+      }
+    ],
+    "hint": "滚打包收"
+  },
+  {
+    "id": 112,
+    "type": "tesuji",
+    "difficulty": 4,
+    "title": "吴清源-征子",
+    "boardSize": 19,
+    "stones": [
+      [
+        8,
+        5,
+        2
+      ],
+      [
+        9,
+        5,
+        1
+      ],
+      [
+        8,
+        6,
+        1
+      ],
+      [
+        9,
+        6,
+        2
+      ],
+      [
+        10,
+        6,
+        2
+      ],
+      [
+        7,
+        5,
+        2
+      ],
+      [
+        10,
+        5,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      10,
+      7
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            10,
+            7
+          ]
+        ],
+        "result": "correct",
+        "comment": "经典征子"
+      }
+    ],
+    "hint": "追着跑"
+  },
+  {
+    "id": 113,
+    "type": "life_death",
+    "difficulty": 4,
+    "title": "吴清源-涨牯牛",
+    "boardSize": 19,
+    "stones": [
+      [
+        5,
+        5,
+        1
+      ],
+      [
+        6,
+        5,
+        1
+      ],
+      [
+        7,
+        5,
+        2
+      ],
+      [
+        8,
+        5,
+        2
+      ],
+      [
+        5,
+        6,
+        1
+      ],
+      [
+        8,
+        6,
+        2
+      ],
+      [
+        6,
+        6,
+        2
+      ],
+      [
+        7,
+        6,
+        1
+      ],
+      [
+        6,
+        7,
+        1
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      7,
+      6
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            7,
+            6
+          ]
+        ],
+        "result": "correct",
+        "comment": "涨牯牛的杀法"
+      }
+    ],
+    "hint": "缩小眼位"
+  },
+  {
+    "id": 114,
+    "type": "tesuji",
+    "difficulty": 3,
+    "title": "吴清源-枷吃",
+    "boardSize": 19,
+    "stones": [
+      [
+        7,
+        5,
+        2
+      ],
+      [
+        8,
+        5,
+        1
+      ],
+      [
+        9,
+        5,
+        1
+      ],
+      [
+        8,
+        6,
+        1
+      ],
+      [
+        9,
+        6,
+        2
+      ],
+      [
+        10,
+        5,
+        2
+      ],
+      [
+        7,
+        6,
+        2
+      ],
+      [
+        10,
+        6,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      9,
+      6
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            9,
+            6
+          ]
+        ],
+        "result": "correct",
+        "comment": "枷吃的妙手"
+      }
+    ],
+    "hint": "封锁对方"
+  },
+  {
+    "id": 115,
+    "type": "life_death",
+    "difficulty": 5,
+    "title": "吴清源-接不归",
+    "boardSize": 19,
+    "stones": [
+      [
+        6,
+        5,
+        1
+      ],
+      [
+        7,
+        5,
+        1
+      ],
+      [
+        8,
+        5,
+        2
+      ],
+      [
+        9,
+        5,
+        2
+      ],
+      [
+        6,
+        6,
+        1
+      ],
+      [
+        9,
+        6,
+        2
+      ],
+      [
+        7,
+        6,
+        2
+      ],
+      [
+        8,
+        6,
+        2
+      ],
+      [
+        5,
+        5,
+        2
+      ],
+      [
+        10,
+        5,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      8,
+      5
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            8,
+            5
+          ]
+        ],
+        "result": "correct",
+        "comment": "利用接不归吃子"
+      }
+    ],
+    "hint": "让对方接不归"
+  },
+  {
+    "id": 116,
+    "type": "life_death",
+    "difficulty": 3,
+    "title": "吴清源-小猪嘴",
+    "boardSize": 19,
+    "stones": [
+      [
+        5,
+        5,
+        1
+      ],
+      [
+        6,
+        5,
+        1
+      ],
+      [
+        7,
+        5,
+        2
+      ],
+      [
+        8,
+        5,
+        2
+      ],
+      [
+        5,
+        6,
+        1
+      ],
+      [
+        6,
+        6,
+        1
+      ],
+      [
+        7,
+        6,
+        2
+      ],
+      [
+        5,
+        7,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      6,
+      6
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            6,
+            6
+          ]
+        ],
+        "result": "correct",
+        "comment": "小猪嘴的杀法"
+      }
+    ],
+    "hint": "点入急所"
+  },
+  {
+    "id": 117,
+    "type": "yose",
+    "difficulty": 3,
+    "title": "吴清源-官子妙手",
+    "boardSize": 19,
+    "stones": [
+      [
+        5,
+        5,
+        1
+      ],
+      [
+        6,
+        5,
+        2
+      ],
+      [
+        7,
+        5,
+        2
+      ],
+      [
+        8,
+        5,
+        1
+      ],
+      [
+        5,
+        6,
+        2
+      ],
+      [
+        6,
+        6,
+        1
+      ],
+      [
+        7,
+        6,
+        1
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      6,
+      6
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            6,
+            6
+          ]
+        ],
+        "result": "correct",
+        "comment": "官子收束妙手"
+      }
+    ],
+    "hint": "最大化官子价值"
+  },
+  {
+    "id": 118,
+    "type": "tesuji",
+    "difficulty": 4,
+    "title": "吴清源-倒扑",
+    "boardSize": 19,
+    "stones": [
+      [
+        7,
+        5,
+        1
+      ],
+      [
+        8,
+        5,
+        2
+      ],
+      [
+        9,
+        5,
+        2
+      ],
+      [
+        7,
+        6,
+        1
+      ],
+      [
+        8,
+        6,
+        2
+      ],
+      [
+        9,
+        6,
+        2
+      ],
+      [
+        7,
+        7,
+        2
+      ],
+      [
+        8,
+        7,
+        1
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      8,
+      7
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            8,
+            7
+          ]
+        ],
+        "result": "correct",
+        "comment": "倒扑的手筋"
+      }
+    ],
+    "hint": "牺牲换取更大利益"
+  },
+  {
+    "id": 119,
+    "type": "life_death",
+    "difficulty": 4,
+    "title": "吴清源-有眼杀无眼",
+    "boardSize": 19,
+    "stones": [
+      [
+        6,
+        5,
+        1
+      ],
+      [
+        7,
+        5,
+        1
+      ],
+      [
+        8,
+        5,
+        2
+      ],
+      [
+        9,
+        5,
+        2
+      ],
+      [
+        6,
+        6,
+        1
+      ],
+      [
+        9,
+        6,
+        2
+      ],
+      [
+        7,
+        6,
+        2
+      ],
+      [
+        8,
+        6,
+        2
+      ],
+      [
+        6,
+        7,
+        2
+      ],
+      [
+        7,
+        7,
+        1
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      7,
+      7
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            7,
+            7
+          ]
+        ],
+        "result": "correct",
+        "comment": "有眼杀无眼的经典形"
+      }
+    ],
+    "hint": "利用眼位优势"
+  },
+  {
+    "id": 120,
+    "type": "life_death",
+    "difficulty": 5,
+    "title": "吴清源-大头鬼变招",
+    "boardSize": 19,
+    "stones": [
+      [
+        8,
+        5,
+        1
+      ],
+      [
+        9,
+        5,
+        2
+      ],
+      [
+        10,
+        5,
+        2
+      ],
+      [
+        8,
+        6,
+        1
+      ],
+      [
+        9,
+        6,
+        2
+      ],
+      [
+        10,
+        6,
+        2
+      ],
+      [
+        7,
+        6,
+        2
+      ],
+      [
+        8,
+        7,
+        2
+      ],
+      [
+        11,
+        5,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      9,
+      6
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            9,
+            6
+          ]
+        ],
+        "result": "correct",
+        "comment": "大头鬼的变招"
+      }
+    ],
+    "hint": "滚打包收的连续手筋"
+  },
+  {
+    "id": 121,
+    "type": "capture",
+    "difficulty": 2,
+    "title": "吴清源-抱吃",
+    "boardSize": 19,
+    "stones": [
+      [
+        8,
+        5,
+        2
+      ],
+      [
+        9,
+        5,
+        1
+      ],
+      [
+        8,
+        6,
+        1
+      ],
+      [
+        9,
+        6,
+        2
+      ],
+      [
+        10,
+        5,
+        2
+      ],
+      [
+        7,
+        5,
+        1
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      8,
+      5
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            8,
+            5
+          ]
+        ],
+        "result": "correct",
+        "comment": "抱吃的简单应用"
+      }
+    ],
+    "hint": "让对方无路可逃"
+  },
+  {
+    "id": 122,
+    "type": "capture",
+    "difficulty": 3,
+    "title": "吴清源-门吃",
+    "boardSize": 19,
+    "stones": [
+      [
+        7,
+        5,
+        2
+      ],
+      [
+        8,
+        5,
+        1
+      ],
+      [
+        9,
+        5,
+        1
+      ],
+      [
+        8,
+        6,
+        2
+      ],
+      [
+        7,
+        6,
+        2
+      ],
+      [
+        6,
+        5,
+        1
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      8,
+      5
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            8,
+            5
+          ]
+        ],
+        "result": "correct",
+        "comment": "门吃的妙手"
+      }
+    ],
+    "hint": "封锁对方的逃路"
+  },
+  {
+    "id": 123,
+    "type": "tesuji",
+    "difficulty": 4,
+    "title": "吴清源-挖的手筋",
+    "boardSize": 19,
+    "stones": [
+      [
+        7,
+        5,
+        1
+      ],
+      [
+        8,
+        5,
+        2
+      ],
+      [
+        9,
+        5,
+        2
+      ],
+      [
+        7,
+        6,
+        2
+      ],
+      [
+        8,
+        6,
+        1
+      ],
+      [
+        9,
+        6,
+        2
+      ],
+      [
+        6,
+        5,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      8,
+      6
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            8,
+            6
+          ]
+        ],
+        "result": "correct",
+        "comment": "挖入分割敌人"
+      }
+    ],
+    "hint": "分割包围"
+  },
+  {
+    "id": 124,
+    "type": "life_death",
+    "difficulty": 3,
+    "title": "吴清源-胀牯牛活棋",
+    "boardSize": 19,
+    "stones": [
+      [
+        5,
+        5,
+        1
+      ],
+      [
+        6,
+        5,
+        1
+      ],
+      [
+        7,
+        5,
+        2
+      ],
+      [
+        8,
+        5,
+        2
+      ],
+      [
+        5,
+        6,
+        1
+      ],
+      [
+        8,
+        6,
+        2
+      ],
+      [
+        6,
+        6,
+        2
+      ],
+      [
+        7,
+        6,
+        1
+      ],
+      [
+        6,
+        7,
+        1
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      7,
+      6
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            7,
+            6
+          ]
+        ],
+        "result": "correct",
+        "comment": "胀牯牛做活"
+      }
+    ],
+    "hint": "利用气紧做活"
+  },
+  {
+    "id": 125,
+    "type": "tesuji",
+    "difficulty": 4,
+    "title": "吴清源-点的手筋",
+    "boardSize": 19,
+    "stones": [
+      [
+        6,
+        5,
+        1
+      ],
+      [
+        7,
+        5,
+        1
+      ],
+      [
+        8,
+        5,
+        2
+      ],
+      [
+        9,
+        5,
+        2
+      ],
+      [
+        6,
+        6,
+        2
+      ],
+      [
+        7,
+        6,
+        2
+      ],
+      [
+        8,
+        6,
+        1
+      ],
+      [
+        9,
+        6,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      7,
+      6
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            7,
+            6
+          ]
+        ],
+        "result": "correct",
+        "comment": "点入破眼的手筋"
+      }
+    ],
+    "hint": "破坏对方眼位"
+  },
+  {
+    "id": 126,
+    "type": "life_death",
+    "difficulty": 4,
+    "title": "吴清源-金柜角",
+    "boardSize": 19,
+    "stones": [
+      [
+        5,
+        5,
+        1
+      ],
+      [
+        6,
+        5,
+        1
+      ],
+      [
+        7,
+        5,
+        1
+      ],
+      [
+        5,
+        6,
+        2
+      ],
+      [
+        7,
+        6,
+        2
+      ],
+      [
+        5,
+        7,
+        2
+      ],
+      [
+        6,
+        7,
+        2
+      ],
+      [
+        7,
+        7,
+        2
+      ],
+      [
+        8,
+        5,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      6,
+      5
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            6,
+            5
+          ]
+        ],
+        "result": "correct",
+        "comment": "金柜角的攻防"
+      }
+    ],
+    "hint": "角部死活难题"
+  },
+  {
+    "id": 127,
+    "type": "life_death",
+    "difficulty": 5,
+    "title": "吴清源-劫争",
+    "boardSize": 19,
+    "stones": [
+      [
+        5,
+        5,
+        1
+      ],
+      [
+        6,
+        5,
+        1
+      ],
+      [
+        7,
+        5,
+        2
+      ],
+      [
+        8,
+        5,
+        2
+      ],
+      [
+        5,
+        6,
+        1
+      ],
+      [
+        8,
+        6,
+        2
+      ],
+      [
+        6,
+        6,
+        2
+      ],
+      [
+        7,
+        6,
+        1
+      ],
+      [
+        6,
+        7,
+        1
+      ],
+      [
+        5,
+        7,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      7,
+      6
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            7,
+            6
+          ]
+        ],
+        "result": "correct",
+        "comment": "制造劫材"
+      }
+    ],
+    "hint": "先制造劫材"
+  },
+  {
+    "id": 128,
+    "type": "tesuji",
+    "difficulty": 3,
+    "title": "吴清源-嵌的手筋",
+    "boardSize": 19,
+    "stones": [
+      [
+        7,
+        5,
+        1
+      ],
+      [
+        9,
+        5,
+        2
+      ],
+      [
+        7,
+        6,
+        2
+      ],
+      [
+        8,
+        6,
+        1
+      ],
+      [
+        9,
+        6,
+        2
+      ],
+      [
+        6,
+        5,
+        2
+      ],
+      [
+        10,
+        5,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      8,
+      6
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            8,
+            6
+          ]
+        ],
+        "result": "correct",
+        "comment": "嵌入敌人阵营"
+      }
+    ],
+    "hint": "利用对方的空隙"
+  },
+  {
+    "id": 129,
+    "type": "life_death",
+    "difficulty": 4,
+    "title": "吴清源-聚杀",
+    "boardSize": 19,
+    "stones": [
+      [
+        7,
+        5,
+        1
+      ],
+      [
+        8,
+        5,
+        1
+      ],
+      [
+        9,
+        5,
+        1
+      ],
+      [
+        7,
+        6,
+        2
+      ],
+      [
+        9,
+        6,
+        2
+      ],
+      [
+        7,
+        7,
+        2
+      ],
+      [
+        8,
+        7,
+        2
+      ],
+      [
+        9,
+        7,
+        2
+      ],
+      [
+        8,
+        6,
+        1
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      8,
+      6
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            8,
+            6
+          ]
+        ],
+        "result": "correct",
+        "comment": "聚杀要点"
+      }
+    ],
+    "hint": "把对方聚成死形"
+  },
+  {
+    "id": 130,
+    "type": "life_death",
+    "difficulty": 5,
+    "title": "吴清源-双倒扑",
+    "boardSize": 19,
+    "stones": [
+      [
+        8,
+        5,
+        1
+      ],
+      [
+        9,
+        5,
+        2
+      ],
+      [
+        10,
+        5,
+        2
+      ],
+      [
+        8,
+        6,
+        1
+      ],
+      [
+        9,
+        6,
+        2
+      ],
+      [
+        10,
+        6,
+        2
+      ],
+      [
+        8,
+        7,
+        2
+      ],
+      [
+        9,
+        7,
+        1
+      ],
+      [
+        11,
+        5,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      9,
+      7
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            9,
+            7
+          ]
+        ],
+        "result": "correct",
+        "comment": "双倒扑的经典形"
+      }
+    ],
+    "hint": "连续倒扑"
+  },
+  {
+    "id": 131,
+    "type": "yose",
+    "difficulty": 4,
+    "title": "吴清源-先手官子",
+    "boardSize": 19,
+    "stones": [
+      [
+        5,
+        5,
+        1
+      ],
+      [
+        6,
+        5,
+        1
+      ],
+      [
+        7,
+        5,
+        2
+      ],
+      [
+        8,
+        5,
+        2
+      ],
+      [
+        9,
+        5,
+        1
+      ],
+      [
+        5,
+        6,
+        2
+      ],
+      [
+        6,
+        6,
+        1
+      ],
+      [
+        7,
+        6,
+        2
+      ],
+      [
+        8,
+        6,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      8,
+      6
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            8,
+            6
+          ]
+        ],
+        "result": "correct",
+        "comment": "先手官的收法"
+      }
+    ],
+    "hint": "追求先手"
+  },
+  {
+    "id": 132,
+    "type": "tesuji",
+    "difficulty": 3,
+    "title": "吴清源-靠的手筋",
+    "boardSize": 19,
+    "stones": [
+      [
+        7,
+        5,
+        2
+      ],
+      [
+        8,
+        5,
+        1
+      ],
+      [
+        9,
+        5,
+        2
+      ],
+      [
+        8,
+        6,
+        2
+      ],
+      [
+        6,
+        5,
+        2
+      ],
+      [
+        10,
+        5,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      9,
+      5
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            9,
+            5
+          ]
+        ],
+        "result": "correct",
+        "comment": "靠的腾挪手筋"
+      }
+    ],
+    "hint": "借力打力"
+  },
+  {
+    "id": 133,
+    "type": "life_death",
+    "difficulty": 3,
+    "title": "吴清源-做活要点",
+    "boardSize": 19,
+    "stones": [
+      [
+        6,
+        5,
+        1
+      ],
+      [
+        7,
+        5,
+        1
+      ],
+      [
+        8,
+        5,
+        1
+      ],
+      [
+        6,
+        6,
+        2
+      ],
+      [
+        8,
+        6,
+        2
+      ],
+      [
+        6,
+        7,
+        2
+      ],
+      [
+        7,
+        7,
+        2
+      ],
+      [
+        8,
+        7,
+        2
+      ],
+      [
+        5,
+        5,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      7,
+      5
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            7,
+            5
+          ]
+        ],
+        "result": "correct",
+        "comment": "做活的急所"
+      }
+    ],
+    "hint": "占据做眼要点"
+  },
+  {
+    "id": 134,
+    "type": "capture",
+    "difficulty": 3,
+    "title": "吴清源-扑吃",
+    "boardSize": 19,
+    "stones": [
+      [
+        7,
+        5,
+        1
+      ],
+      [
+        8,
+        5,
+        2
+      ],
+      [
+        9,
+        5,
+        2
+      ],
+      [
+        7,
+        6,
+        1
+      ],
+      [
+        8,
+        6,
+        2
+      ],
+      [
+        9,
+        6,
+        2
+      ],
+      [
+        6,
+        5,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      8,
+      6
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            8,
+            6
+          ]
+        ],
+        "result": "correct",
+        "comment": "扑吃的妙手"
+      }
+    ],
+    "hint": "先扑后吃"
+  },
+  {
+    "id": 135,
+    "type": "tesuji",
+    "difficulty": 4,
+    "title": "吴清源-跳的手筋",
+    "boardSize": 19,
+    "stones": [
+      [
+        7,
+        5,
+        2
+      ],
+      [
+        8,
+        5,
+        1
+      ],
+      [
+        9,
+        5,
+        2
+      ],
+      [
+        7,
+        6,
+        2
+      ],
+      [
+        8,
+        6,
+        2
+      ],
+      [
+        6,
+        5,
+        2
+      ],
+      [
+        10,
+        5,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      9,
+      5
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            9,
+            5
+          ]
+        ],
+        "result": "correct",
+        "comment": "跳的侵入手筋"
+      }
+    ],
+    "hint": "快速侵入"
+  },
+  {
+    "id": 136,
+    "type": "life_death",
+    "difficulty": 4,
+    "title": "吴清源-二一路妙手",
+    "boardSize": 19,
+    "stones": [
+      [
+        5,
+        5,
+        1
+      ],
+      [
+        6,
+        5,
+        1
+      ],
+      [
+        7,
+        5,
+        2
+      ],
+      [
+        8,
+        5,
+        2
+      ],
+      [
+        5,
+        6,
+        1
+      ],
+      [
+        8,
+        6,
+        2
+      ],
+      [
+        6,
+        6,
+        2
+      ],
+      [
+        7,
+        6,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      5,
+      6
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            5,
+            6
+          ]
+        ],
+        "result": "correct",
+        "comment": "二一路的妙手"
+      }
+    ],
+    "hint": "边角的特殊手段"
+  },
+  {
+    "id": 137,
+    "type": "tesuji",
+    "difficulty": 3,
+    "title": "吴清源-托的手筋",
+    "boardSize": 19,
+    "stones": [
+      [
+        6,
+        5,
+        2
+      ],
+      [
+        7,
+        5,
+        2
+      ],
+      [
+        8,
+        5,
+        1
+      ],
+      [
+        9,
+        5,
+        1
+      ],
+      [
+        6,
+        6,
+        2
+      ],
+      [
+        9,
+        6,
+        1
+      ],
+      [
+        5,
+        5,
+        1
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      7,
+      6
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            7,
+            6
+          ]
+        ],
+        "result": "correct",
+        "comment": "托的手筋"
+      }
+    ],
+    "hint": "托角整形"
+  },
+  {
+    "id": 138,
+    "type": "life_death",
+    "difficulty": 5,
+    "title": "吴清源-连环劫",
+    "boardSize": 19,
+    "stones": [
+      [
+        5,
+        5,
+        1
+      ],
+      [
+        6,
+        5,
+        1
+      ],
+      [
+        7,
+        5,
+        2
+      ],
+      [
+        8,
+        5,
+        2
+      ],
+      [
+        5,
+        6,
+        1
+      ],
+      [
+        8,
+        6,
+        2
+      ],
+      [
+        6,
+        6,
+        2
+      ],
+      [
+        7,
+        6,
+        1
+      ],
+      [
+        6,
+        7,
+        1
+      ],
+      [
+        7,
+        7,
+        2
+      ],
+      [
+        5,
+        7,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      7,
+      6
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            7,
+            6
+          ]
+        ],
+        "result": "correct",
+        "comment": "制造连环劫"
+      }
+    ],
+    "hint": "复杂劫争"
+  },
+  {
+    "id": 139,
+    "type": "tesuji",
+    "difficulty": 4,
+    "title": "吴清源-挤的手筋",
+    "boardSize": 19,
+    "stones": [
+      [
+        7,
+        5,
+        1
+      ],
+      [
+        8,
+        5,
+        2
+      ],
+      [
+        9,
+        5,
+        2
+      ],
+      [
+        7,
+        6,
+        2
+      ],
+      [
+        8,
+        6,
+        1
+      ],
+      [
+        9,
+        6,
+        2
+      ],
+      [
+        6,
+        5,
+        2
+      ],
+      [
+        10,
+        5,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      8,
+      6
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            8,
+            6
+          ]
+        ],
+        "result": "correct",
+        "comment": "挤的妙手"
+      }
+    ],
+    "hint": "制造断点"
+  },
+  {
+    "id": 140,
+    "type": "life_death",
+    "difficulty": 4,
+    "title": "吴清源-大头鬼收官",
+    "boardSize": 19,
+    "stones": [
+      [
+        8,
+        5,
+        1
+      ],
+      [
+        9,
+        5,
+        2
+      ],
+      [
+        10,
+        5,
+        2
+      ],
+      [
+        8,
+        6,
+        1
+      ],
+      [
+        9,
+        6,
+        2
+      ],
+      [
+        10,
+        6,
+        2
+      ],
+      [
+        7,
+        6,
+        2
+      ],
+      [
+        8,
+        7,
+        2
+      ],
+      [
+        11,
+        5,
+        2
+      ]
+    ],
+    "toPlay": 1,
+    "answer": [
+      9,
+      6
+    ],
+    "solutions": [
+      {
+        "moves": [
+          [
+            9,
+            6
+          ]
+        ],
+        "result": "correct",
+        "comment": "大头鬼收官"
+      }
+    ],
+    "hint": "滚打包收"
+  }
 ]
