@@ -16,7 +16,7 @@ import com.wangyu.gotsumego.databinding.ActivityMainBinding
 
 /**
  * 主界面Activity
- * 显示题目分类和难度选择
+ * 显示题目分类（按书籍）
  */
 class MainActivity : AppCompatActivity() {
     
@@ -30,85 +30,87 @@ class MainActivity : AppCompatActivity() {
         
         setupClickListeners()
         loadStatistics()
-        setupDifficultyList()
+        setupBookList()
     }
     
     private fun setupClickListeners() {
         // 全部题目
         binding.cardAllProblems.setOnClickListener {
-            openProblemList(null, "全部题目")
+            openProblemList(book = null, title = "全部题目")
         }
         
-        // 死活题
+        // 死活题 - 保留兼容
         binding.cardLifeDeath.setOnClickListener {
-            openProblemList(ProblemType.LIFE_DEATH, getString(R.string.life_death))
+            openProblemListByType(ProblemType.LIFE_DEATH, "死活题")
         }
         
         // 手筋题
         binding.cardTesuji.setOnClickListener {
-            openProblemList(ProblemType.TESUJI, getString(R.string.tesuji))
+            openProblemListByType(ProblemType.TESUJI, "手筋题")
         }
         
         // 官子题
         binding.cardYose.setOnClickListener {
-            openProblemList(ProblemType.YOSE, getString(R.string.yose))
+            openProblemListByType(ProblemType.YOSE, "官子题")
         }
         
         // 吃子题
         binding.cardCapture.setOnClickListener {
-            openProblemList(ProblemType.CAPTURE, getString(R.string.capture))
+            openProblemListByType(ProblemType.CAPTURE, "吃子题")
         }
     }
     
     private fun loadStatistics() {
         val total = repository.getTotalCount()
-        binding.tvAllCount.text = getString(R.string.total_problems, total)
+        binding.tvAllCount.text = "共${total}题"
         
         val lifeDeathCount = repository.getProblemCountByType(ProblemType.LIFE_DEATH)
-        binding.tvLifeDeathCount.text = getString(R.string.total_problems, lifeDeathCount)
+        binding.tvLifeDeathCount.text = "共${lifeDeathCount}题"
         
         val tesujiCount = repository.getProblemCountByType(ProblemType.TESUJI)
-        binding.tvTesujiCount.text = getString(R.string.total_problems, tesujiCount)
+        binding.tvTesujiCount.text = "共${tesujiCount}题"
         
         val yoseCount = repository.getProblemCountByType(ProblemType.YOSE)
-        binding.tvYoseCount.text = getString(R.string.total_problems, yoseCount)
+        binding.tvYoseCount.text = "共${yoseCount}题"
         
         val captureCount = repository.getProblemCountByType(ProblemType.CAPTURE)
-        binding.tvCaptureCount.text = getString(R.string.total_problems, captureCount)
+        binding.tvCaptureCount.text = "共${captureCount}题"
     }
     
-    private fun setupDifficultyList() {
-        val difficulties = repository.getDifficultyLevels()
+    private fun setupBookList() {
+        val bookStats = repository.getBookStatistics()
         
         binding.rvDifficulties.layoutManager = LinearLayoutManager(this)
-        binding.rvDifficulties.adapter = DifficultyAdapter(difficulties) { difficulty ->
-            openProblemListByDifficulty(difficulty)
+        binding.rvDifficulties.adapter = BookAdapter(bookStats) { book ->
+            openProblemList(book = book, title = book)
         }
     }
     
-    private fun openProblemList(type: ProblemType?, title: String) {
+    private fun openProblemList(book: String?, title: String) {
         val intent = Intent(this, ProblemActivity::class.java).apply {
-            putExtra(ProblemActivity.EXTRA_TYPE, type?.key)
+            putExtra(ProblemActivity.EXTRA_BOOK, book)
             putExtra(ProblemActivity.EXTRA_TITLE, title)
         }
         startActivity(intent)
     }
     
-    private fun openProblemListByDifficulty(difficulty: Int) {
+    private fun openProblemListByType(type: ProblemType, title: String) {
         val intent = Intent(this, ProblemActivity::class.java).apply {
-            putExtra(ProblemActivity.EXTRA_DIFFICULTY, difficulty)
-            putExtra(ProblemActivity.EXTRA_TITLE, "难度 $difficulty")
+            putExtra(ProblemActivity.EXTRA_TYPE, type.key)
+            putExtra(ProblemActivity.EXTRA_TITLE, title)
         }
         startActivity(intent)
     }
     
     /**
-     * 难度列表适配器
+     * 书籍列表适配器
      */
-    inner class DifficultyAdapter(
-        private val difficulties: List<Int>,
-        private val onItemClick: (Int) -> Unit
-    ) : RecyclerView.Adapter<DifficultyAdapter.ViewHolder>() {
+    inner class BookAdapter(
+        private val bookStats: Map<String, Int>,
+        private val onItemClick: (String) -> Unit
+    ) : RecyclerView.Adapter<BookAdapter.ViewHolder>() {
+        
+        private val books = bookStats.entries.toList()
         
         inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             val tvLevel: TextView = itemView.findViewById(R.id.tvDifficultyLevel)
@@ -123,16 +125,13 @@ class MainActivity : AppCompatActivity() {
         }
         
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            val difficulty = difficulties[position]
-            holder.tvLevel.text = difficulty.toString()
-            holder.tvTitle.text = "难度 $difficulty"
-            holder.tvCount.text = getString(
-                R.string.total_problems,
-                repository.getProblemCountByDifficulty(difficulty)
-            )
-            holder.itemView.setOnClickListener { onItemClick(difficulty) }
+            val (book, count) = books[position]
+            holder.tvLevel.text = "📚"
+            holder.tvTitle.text = book
+            holder.tvCount.text = "共${count}题"
+            holder.itemView.setOnClickListener { onItemClick(book) }
         }
         
-        override fun getItemCount(): Int = difficulties.size
+        override fun getItemCount(): Int = books.size
     }
 }

@@ -34,22 +34,6 @@ enum class ProblemType(val key: String, val displayName: String, val emoji: Stri
 
 /**
  * 围棋题目数据模型
- * 
- * 坐标系统说明：
- * - JSON中 stones: [[x, y, color]]
- *   - x = 列 (col)，0-based，从左到右递增
- *   - y = 行 (row)，0-based，从棋盘底部开始递增
- * - 棋盘显示时：
- *   - row = boardSize - 1 - y (反转y坐标)
- *   - col = x (不变)
- * - 落子位置用 index 表示：
- *   - index = row * boardSize + col
- * 
- * 棋盘字符串格式：
- * - 长度 = boardSize * boardSize
- * - '.' = 空位
- * - 'X' = 黑子
- * - 'O' = 白子
  */
 data class Problem(
     val id: Int,
@@ -61,16 +45,11 @@ data class Problem(
     val toPlay: StoneColor,
     val correctMoves: List<Position>,
     val hint: String?,
-    val solutionComment: String?
+    val solutionComment: String?,
+    val book: String
 ) {
-    /**
-     * 将题目转换为棋盘字符串
-     * 字符串长度 = boardSize * boardSize
-     * index = row * boardSize + col
-     */
     fun toBoardString(): String {
         val sb = StringBuilder()
-        // 棋盘字符串长度必须是 boardSize * boardSize
         repeat(boardSize * boardSize) { index ->
             val row = index / boardSize
             val col = index % boardSize
@@ -80,21 +59,12 @@ data class Problem(
         return sb.toString()
     }
     
-    /**
-     * 获取正解的第一个位置（用于单步题目）
-     */
     val firstCorrectMove: Position?
         get() = correctMoves.firstOrNull()
     
-    /**
-     * 检查是否是单步题（只有一个正解）
-     */
     val isSingleMove: Boolean
         get() = correctMoves.size == 1
     
-    /**
-     * 获取难度显示名称
-     */
     val difficultyName: String
         get() = when (difficulty) {
             1 -> "入门"
@@ -106,29 +76,15 @@ data class Problem(
         }
 }
 
-/**
- * 棋子位置
- * @param col 列(0-based，从左到右)
- * @param row 行(0-based，从上到下)
- */
 data class Position(
     val col: Int,
     val row: Int
 ) {
-    /**
-     * 转换为index
-     * index = row * boardSize + col
-     */
     fun toIndex(boardSize: Int): Int {
         return row * boardSize + col
     }
     
     companion object {
-        /**
-         * 从index转换为Position
-         * row = index / boardSize
-         * col = index % boardSize
-         */
         fun fromIndex(index: Int, boardSize: Int): Position {
             return Position(
                 col = index % boardSize,
@@ -136,53 +92,35 @@ data class Position(
             )
         }
         
-        /**
-         * 从JSON格式的坐标创建Position
-         * JSON格式: [x, y] 其中 x=col, y=row（y从底部开始）
-         * 转换为显示坐标时需要反转
-         */
         fun fromJsonCoords(x: Int, y: Int, boardSize: Int): Position {
             return Position(col = x, row = boardSize - 1 - y)
         }
     }
 }
 
-/**
- * 棋盘上的棋子
- */
 data class Stone(
-    val col: Int,      // 列 (x坐标)
-    val row: Int,      // 行 (显示坐标，已反转)
+    val col: Int,
+    val row: Int,
     val color: StoneColor
 )
 
 /**
  * 从JsonProblem转换为Problem
- * 
- * 坐标转换说明：
- * - JSON坐标: y=0 在棋盘底部，y增加向上
- * - 棋盘绘制: row=0 在顶部，row增加向下
- * - 转换公式: row = boardSize - 1 - y
  */
 fun JsonProblem.toProblem(): Problem {
-    // 转换棋子列表
-    // JSON坐标: y=0在棋盘底部，y增加向上
-    // 棋盘绘制: row=0在顶部，row增加向下
-    // 需要反转y坐标: row = boardSize - 1 - y
     val stoneList = stones.mapNotNull { stoneData ->
         if (stoneData.size >= 3) {
-            val x = stoneData[0] // 列
-            val y = stoneData[1] // JSON中的y（从底部开始，0=底部）
+            val x = stoneData[0]
+            val y = stoneData[1]
             val colorValue = stoneData[2]
             Stone(
                 col = x,
-                row = boardSize - 1 - y, // 反转y坐标：底部y=0 -> row=boardSize-1，顶部y=boardSize-1 -> row=0
+                row = boardSize - 1 - y,
                 color = StoneColor.fromValue(colorValue)
             )
         } else null
     }
     
-    // 转换正解位置，同样需要反转y坐标
     val moves = if (answer.size >= 2) {
         val x = answer[0]
         val y = answer[1]
@@ -191,7 +129,6 @@ fun JsonProblem.toProblem(): Problem {
         emptyList()
     }
     
-    // 从solutions中提取评论
     val comment = solutions?.firstOrNull()?.comment
     
     return Problem(
@@ -204,6 +141,7 @@ fun JsonProblem.toProblem(): Problem {
         toPlay = StoneColor.fromValue(toPlay),
         correctMoves = moves,
         hint = hint,
-        solutionComment = comment
+        solutionComment = comment,
+        book = book ?: "其他"
     )
 }

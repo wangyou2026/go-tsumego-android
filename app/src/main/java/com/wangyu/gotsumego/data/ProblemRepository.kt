@@ -39,9 +39,6 @@ class ProblemRepository(private val context: Context) {
         }
     }
     
-    /**
-     * 从assets读取JSON文件
-     */
     private fun loadJsonFromAssets(): String? {
         return try {
             context.assets.open("problems_full.json").bufferedReader().use { it.readText() }
@@ -51,9 +48,6 @@ class ProblemRepository(private val context: Context) {
         }
     }
     
-    /**
-     * 获取所有题目
-     */
     fun getAllProblems(): List<Problem> {
         if (problems == null) {
             loadProblems()
@@ -61,32 +55,49 @@ class ProblemRepository(private val context: Context) {
         return problems ?: emptyList()
     }
     
-    /**
-     * 按类型获取题目
-     */
     fun getProblemsByType(type: ProblemType): List<Problem> {
         return getAllProblems().filter { it.type == type }
     }
     
     /**
-     * 按难度获取题目
+     * 按书籍获取题目
      */
+    fun getProblemsByBook(book: String): List<Problem> {
+        return getAllProblems().filter { it.book == book }
+    }
+    
+    /**
+     * 获取所有书籍列表
+     */
+    fun getBooks(): List<String> {
+        return getAllProblems()
+            .map { it.book }
+            .distinct()
+            .sorted()
+    }
+    
+    /**
+     * 获取书籍统计
+     */
+    fun getBookStatistics(): Map<String, Int> {
+        return getAllProblems()
+            .groupBy { it.book }
+            .mapValues { it.value.size }
+            .toList()
+            .sortedByDescending { it.second }
+            .toMap()
+    }
+    
     fun getProblemsByDifficulty(difficulty: Int): List<Problem> {
         return getAllProblems().filter { it.difficulty == difficulty }
     }
     
-    /**
-     * 按类型和难度获取题目
-     */
     fun getProblemsByTypeAndDifficulty(type: ProblemType, difficulty: Int): List<Problem> {
         return getAllProblems().filter { 
             it.type == type && it.difficulty == difficulty 
         }
     }
     
-    /**
-     * 获取题目的难度列表（已排序）
-     */
     fun getDifficultyLevels(): List<Int> {
         return getAllProblems()
             .map { it.difficulty }
@@ -94,56 +105,38 @@ class ProblemRepository(private val context: Context) {
             .sorted()
     }
     
-    /**
-     * 获取题目的类型统计
-     */
     fun getTypeStatistics(): Map<ProblemType, Int> {
         return getAllProblems()
             .groupBy { it.type }
             .mapValues { it.value.size }
     }
     
-    /**
-     * 获取指定类型的题目数量
-     */
     fun getProblemCountByType(type: ProblemType): Int {
         return getAllProblems().count { it.type == type }
     }
     
-    /**
-     * 获取指定难度的题目数量
-     */
     fun getProblemCountByDifficulty(difficulty: Int): Int {
         return getAllProblems().count { it.difficulty == difficulty }
     }
     
-    /**
-     * 根据索引获取题目
-     */
-    fun getProblemAt(index: Int, type: ProblemType? = null): Problem? {
-        val filtered = if (type != null) {
-            getProblemsByType(type)
-        } else {
-            getAllProblems()
+    fun getProblemAt(index: Int, type: ProblemType? = null, book: String? = null): Problem? {
+        val filtered = when {
+            book != null -> getProblemsByBook(book)
+            type != null -> getProblemsByType(type)
+            else -> getAllProblems()
         }
         return filtered.getOrNull(index)
     }
     
-    /**
-     * 获取题目的索引
-     */
-    fun getProblemIndex(problem: Problem, type: ProblemType? = null): Int {
-        val filtered = if (type != null) {
-            getProblemsByType(type)
-        } else {
-            getAllProblems()
+    fun getProblemIndex(problem: Problem, type: ProblemType? = null, book: String? = null): Int {
+        val filtered = when {
+            book != null -> getProblemsByBook(book)
+            type != null -> getProblemsByType(type)
+            else -> getAllProblems()
         }
         return filtered.indexOfFirst { it.id == problem.id }
     }
     
-    /**
-     * 获取题目总数
-     */
     fun getTotalCount(): Int {
         return getAllProblems().size
     }

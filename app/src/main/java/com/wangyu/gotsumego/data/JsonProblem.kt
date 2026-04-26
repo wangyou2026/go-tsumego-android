@@ -31,6 +31,9 @@ data class JsonProblem(
     @SerializedName("answer")
     val answer: List<Int>,
     
+    @SerializedName("book")
+    val book: String?,
+    
     @SerializedName("solutions")
     val solutions: List<JsonSolution>?,
     
