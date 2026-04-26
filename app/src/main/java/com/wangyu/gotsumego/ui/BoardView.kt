@@ -50,6 +50,10 @@ class BoardView @JvmOverloads constructor(
     var correctMoveIndex: Int = -1
     var showCorrectMove: Boolean = false
     
+    // 提示位置
+    var hintIndex: Int = -1
+    var showHint: Boolean = false
+    
     // 落子监听器
     var onStoneClickListener: ((Int) -> Unit)? = null
     

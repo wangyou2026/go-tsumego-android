@@ -11,13 +11,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.wangyu.gotsumego.R
 import com.wangyu.gotsumego.TsumegoApp
-import com.wangyu.gotsumego.data.ProblemType
 import com.wangyu.gotsumego.databinding.ActivityMainBinding
 
-/**
- * 主界面Activity
- * 显示题目分类（按书籍）
- */
 class MainActivity : AppCompatActivity() {
     
     private lateinit var binding: ActivityMainBinding
@@ -28,61 +23,22 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
-        setupClickListeners()
-        loadStatistics()
-        setupBookList()
+        setupViews()
     }
     
-    private fun setupClickListeners() {
+    private fun setupViews() {
         // 全部题目
-        binding.cardAllProblems.setOnClickListener {
-            openProblemList(book = null, title = "全部题目")
-        }
-        
-        // 死活题 - 保留兼容
-        binding.cardLifeDeath.setOnClickListener {
-            openProblemListByType(ProblemType.LIFE_DEATH, "死活题")
-        }
-        
-        // 手筋题
-        binding.cardTesuji.setOnClickListener {
-            openProblemListByType(ProblemType.TESUJI, "手筋题")
-        }
-        
-        // 官子题
-        binding.cardYose.setOnClickListener {
-            openProblemListByType(ProblemType.YOSE, "官子题")
-        }
-        
-        // 吃子题
-        binding.cardCapture.setOnClickListener {
-            openProblemListByType(ProblemType.CAPTURE, "吃子题")
-        }
-    }
-    
-    private fun loadStatistics() {
         val total = repository.getTotalCount()
         binding.tvAllCount.text = "共${total}题"
+        binding.cardAllProblems.setOnClickListener {
+            openProblemList(null, "全部题目")
+        }
         
-        val lifeDeathCount = repository.getProblemCountByType(ProblemType.LIFE_DEATH)
-        binding.tvLifeDeathCount.text = "共${lifeDeathCount}题"
-        
-        val tesujiCount = repository.getProblemCountByType(ProblemType.TESUJI)
-        binding.tvTesujiCount.text = "共${tesujiCount}题"
-        
-        val yoseCount = repository.getProblemCountByType(ProblemType.YOSE)
-        binding.tvYoseCount.text = "共${yoseCount}题"
-        
-        val captureCount = repository.getProblemCountByType(ProblemType.CAPTURE)
-        binding.tvCaptureCount.text = "共${captureCount}题"
-    }
-    
-    private fun setupBookList() {
+        // 书籍分类列表
         val bookStats = repository.getBookStatistics()
-        
         binding.rvDifficulties.layoutManager = LinearLayoutManager(this)
         binding.rvDifficulties.adapter = BookAdapter(bookStats) { book ->
-            openProblemList(book = book, title = book)
+            openProblemList(book, book)
         }
     }
     
@@ -94,17 +50,6 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
     }
     
-    private fun openProblemListByType(type: ProblemType, title: String) {
-        val intent = Intent(this, ProblemActivity::class.java).apply {
-            putExtra(ProblemActivity.EXTRA_TYPE, type.key)
-            putExtra(ProblemActivity.EXTRA_TITLE, title)
-        }
-        startActivity(intent)
-    }
-    
-    /**
-     * 书籍列表适配器
-     */
     inner class BookAdapter(
         private val bookStats: Map<String, Int>,
         private val onItemClick: (String) -> Unit
@@ -113,7 +58,6 @@ class MainActivity : AppCompatActivity() {
         private val books = bookStats.entries.toList()
         
         inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-            val tvLevel: TextView = itemView.findViewById(R.id.tvDifficultyLevel)
             val tvTitle: TextView = itemView.findViewById(R.id.tvDifficultyTitle)
             val tvCount: TextView = itemView.findViewById(R.id.tvProblemCount)
         }
@@ -126,8 +70,7 @@ class MainActivity : AppCompatActivity() {
         
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val (book, count) = books[position]
-            holder.tvLevel.text = "📚"
-            holder.tvTitle.text = book
+            holder.tvTitle.text = "📚 $book"
             holder.tvCount.text = "共${count}题"
             holder.itemView.setOnClickListener { onItemClick(book) }
         }

@@ -1,8 +1,5 @@
 package com.wangyu.gotsumego.data
 
-/**
- * 围棋棋子颜色
- */
 enum class StoneColor(val value: Int, val symbol: Char) {
     EMPTY(0, '.'),
     BLACK(1, 'X'),
@@ -15,9 +12,6 @@ enum class StoneColor(val value: Int, val symbol: Char) {
     }
 }
 
-/**
- * 题目类型
- */
 enum class ProblemType(val key: String, val displayName: String, val emoji: String) {
     LIFE_DEATH("life_death", "死活题", "🎯"),
     TESUJI("tesuji", "手筋题", "⚡"),
@@ -32,9 +26,6 @@ enum class ProblemType(val key: String, val displayName: String, val emoji: Stri
     }
 }
 
-/**
- * 围棋题目数据模型
- */
 data class Problem(
     val id: Int,
     val type: ProblemType,
@@ -44,6 +35,7 @@ data class Problem(
     val stones: List<Stone>,
     val toPlay: StoneColor,
     val correctMoves: List<Position>,
+    val solutionMoves: List<SolutionMove>,
     val hint: String?,
     val solutionComment: String?,
     val book: String
@@ -62,9 +54,6 @@ data class Problem(
     val firstCorrectMove: Position?
         get() = correctMoves.firstOrNull()
     
-    val isSingleMove: Boolean
-        get() = correctMoves.size == 1
-    
     val difficultyName: String
         get() = when (difficulty) {
             1 -> "入门"
@@ -80,20 +69,11 @@ data class Position(
     val col: Int,
     val row: Int
 ) {
-    fun toIndex(boardSize: Int): Int {
-        return row * boardSize + col
-    }
+    fun toIndex(boardSize: Int): Int = row * boardSize + col
     
     companion object {
         fun fromIndex(index: Int, boardSize: Int): Position {
-            return Position(
-                col = index % boardSize,
-                row = index / boardSize
-            )
-        }
-        
-        fun fromJsonCoords(x: Int, y: Int, boardSize: Int): Position {
-            return Position(col = x, row = boardSize - 1 - y)
+            return Position(col = index % boardSize, row = index / boardSize)
         }
     }
 }
@@ -104,32 +84,40 @@ data class Stone(
     val color: StoneColor
 )
 
-/**
- * 从JsonProblem转换为Problem
- */
+data class SolutionMove(
+    val col: Int,
+    val row: Int,
+    val color: StoneColor
+) {
+    fun toPosition(): Position = Position(col, row)
+    fun toIndex(boardSize: Int): Int = row * boardSize + col
+}
+
 fun JsonProblem.toProblem(): Problem {
     val stoneList = stones.mapNotNull { stoneData ->
         if (stoneData.size >= 3) {
-            val x = stoneData[0]
-            val y = stoneData[1]
-            val colorValue = stoneData[2]
             Stone(
-                col = x,
-                row = boardSize - 1 - y,
-                color = StoneColor.fromValue(colorValue)
+                col = stoneData[0],
+                row = boardSize - 1 - stoneData[1],
+                color = StoneColor.fromValue(stoneData[2])
             )
         } else null
     }
     
     val moves = if (answer.size >= 2) {
-        val x = answer[0]
-        val y = answer[1]
-        listOf(Position(col = x, row = boardSize - 1 - y))
-    } else {
-        emptyList()
-    }
+        listOf(Position(col = answer[0], row = boardSize - 1 - answer[1]))
+    } else emptyList()
     
-    val comment = solutions?.firstOrNull()?.comment
+    // 解析完整解答序列
+    val solutionMoveList = solutionMoves?.mapNotNull { move ->
+        if (move.size >= 3) {
+            SolutionMove(
+                col = move[0],
+                row = boardSize - 1 - move[1],
+                color = StoneColor.fromValue(move[2])
+            )
+        } else null
+    } ?: emptyList()
     
     return Problem(
         id = id,
@@ -140,8 +128,9 @@ fun JsonProblem.toProblem(): Problem {
         stones = stoneList,
         toPlay = StoneColor.fromValue(toPlay),
         correctMoves = moves,
+        solutionMoves = solutionMoveList,
         hint = hint,
-        solutionComment = comment,
+        solutionComment = solutionComment,
         book = book ?: "其他"
     )
 }

@@ -2,10 +2,6 @@ package com.wangyu.gotsumego.data
 
 import com.google.gson.annotations.SerializedName
 
-/**
- * JSON格式的题目数据模型
- * 对应 problems_full.json 的结构
- */
 data class JsonProblem(
     @SerializedName("id")
     val id: Int,
@@ -34,20 +30,12 @@ data class JsonProblem(
     @SerializedName("book")
     val book: String?,
     
-    @SerializedName("solutions")
-    val solutions: List<JsonSolution>?,
+    @SerializedName("solutionMoves")
+    val solutionMoves: List<List<Int>>?,
+    
+    @SerializedName("solutionComment")
+    val solutionComment: String?,
     
     @SerializedName("hint")
     val hint: String?
-)
-
-data class JsonSolution(
-    @SerializedName("moves")
-    val moves: List<List<Int>>,
-    
-    @SerializedName("result")
-    val result: String,
-    
-    @SerializedName("comment")
-    val comment: String?
 )
