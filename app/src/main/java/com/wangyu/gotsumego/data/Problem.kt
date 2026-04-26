@@ -38,7 +38,13 @@ data class Problem(
     val solutionMoves: List<SolutionMove>,
     val hint: String?,
     val solutionComment: String?,
-    val book: String
+    val book: String,
+    // 裁剪相关字段
+    val cropLeft: Int,
+    val cropRight: Int,
+    val cropTop: Int,
+    val cropBottom: Int,
+    val cropSize: Int
 ) {
     fun toBoardString(): String {
         val sb = StringBuilder()
@@ -49,6 +55,38 @@ data class Problem(
             sb.append(stone?.color?.symbol ?: StoneColor.EMPTY.symbol)
         }
         return sb.toString()
+    }
+    
+    /**
+     * 生成裁剪后的棋盘字符串
+     */
+    fun toCroppedBoardString(): String {
+        if (cropSize <= 0 || cropLeft >= cropRight || cropTop >= cropBottom) {
+            return toBoardString()
+        }
+        
+        val sb = StringBuilder()
+        for (row in cropTop..cropBottom) {
+            for (col in cropLeft..cropRight) {
+                val stone = stones.find { it.row == row && it.col == col }
+                sb.append(stone?.color?.symbol ?: StoneColor.EMPTY.symbol)
+            }
+        }
+        return sb.toString()
+    }
+    
+    /**
+     * 将全局坐标转换为裁剪后棋盘的坐标
+     */
+    fun globalToCropped(col: Int, row: Int): Pair<Int, Int> {
+        return Pair(col - cropLeft, row - cropTop)
+    }
+    
+    /**
+     * 将裁剪后棋盘的坐标转换为全局坐标
+     */
+    fun croppedToGlobal(croppedCol: Int, croppedRow: Int): Pair<Int, Int> {
+        return Pair(croppedCol + cropLeft, croppedRow + cropTop)
     }
     
     val firstCorrectMove: Position?
@@ -63,6 +101,9 @@ data class Problem(
             5 -> "专业"
             else -> "未知"
         }
+    
+    val isCropped: Boolean
+        get() = cropSize > 0 && cropSize < boardSize
 }
 
 data class Position(
@@ -119,6 +160,13 @@ fun JsonProblem.toProblem(): Problem {
         } else null
     } ?: emptyList()
     
+    // 裁剪参数
+    val cLeft = cropLeft ?: 0
+    val cRight = cropRight ?: (boardSize - 1)
+    val cTop = cropTop ?: 0
+    val cBottom = cropBottom ?: (boardSize - 1)
+    val cSize = cropSize ?: boardSize
+    
     return Problem(
         id = id,
         type = ProblemType.fromKey(type),
@@ -131,6 +179,11 @@ fun JsonProblem.toProblem(): Problem {
         solutionMoves = solutionMoveList,
         hint = hint,
         solutionComment = solutionComment,
-        book = book ?: "其他"
+        book = book ?: "其他",
+        cropLeft = cLeft,
+        cropRight = cRight,
+        cropTop = cTop,
+        cropBottom = cBottom,
+        cropSize = cSize
     )
 }

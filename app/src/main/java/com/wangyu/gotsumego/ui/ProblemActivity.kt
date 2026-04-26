@@ -25,6 +25,9 @@ class ProblemActivity : AppCompatActivity() {
     private var currentSolutionIndex: Int = 0  // 当前解答到第几步
     private var isSolved: Boolean = false
     
+    // 当前是否使用裁剪模式
+    private var isCroppedMode: Boolean = false
+    
     companion object {
         const val EXTRA_BOOK = "extra_book"
         const val EXTRA_TITLE = "extra_title"
@@ -76,11 +79,26 @@ class ProblemActivity : AppCompatActivity() {
         binding.tvBoardSize.text = "${problem.boardSize}路"
         binding.tvToPlay.text = if (problem.toPlay == StoneColor.WHITE) "白先" else "黑先"
         
-        // 初始化棋盘
-        currentBoardString = problem.toBoardString()
-        binding.boardView.boardSize = problem.boardSize
+        // 判断是否使用裁剪模式
+        isCroppedMode = problem.isCropped
+        
+        if (isCroppedMode) {
+            // 使用裁剪模式
+            currentBoardString = problem.toCroppedBoardString()
+            binding.boardView.setCroppedBoard(
+                boardString = currentBoardString,
+                cropSize = problem.cropSize,
+                cropLeft = problem.cropLeft,
+                cropTop = problem.cropTop,
+                fullBoardSize = problem.boardSize
+            )
+        } else {
+            // 标准模式
+            currentBoardString = problem.toBoardString()
+            binding.boardView.setStandardBoard(currentBoardString, problem.boardSize)
+        }
+        
         binding.boardView.currentPlayer = problem.toPlay
-        binding.boardView.updateBoard(currentBoardString)
         
         // 重置状态
         currentSolutionIndex = 0
@@ -118,11 +136,17 @@ class ProblemActivity : AppCompatActivity() {
         
         // 检查是否是正确的位置
         val expectedMove = solutionMoves[currentSolutionIndex]
-        val expectedIndex = expectedMove.toIndex(problem.boardSize)
+        val expectedIndex = if (isCroppedMode) {
+            // 裁剪模式下，需要转换坐标
+            val (croppedCol, croppedRow) = problem.globalToCropped(expectedMove.col, expectedMove.row)
+            croppedRow * problem.cropSize + croppedCol
+        } else {
+            expectedMove.toIndex(problem.boardSize)
+        }
         
         if (index == expectedIndex) {
             // 正确！放置棋子
-            placeStone(index, problem.boardSize, expectedMove.color)
+            placeStone(index, problem, expectedMove.color)
             currentSolutionIndex++
             
             // 检查是否完成
@@ -154,10 +178,19 @@ class ProblemActivity : AppCompatActivity() {
         
         val problem = problemList[currentIndex]
         val move = solutionMoves[currentSolutionIndex]
-        val index = move.toIndex(problem.boardSize)
+        
+        // 计算裁剪模式下的index
+        val index = if (isCroppedMode) {
+            val (croppedCol, croppedRow) = problem.globalToCropped(move.col, move.row)
+            croppedRow * problem.cropSize + croppedCol
+        } else {
+            move.toIndex(problem.boardSize)
+        }
+        
+        val boardSize = if (isCroppedMode) problem.cropSize else problem.boardSize
         
         if (GoBoard.isEmptyAt(currentBoardString, index)) {
-            placeStone(index, problem.boardSize, move.color)
+            placeStone(index, problem, move.color)
             currentSolutionIndex++
             
             // 继续检查是否还有对手的棋要下
@@ -180,7 +213,8 @@ class ProblemActivity : AppCompatActivity() {
     private val solutionMoves: List<SolutionMove>
         get() = problemList[currentIndex].solutionMoves
     
-    private fun placeStone(index: Int, boardSize: Int, color: StoneColor) {
+    private fun placeStone(index: Int, problem: Problem, color: StoneColor) {
+        val boardSize = if (isCroppedMode) problem.cropSize else problem.boardSize
         currentBoardString = GoBoard.placeStone(currentBoardString, index, color, boardSize)
         binding.boardView.lastMoveIndex = index
         binding.boardView.currentPlayer = if (color == StoneColor.BLACK) StoneColor.WHITE else StoneColor.BLACK
@@ -248,7 +282,14 @@ class ProblemActivity : AppCompatActivity() {
         val problem = problemList[currentIndex]
         if (currentSolutionIndex < solutionMoves.size) {
             val move = solutionMoves[currentSolutionIndex]
-            val index = move.toIndex(problem.boardSize)
+            
+            // 计算裁剪模式下的index
+            val index = if (isCroppedMode) {
+                val (croppedCol, croppedRow) = problem.globalToCropped(move.col, move.row)
+                croppedRow * problem.cropSize + croppedCol
+            } else {
+                move.toIndex(problem.boardSize)
+            }
             
             // 高亮提示位置
             binding.boardView.hintIndex = index

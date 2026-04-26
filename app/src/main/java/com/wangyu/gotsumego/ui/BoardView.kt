@@ -15,6 +15,7 @@ import kotlin.math.min
  * 支持绘制9路、13路、19路棋盘
  * 支持触摸落子
  * 渐变色棋子和阴影效果
+ * 支持智能裁剪显示
  */
 class BoardView @JvmOverloads constructor(
     context: Context,
@@ -26,6 +27,7 @@ class BoardView @JvmOverloads constructor(
     var boardSize: Int = 9
         set(value) {
             field = value
+            isCroppedMode = false
             invalidate()
         }
     
@@ -53,6 +55,13 @@ class BoardView @JvmOverloads constructor(
     // 提示位置
     var hintIndex: Int = -1
     var showHint: Boolean = false
+    
+    // 裁剪模式相关
+    private var isCroppedMode: Boolean = false
+    private var cropSize: Int = 0
+    private var cropLeft: Int = 0
+    private var cropTop: Int = 0
+    private var fullBoardSize: Int = 19
     
     // 落子监听器
     var onStoneClickListener: ((Int) -> Unit)? = null
@@ -120,6 +129,10 @@ class BoardView @JvmOverloads constructor(
     private var stoneRadius = 0f
     private var starPointRadius = 0f
     
+    // 当前使用的棋盘大小（裁剪模式时使用cropSize）
+    private val effectiveBoardSize: Int
+        get() = if (isCroppedMode && cropSize > 0) cropSize else boardSize
+    
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val width = MeasureSpec.getSize(widthMeasureSpec)
         val height = MeasureSpec.getSize(heightMeasureSpec)
@@ -135,9 +148,47 @@ class BoardView @JvmOverloads constructor(
     private fun calculateDimensions() {
         val size = min(width, height)
         val availableSize = size - 2 * padding
-        cellSize = availableSize / (boardSize - 1)
+        val effectiveSize = effectiveBoardSize
+        cellSize = availableSize / (effectiveSize - 1).coerceAtLeast(1)
         stoneRadius = cellSize * 0.45f
         starPointRadius = cellSize * 0.12f
+    }
+    
+    /**
+     * 设置裁剪模式
+     * @param boardString 裁剪后的棋盘字符串
+     * @param cropSize 裁剪后的棋盘大小
+     * @param cropLeft 裁剪区域左边
+     * @param cropTop 裁剪区域上边
+     * @param fullBoardSize 原始棋盘大小
+     */
+    fun setCroppedBoard(
+        boardString: String,
+        cropSize: Int,
+        cropLeft: Int,
+        cropTop: Int,
+        fullBoardSize: Int
+    ) {
+        this.boardString = boardString
+        this.cropSize = cropSize
+        this.cropLeft = cropLeft
+        this.cropTop = cropTop
+        this.fullBoardSize = fullBoardSize
+        this.isCroppedMode = true
+        this.boardSize = cropSize
+        calculateDimensions()
+        invalidate()
+    }
+    
+    /**
+     * 重置为标准模式
+     */
+    fun setStandardBoard(boardString: String, boardSize: Int) {
+        this.boardString = boardString
+        this.boardSize = boardSize
+        this.isCroppedMode = false
+        calculateDimensions()
+        invalidate()
     }
     
     override fun onDraw(canvas: Canvas) {
@@ -200,19 +251,22 @@ class BoardView @JvmOverloads constructor(
         linePaint.color = Color.parseColor("#6B4423")
         linePaint.strokeWidth = 2f
         
-        for (i in 0 until boardSize) {
+        val size = effectiveBoardSize
+        
+        for (i in 0 until size) {
             val y = padding + i * cellSize
-            canvas.drawLine(padding, y, padding + (boardSize - 1) * cellSize, y, linePaint)
+            canvas.drawLine(padding, y, padding + (size - 1) * cellSize, y, linePaint)
         }
         
-        for (i in 0 until boardSize) {
+        for (i in 0 until size) {
             val x = padding + i * cellSize
-            canvas.drawLine(x, padding, x, padding + (boardSize - 1) * cellSize, linePaint)
+            canvas.drawLine(x, padding, x, padding + (size - 1) * cellSize, linePaint)
         }
     }
     
     private fun drawStarPoints(canvas: Canvas) {
-        val starPoints = GoBoard.getStarPoints(boardSize)
+        val size = effectiveBoardSize
+        val starPoints = GoBoard.getStarPoints(size)
         
         val outerPaint = Paint().apply {
             color = Color.parseColor("#4A3520")
@@ -234,11 +288,12 @@ class BoardView @JvmOverloads constructor(
     }
     
     private fun drawStones(canvas: Canvas) {
-        if (boardString.length != boardSize * boardSize) return
+        val size = effectiveBoardSize
+        if (boardString.length != size * size) return
         
         for (i in boardString.indices) {
-            val row = i / boardSize
-            val col = i % boardSize
+            val row = i / size
+            val col = i % size
             val stone = boardString[i]
             
             when (stone) {
@@ -326,8 +381,9 @@ class BoardView @JvmOverloads constructor(
     }
     
     private fun drawLastMoveMarker(canvas: Canvas, index: Int) {
-        val col = index % boardSize
-        val row = index / boardSize
+        val size = effectiveBoardSize
+        val col = index % size
+        val row = index / size
         val centerX = padding + col * cellSize
         val centerY = padding + row * cellSize
         
@@ -348,8 +404,9 @@ class BoardView @JvmOverloads constructor(
     }
     
     private fun drawHintMarker(canvas: Canvas, index: Int) {
-        val col = index % boardSize
-        val row = index / boardSize
+        val size = effectiveBoardSize
+        val col = index % size
+        val row = index / size
         val centerX = padding + col * cellSize
         val centerY = padding + row * cellSize
         
@@ -389,12 +446,20 @@ class BoardView @JvmOverloads constructor(
             val touchX = event.x
             val touchY = event.y
             
+            val size = effectiveBoardSize
             val col = ((touchX - padding) / cellSize + 0.5f).toInt()
             val row = ((touchY - padding) / cellSize + 0.5f).toInt()
             
-            if (col in 0 until boardSize && row in 0 until boardSize) {
-                val index = row * boardSize + col
-                onStoneClickListener?.invoke(index)
+            if (col in 0 until size && row in 0 until size) {
+                val index = row * size + col
+                
+                // 如果是裁剪模式，需要转换坐标
+                if (isCroppedMode) {
+                    // 返回全局坐标的index（由外部处理）
+                    onStoneClickListener?.invoke(index)
+                } else {
+                    onStoneClickListener?.invoke(index)
+                }
             }
             
             return true
@@ -413,8 +478,9 @@ class BoardView @JvmOverloads constructor(
     }
     
     fun getStoneAt(col: Int, row: Int): StoneColor {
-        if (col < 0 || col >= boardSize || row < 0 || row >= boardSize) return StoneColor.EMPTY
-        return getStoneAt(row * boardSize + col)
+        val size = effectiveBoardSize
+        if (col < 0 || col >= size || row < 0 || row >= size) return StoneColor.EMPTY
+        return getStoneAt(row * size + col)
     }
     
     fun updateBoard(boardStr: String, lastMove: Int = -1) {
@@ -426,6 +492,22 @@ class BoardView @JvmOverloads constructor(
     fun setCorrectMove(index: Int, show: Boolean) {
         this.correctMoveIndex = index
         this.showCorrectMove = show
+        invalidate()
+    }
+    
+    /**
+     * 在指定位置显示提示标记（使用裁剪坐标）
+     */
+    fun showHintAt(croppedCol: Int, croppedRow: Int, show: Boolean) {
+        if (show) {
+            val size = effectiveBoardSize
+            if (croppedCol in 0 until size && croppedRow in 0 until size) {
+                this.correctMoveIndex = croppedRow * size + croppedCol
+                this.showCorrectMove = true
+            }
+        } else {
+            this.showCorrectMove = false
+        }
         invalidate()
     }
 }
