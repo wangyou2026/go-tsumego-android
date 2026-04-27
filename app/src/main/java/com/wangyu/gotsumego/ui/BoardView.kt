@@ -153,7 +153,7 @@ class BoardView @JvmOverloads constructor(
         canvas.drawRect(rect, boardPaint)
         
         val framePaint = Paint().apply {
-            color = Color.parseColor("#5D4037")
+            this.color = Color.parseColor("#5D4037")
             style = Paint.Style.STROKE
             strokeWidth = 12f
             isAntiAlias = true
@@ -161,7 +161,7 @@ class BoardView @JvmOverloads constructor(
         canvas.drawRect(rect, framePaint)
         
         val innerFramePaint = Paint().apply {
-            color = Color.parseColor("#8B4513")
+            this.color = Color.parseColor("#8B4513")
             style = Paint.Style.STROKE
             strokeWidth = 4f
             isAntiAlias = true
@@ -210,11 +210,11 @@ class BoardView @JvmOverloads constructor(
         }
     }
     
-    private fun drawStone(canvas: Canvas, col: Int, row: Int, color: StoneColor) {
+    private fun drawStone(canvas: Canvas, col: Int, row: Int, stoneColor: StoneColor) {
         val centerX = padding + col * cellSize
         val centerY = padding + row * cellSize
         
-        if (color == StoneColor.BLACK) {
+        if (stoneColor == StoneColor.BLACK) {
             canvas.drawCircle(centerX + 2f, centerY + 3f, stoneRadius, shadowPaint)
             
             val blackGradient = RadialGradient(
@@ -231,18 +231,17 @@ class BoardView @JvmOverloads constructor(
             blackStonePaint.shader = blackGradient
             canvas.drawCircle(centerX, centerY, stoneRadius, blackStonePaint)
             
-            val hlPaint = Paint().apply {
-                color = Color.argb(80, 255, 255, 255)
-                style = Paint.Style.FILL
-                isAntiAlias = true
-            }
+            val hlPaint = Paint()
+            hlPaint.color = Color.argb(80, 255, 255, 255)
+            hlPaint.style = Paint.Style.FILL
+            hlPaint.isAntiAlias = true
             canvas.drawCircle(
                 centerX - stoneRadius * 0.35f,
                 centerY - stoneRadius * 0.35f,
                 stoneRadius * 0.2f,
                 hlPaint
             )
-        } else if (color == StoneColor.WHITE) {
+        } else if (stoneColor == StoneColor.WHITE) {
             canvas.drawCircle(centerX + 2f, centerY + 3f, stoneRadius, shadowPaint)
             
             val wGradient = RadialGradient(
@@ -263,11 +262,10 @@ class BoardView @JvmOverloads constructor(
             strokePaint.strokeWidth = 1.5f
             canvas.drawCircle(centerX, centerY, stoneRadius - 0.75f, strokePaint)
             
-            val hlPaint = Paint().apply {
-                color = Color.argb(100, 255, 255, 255)
-                style = Paint.Style.FILL
-                isAntiAlias = true
-            }
+            val hlPaint = Paint()
+            hlPaint.color = Color.argb(100, 255, 255, 255)
+            hlPaint.style = Paint.Style.FILL
+            hlPaint.isAntiAlias = true
             canvas.drawCircle(
                 centerX - stoneRadius * 0.35f,
                 centerY - stoneRadius * 0.35f,
@@ -290,11 +288,10 @@ class BoardView @JvmOverloads constructor(
             Color.parseColor("#FF1744")
         }
         
-        val markerPaint = Paint().apply {
-            color = markerColor
-            style = Paint.Style.FILL
-            isAntiAlias = true
-        }
+        val markerPaint = Paint()
+        markerPaint.color = markerColor
+        markerPaint.style = Paint.Style.FILL
+        markerPaint.isAntiAlias = true
         
         canvas.drawCircle(centerX, centerY, stoneRadius * 0.2f, markerPaint)
     }
@@ -319,11 +316,10 @@ class BoardView @JvmOverloads constructor(
         hintPaint.alpha = 220
         canvas.drawCircle(centerX, centerY, stoneRadius * 0.5f, hintPaint)
         
-        val innerPaint = Paint().apply {
-            color = Color.WHITE
-            style = Paint.Style.FILL
-            isAntiAlias = true
-        }
+        val innerPaint = Paint()
+        innerPaint.color = Color.WHITE
+        innerPaint.style = Paint.Style.FILL
+        innerPaint.isAntiAlias = true
         canvas.drawCircle(centerX, centerY, stoneRadius * 0.15f, innerPaint)
     }
     
