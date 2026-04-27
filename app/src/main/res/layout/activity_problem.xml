@@ -34,7 +34,7 @@
             android:textColor="@color/white"
             android:textStyle="bold"
             android:gravity="center"
-            tools:text="死活题" />
+            tools:text="官子谱" />
 
         <ImageButton
             android:id="@+id/btnReset"
@@ -47,73 +47,37 @@
 
     </LinearLayout>
 
-    <!-- 题目信息 -->
+    <!-- 题目信息 - 简化版 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:padding="@dimen/padding_medium"
         android:background="@color/card_background"
-        android:elevation="2dp">
+        android:gravity="center_vertical">
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/tvProblemNumber"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:textSize="@dimen/text_size_large"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold"
+            tools:text="第 1/1708 题" />
 
-            <TextView
-                android:id="@+id/tvProblemNumber"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/text_size_large"
-                android:textColor="@color/text_primary"
-                android:textStyle="bold"
-                tools:text="第 1 题" />
-
-            <View
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_weight="1" />
-
-            <TextView
-                android:id="@+id/tvDifficulty"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/text_size_medium"
-                android:textColor="@color/accent"
-                tools:text="难度: 3" />
-
-            <TextView
-                android:id="@+id/tvBoardSize"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/padding_medium"
-                android:textSize="@dimen/text_size_medium"
-                android:textColor="@color/text_secondary"
-                tools:text="9路" />
-
-        </LinearLayout>
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
 
         <TextView
             android:id="@+id/tvToPlay"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textSize="@dimen/text_size_medium"
-            android:textColor="@color/text_secondary"
-            tools:text="黑方落子" />
-
-        <TextView
-            android:id="@+id/tvHint"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/padding_small"
-            android:textSize="@dimen/text_size_medium"
-            android:textColor="@color/hint_point"
-            android:visibility="gone"
-            tools:text="提示: 寻找眼位要点"
-            tools:visibility="visible" />
+            android:textSize="@dimen/text_size_large"
+            android:textColor="@color/accent"
+            android:textStyle="bold"
+            tools:text="白先" />
 
     </LinearLayout>
 
@@ -142,7 +106,20 @@
         android:textStyle="bold"
         android:gravity="center"
         android:visibility="gone"
-        tools:text="正确!"
+        tools:text="完成!"
+        tools:visibility="visible" />
+
+    <!-- 提示文字 -->
+    <TextView
+        android:id="@+id/tvHint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/padding_small"
+        android:textSize="@dimen/text_size_medium"
+        android:textColor="@color/hint_point"
+        android:gravity="center"
+        android:visibility="gone"
+        tools:text="解答说明"
         tools:visibility="visible" />
 
     <!-- 底部按钮 -->
@@ -151,8 +128,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="@dimen/padding_medium"
-        android:background="@color/card_background"
-        android:elevation="4dp">
+        android:background="@color/card_background">
 
         <Button
             android:id="@+id/btnPrev"
