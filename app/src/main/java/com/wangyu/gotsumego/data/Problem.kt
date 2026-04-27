@@ -59,16 +59,21 @@ data class Problem(
     
     /**
      * 生成裁剪后的棋盘字符串
+     * 棋盘必须是正方形，大小为cropSize
      */
     fun toCroppedBoardString(): String {
-        if (cropSize <= 0 || cropLeft >= cropRight || cropTop >= cropBottom) {
+        if (cropSize <= 0 || cropSize >= boardSize) {
             return toBoardString()
         }
         
         val sb = StringBuilder()
-        for (row in cropTop..cropBottom) {
-            for (col in cropLeft..cropRight) {
-                val stone = stones.find { it.row == row && it.col == col }
+        // 裁剪后的棋盘大小为 cropSize x cropSize
+        for (row in 0 until cropSize) {
+            for (col in 0 until cropSize) {
+                // 映射到全局坐标
+                val globalRow = cropTop + row
+                val globalCol = cropLeft + col
+                val stone = stones.find { it.row == globalRow && it.col == globalCol }
                 sb.append(stone?.color?.symbol ?: StoneColor.EMPTY.symbol)
             }
         }

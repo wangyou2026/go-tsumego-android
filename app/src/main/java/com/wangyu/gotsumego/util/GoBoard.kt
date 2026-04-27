@@ -6,94 +6,50 @@ import com.wangyu.gotsumego.data.StoneColor
 /**
  * 围棋棋盘工具类
  * 提供棋盘相关的计算和转换功能
+ * 包含提子规则实现
  */
 object GoBoard {
     
-    /**
-     * 计算棋盘上的星位（天元和星位点）
-     * @param boardSize 棋盘大小 (9, 13, 19)
-     * @return 星位位置的列表
-     */
     fun getStarPoints(boardSize: Int): List<Position> {
         return when (boardSize) {
             9 -> listOf(
-                Position(2, 2),  // 左上
-                Position(6, 2),  // 右上
-                Position(4, 4),  // 天元
-                Position(2, 6),  // 左下
-                Position(6, 6)   // 右下
+                Position(2, 2), Position(6, 2), Position(4, 4),
+                Position(2, 6), Position(6, 6)
             )
             13 -> listOf(
-                Position(3, 3),  // 左上
-                Position(9, 3),  // 右上
-                Position(6, 6),  // 天元
-                Position(3, 9),  // 左下
-                Position(9, 9)   // 右下
+                Position(3, 3), Position(9, 3), Position(6, 6),
+                Position(3, 9), Position(9, 9)
             )
             19 -> listOf(
-                Position(3, 3),  // 左上
-                Position(9, 3),  // 上边中
-                Position(15, 3), // 右上
-                Position(3, 9),  // 左边中
-                Position(9, 9),  // 天元
-                Position(15, 9), // 右边中
-                Position(3, 15), // 左下
-                Position(9, 15), // 下边中
-                Position(15, 15) // 右下
+                Position(3, 3), Position(9, 3), Position(15, 3),
+                Position(3, 9), Position(9, 9), Position(15, 9),
+                Position(3, 15), Position(9, 15), Position(15, 15)
             )
             else -> emptyList()
         }
     }
     
-    /**
-     * 检查指定位置是否是星位
-     */
     fun isStarPoint(col: Int, row: Int, boardSize: Int): Boolean {
         return getStarPoints(boardSize).any { it.col == col && it.row == row }
     }
     
-    /**
-     * 检查坐标是否在棋盘范围内
-     */
     fun isValidPosition(col: Int, row: Int, boardSize: Int): Boolean {
         return col in 0 until boardSize && row in 0 until boardSize
     }
     
-    /**
-     * 检查index是否在棋盘范围内
-     */
     fun isValidIndex(index: Int, boardSize: Int): Boolean {
         return index in 0 until (boardSize * boardSize)
     }
     
-    /**
-     * 将(col, row)转换为index
-     * index = row * boardSize + col
-     */
-    fun toIndex(col: Int, row: Int, boardSize: Int): Int {
-        return row * boardSize + col
-    }
+    fun toIndex(col: Int, row: Int, boardSize: Int): Int = row * boardSize + col
     
-    /**
-     * 将index转换为(col, row)
-     * row = index / boardSize
-     * col = index % boardSize
-     */
-    fun toPosition(index: Int, boardSize: Int): Position {
-        return Position(
-            col = index % boardSize,
-            row = index / boardSize
-        )
-    }
+    fun toPosition(index: Int, boardSize: Int): Position = Position(
+        col = index % boardSize,
+        row = index / boardSize
+    )
     
-    /**
-     * 将棋盘字符串转换为二维数组
-     * @param boardString 长度为 boardSize * boardSize 的字符串
-     * @return 二维数组 [row][col]
-     */
     fun stringToBoard(boardString: String, boardSize: Int): Array<Array<StoneColor>> {
         val board = Array(boardSize) { Array(boardSize) { StoneColor.EMPTY } }
-        
         for (i in boardString.indices) {
             val row = i / boardSize
             val col = i % boardSize
@@ -105,13 +61,9 @@ object GoBoard {
                 }
             }
         }
-        
         return board
     }
     
-    /**
-     * 将二维数组转换为棋盘字符串
-     */
     fun boardToString(board: Array<Array<StoneColor>>): String {
         val sb = StringBuilder()
         for (row in board) {
@@ -122,8 +74,104 @@ object GoBoard {
         return sb.toString()
     }
     
+    fun getAdjacentIndices(index: Int, boardSize: Int): List<Int> {
+        val col = index % boardSize
+        val row = index / boardSize
+        val adjacent = mutableListOf<Int>()
+        
+        if (col > 0) adjacent.add(index - 1)           // 左
+        if (col < boardSize - 1) adjacent.add(index + 1)  // 右
+        if (row > 0) adjacent.add(index - boardSize)      // 上
+        if (row < boardSize - 1) adjacent.add(index + boardSize)  // 下
+        
+        return adjacent
+    }
+    
     /**
-     * 在指定位置放置棋子，返回新的棋盘状态
+     * 找到与指定位置相连的同色棋子群
+     */
+    fun getConnectedGroup(boardString: String, index: Int, boardSize: Int): Set<Int> {
+        val color = getStoneAt(boardString, index)
+        if (color == StoneColor.EMPTY) return emptySet()
+        
+        val group = mutableSetOf<Int>()
+        val toCheck = mutableListOf(index)
+        
+        while (toCheck.isNotEmpty()) {
+            val current = toCheck.removeAt(0)
+            if (current in group) continue
+            
+            if (getStoneAt(boardString, current) == color) {
+                group.add(current)
+                for (adj in getAdjacentIndices(current, boardSize)) {
+                    if (adj !in group && getStoneAt(boardString, adj) == color) {
+                        toCheck.add(adj)
+                    }
+                }
+            }
+        }
+        
+        return group
+    }
+    
+    /**
+     * 计算一个棋子群的气数
+     */
+    fun getGroupLiberties(boardString: String, group: Set<Int>, boardSize: Int): List<Int> {
+        val liberties = mutableSetOf<Int>()
+        
+        for (index in group) {
+            for (adj in getAdjacentIndices(index, boardSize)) {
+                if (getStoneAt(boardString, adj) == StoneColor.EMPTY) {
+                    liberties.add(adj)
+                }
+            }
+        }
+        
+        return liberties.toList()
+    }
+    
+    /**
+     * 检查并移除没有气的棋子（提子）
+     */
+    fun captureStones(
+        boardString: String, 
+        lastMoveIndex: Int, 
+        boardSize: Int
+    ): Pair<String, Int> {
+        val lastColor = getStoneAt(boardString, lastMoveIndex)
+        if (lastColor == StoneColor.EMPTY) return Pair(boardString, 0)
+        
+        val opponentColor = if (lastColor == StoneColor.BLACK) StoneColor.WHITE else StoneColor.BLACK
+        var newBoard = boardString
+        var totalCaptured = 0
+        
+        val checkedGroups = mutableSetOf<Int>()
+        
+        for (adj in getAdjacentIndices(lastMoveIndex, boardSize)) {
+            if (adj in checkedGroups) continue
+            if (getStoneAt(newBoard, adj) != opponentColor) continue
+            
+            val group = getConnectedGroup(newBoard, adj, boardSize)
+            checkedGroups.addAll(group)
+            
+            val liberties = getGroupLiberties(newBoard, group, boardSize)
+            
+            if (liberties.isEmpty()) {
+                val chars = newBoard.toCharArray()
+                for (idx in group) {
+                    chars[idx] = StoneColor.EMPTY.symbol
+                }
+                newBoard = String(chars)
+                totalCaptured += group.size
+            }
+        }
+        
+        return Pair(newBoard, totalCaptured)
+    }
+    
+    /**
+     * 在指定位置放置棋子，并自动处理提子
      */
     fun placeStone(
         boardString: String, 
@@ -132,15 +180,28 @@ object GoBoard {
         boardSize: Int
     ): String {
         if (!isValidIndex(index, boardSize)) return boardString
+        if (!isEmptyAt(boardString, index)) return boardString
         
+        // 1. 放置棋子
         val chars = boardString.toCharArray()
         chars[index] = color.symbol
-        return String(chars)
+        var newBoard = String(chars)
+        
+        // 2. 检查并提子
+        val (boardAfterCapture, _) = captureStones(newBoard, index, boardSize)
+        newBoard = boardAfterCapture
+        
+        // 3. 检查自杀（如果自己没气了，恢复原状）
+        val myGroup = getConnectedGroup(newBoard, index, boardSize)
+        val myLiberties = getGroupLiberties(newBoard, myGroup, boardSize)
+        
+        if (myLiberties.isEmpty()) {
+            return boardString
+        }
+        
+        return newBoard
     }
     
-    /**
-     * 移除指定位置的棋子，返回新的棋盘状态
-     */
     fun removeStone(boardString: String, index: Int, boardSize: Int): String {
         if (!isValidIndex(index, boardSize)) return boardString
         
@@ -149,9 +210,6 @@ object GoBoard {
         return String(chars)
     }
     
-    /**
-     * 获取指定位置的棋子颜色
-     */
     fun getStoneAt(boardString: String, index: Int): StoneColor {
         if (index < 0 || index >= boardString.length) return StoneColor.EMPTY
         return when (boardString[index]) {
@@ -161,16 +219,10 @@ object GoBoard {
         }
     }
     
-    /**
-     * 检查位置是否为空
-     */
     fun isEmptyAt(boardString: String, index: Int): Boolean {
         return getStoneAt(boardString, index) == StoneColor.EMPTY
     }
     
-    /**
-     * 获取相邻位置
-     */
     fun getAdjacentPositions(col: Int, row: Int, boardSize: Int): List<Position> {
         val positions = mutableListOf<Position>()
         
@@ -180,21 +232,5 @@ object GoBoard {
         if (row < boardSize - 1) positions.add(Position(col, row + 1))
         
         return positions
-    }
-    
-    /**
-     * 获取位置的相邻index列表
-     */
-    fun getAdjacentIndices(index: Int, boardSize: Int): List<Int> {
-        val col = index % boardSize
-        val row = index / boardSize
-        val adjacent = mutableListOf<Int>()
-        
-        if (col > 0) adjacent.add(index - 1)  // 左
-        if (col < boardSize - 1) adjacent.add(index + 1)  // 右
-        if (row > 0) adjacent.add(index - boardSize)  // 上
-        if (row < boardSize - 1) adjacent.add(index + boardSize)  // 下
-        
-        return adjacent
     }
 }
