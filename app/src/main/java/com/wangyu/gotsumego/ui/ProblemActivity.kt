@@ -76,9 +76,19 @@ class ProblemActivity : AppCompatActivity() {
         binding.tvToPlay.text = if (problem.toPlay == StoneColor.WHITE) "白先" else "黑先"
         binding.tvToPlay.visibility = View.VISIBLE
         
-        // 初始化棋盘 - 不使用裁剪
-        currentBoardString = problem.toBoardString()
-        binding.boardView.boardSize = problem.boardSize
+        // 判断是否使用裁剪模式
+        val useCrop = problem.shouldCrop
+        
+        if (useCrop) {
+            // 裁剪模式：显示局部棋盘
+            currentBoardString = problem.toCroppedBoardString()
+            binding.boardView.boardSize = problem.cropSize
+        } else {
+            // 标准模式：显示完整棋盘
+            currentBoardString = problem.toBoardString()
+            binding.boardView.boardSize = problem.boardSize
+        }
+        
         binding.boardView.currentPlayer = problem.toPlay
         binding.boardView.updateBoard(currentBoardString)
         
@@ -110,7 +120,15 @@ class ProblemActivity : AppCompatActivity() {
         if (currentSolutionIndex >= solutionMoves.size) return
         
         val expectedMove = solutionMoves[currentSolutionIndex]
-        val expectedIndex = expectedMove.toIndex(problem.boardSize)
+        
+        // 计算期望位置在当前棋盘上的index
+        val expectedIndex = if (problem.shouldCrop) {
+            // 裁剪模式：转换坐标
+            val (croppedCol, croppedRow) = problem.globalToCropped(expectedMove.col, expectedMove.row)
+            croppedRow * problem.cropSize + croppedCol
+        } else {
+            expectedMove.toIndex(problem.boardSize)
+        }
         
         if (index == expectedIndex) {
             placeStone(index, problem, expectedMove.color)
@@ -139,7 +157,16 @@ class ProblemActivity : AppCompatActivity() {
         
         val problem = problemList[currentIndex]
         val move = solutionMoves[currentSolutionIndex]
-        val index = move.toIndex(problem.boardSize)
+        
+        // 计算在当前棋盘上的index
+        val index = if (problem.shouldCrop) {
+            val (croppedCol, croppedRow) = problem.globalToCropped(move.col, move.row)
+            croppedRow * problem.cropSize + croppedCol
+        } else {
+            move.toIndex(problem.boardSize)
+        }
+        
+        val currentBoardSize = if (problem.shouldCrop) problem.cropSize else problem.boardSize
         
         if (GoBoard.isEmptyAt(currentBoardString, index)) {
             placeStone(index, problem, move.color)
@@ -163,7 +190,8 @@ class ProblemActivity : AppCompatActivity() {
         get() = problemList[currentIndex].solutionMoves
     
     private fun placeStone(index: Int, problem: Problem, color: StoneColor) {
-        currentBoardString = GoBoard.placeStone(currentBoardString, index, color, problem.boardSize)
+        val currentBoardSize = if (problem.shouldCrop) problem.cropSize else problem.boardSize
+        currentBoardString = GoBoard.placeStone(currentBoardString, index, color, currentBoardSize)
         binding.boardView.lastMoveIndex = index
         binding.boardView.currentPlayer = if (color == StoneColor.BLACK) StoneColor.WHITE else StoneColor.BLACK
         binding.boardView.updateBoard(currentBoardString, index)
@@ -224,8 +252,15 @@ class ProblemActivity : AppCompatActivity() {
         }
         
         if (currentSolutionIndex < solutionMoves.size) {
+            val problem = problemList[currentIndex]
             val move = solutionMoves[currentSolutionIndex]
-            val index = move.toIndex(problemList[currentIndex].boardSize)
+            
+            val index = if (problem.shouldCrop) {
+                val (croppedCol, croppedRow) = problem.globalToCropped(move.col, move.row)
+                croppedRow * problem.cropSize + croppedCol
+            } else {
+                move.toIndex(problem.boardSize)
+            }
             
             binding.boardView.hintIndex = index
             binding.boardView.showHint = true
