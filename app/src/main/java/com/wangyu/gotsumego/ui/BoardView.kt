@@ -10,18 +10,12 @@ import com.wangyu.gotsumego.data.StoneColor
 import com.wangyu.gotsumego.util.GoBoard
 import kotlin.math.min
 
-/**
- * 围棋棋盘自定义View
- * 支持动态棋盘大小（用于智能裁剪）
- * 支持触摸落子
- */
 class BoardView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
     
-    // 棋盘大小（可以是裁剪后的大小）
     var boardSize: Int = 19
         set(value) {
             field = value
@@ -29,31 +23,24 @@ class BoardView @JvmOverloads constructor(
             invalidate()
         }
     
-    // 棋盘字符串，长度必须等于 boardSize * boardSize
     var boardString: String = ""
         set(value) {
             field = value
             invalidate()
         }
     
-    // 当前下棋方
     var currentPlayer: StoneColor = StoneColor.BLACK
     
-    // 最后一手的位置
     var lastMoveIndex: Int = -1
     
-    // 提示位置
     var hintIndex: Int = -1
     var showHint: Boolean = false
     
-    // 落子监听器
     var onStoneClickListener: ((Int) -> Unit)? = null
     
-    // 颜色定义
     private val lineColor = context.getColor(R.color.board_line)
     private val hintColor = context.getColor(R.color.hint_point)
     
-    // 画笔
     private val blackStonePaint = Paint().apply {
         isAntiAlias = true
         style = Paint.Style.FILL
@@ -97,10 +84,8 @@ class BoardView @JvmOverloads constructor(
         isAntiAlias = true
     }
     
-    // 棋盘边距
     private val padding = 40f
     
-    // 计算属性
     private var cellSize = 0f
     private var stoneRadius = 0f
     private var starPointRadius = 0f
@@ -120,7 +105,11 @@ class BoardView @JvmOverloads constructor(
     private fun calculateDimensions() {
         val size = min(width, height)
         val availableSize = size - 2 * padding
-        cellSize = if (boardSize > 1) availableSize / (boardSize - 1) else availableSize
+        if (boardSize > 1) {
+            cellSize = availableSize / (boardSize - 1)
+        } else {
+            cellSize = availableSize
+        }
         stoneRadius = cellSize * 0.45f
         starPointRadius = cellSize * 0.12f
     }
@@ -133,14 +122,12 @@ class BoardView @JvmOverloads constructor(
         drawStarPoints(canvas)
         drawStones(canvas)
         
-        // 绘制最后一手标记
         if (lastMoveIndex >= 0 && lastMoveIndex < boardString.length) {
             if (boardString[lastMoveIndex] != '.') {
                 drawLastMoveMarker(canvas, lastMoveIndex)
             }
         }
         
-        // 绘制提示标记
         if (showHint && hintIndex >= 0 && hintIndex < boardString.length) {
             drawHintMarker(canvas, hintIndex)
         }
@@ -165,7 +152,6 @@ class BoardView @JvmOverloads constructor(
         val rect = RectF(0f, 0f, width.toFloat(), height.toFloat())
         canvas.drawRect(rect, boardPaint)
         
-        // 外框
         val framePaint = Paint().apply {
             color = Color.parseColor("#5D4037")
             style = Paint.Style.STROKE
@@ -174,7 +160,6 @@ class BoardView @JvmOverloads constructor(
         }
         canvas.drawRect(rect, framePaint)
         
-        // 内框
         val innerFramePaint = Paint().apply {
             color = Color.parseColor("#8B4513")
             style = Paint.Style.STROKE
@@ -202,7 +187,6 @@ class BoardView @JvmOverloads constructor(
     
     private fun drawStarPoints(canvas: Canvas) {
         val starPoints = GoBoard.getStarPoints(boardSize)
-        
         for (point in starPoints) {
             val x = padding + point.col * cellSize
             val y = padding + point.row * cellSize
@@ -218,9 +202,10 @@ class BoardView @JvmOverloads constructor(
             val col = i % boardSize
             val stone = boardString[i]
             
-            when (stone) {
-                'X' -> drawStone(canvas, col, row, StoneColor.BLACK)
-                'O' -> drawStone(canvas, col, row, StoneColor.WHITE)
+            if (stone == 'X') {
+                drawStone(canvas, col, row, StoneColor.BLACK)
+            } else if (stone == 'O') {
+                drawStone(canvas, col, row, StoneColor.WHITE)
             }
         }
     }
@@ -229,71 +214,66 @@ class BoardView @JvmOverloads constructor(
         val centerX = padding + col * cellSize
         val centerY = padding + row * cellSize
         
-        when (color) {
-            StoneColor.BLACK -> {
-                canvas.drawCircle(centerX + 2f, centerY + 3f, stoneRadius, shadowPaint)
-                
-                val blackGradient = RadialGradient(
-                    centerX - stoneRadius * 0.3f, centerY - stoneRadius * 0.3f, stoneRadius * 1.5f,
-                    intArrayOf(
-                        Color.parseColor("#5A5A5A"),
-                        Color.parseColor("#2A2A2A"),
-                        Color.parseColor("#000000")
-                    ),
-                    floatArrayOf(0f, 0.4f, 1f),
-                    Shader.TileMode.CLAMP
-                )
-                
-                blackStonePaint.shader = blackGradient
-                canvas.drawCircle(centerX, centerY, stoneRadius, blackStonePaint)
-                
-                // 高光
-                val hlPaint = Paint().apply {
-                    color = Color.argb(80, 255, 255, 255)
-                    style = Paint.Style.FILL
-                    isAntiAlias = true
-                }
-                canvas.drawCircle(
-                    centerX - stoneRadius * 0.35f,
-                    centerY - stoneRadius * 0.35f,
-                    stoneRadius * 0.2f,
-                    hlPaint
-                )
+        if (color == StoneColor.BLACK) {
+            canvas.drawCircle(centerX + 2f, centerY + 3f, stoneRadius, shadowPaint)
+            
+            val blackGradient = RadialGradient(
+                centerX - stoneRadius * 0.3f, centerY - stoneRadius * 0.3f, stoneRadius * 1.5f,
+                intArrayOf(
+                    Color.parseColor("#5A5A5A"),
+                    Color.parseColor("#2A2A2A"),
+                    Color.parseColor("#000000")
+                ),
+                floatArrayOf(0f, 0.4f, 1f),
+                Shader.TileMode.CLAMP
+            )
+            
+            blackStonePaint.shader = blackGradient
+            canvas.drawCircle(centerX, centerY, stoneRadius, blackStonePaint)
+            
+            val hlPaint = Paint().apply {
+                color = Color.argb(80, 255, 255, 255)
+                style = Paint.Style.FILL
+                isAntiAlias = true
             }
-            StoneColor.WHITE -> {
-                canvas.drawCircle(centerX + 2f, centerY + 3f, stoneRadius, shadowPaint)
-                
-                val wGradient = RadialGradient(
-                    centerX - stoneRadius * 0.3f, centerY - stoneRadius * 0.3f, stoneRadius * 1.5f,
-                    intArrayOf(
-                        Color.WHITE,
-                        Color.parseColor("#F8F8F8"),
-                        Color.parseColor("#E0E0E0")
-                    ),
-                    floatArrayOf(0f, 0.5f, 1f),
-                    Shader.TileMode.CLAMP
-                )
-                
-                whiteStonePaint.shader = wGradient
-                canvas.drawCircle(centerX, centerY, stoneRadius, whiteStonePaint)
-                
-                strokePaint.color = Color.parseColor("#CCCCCC")
-                strokePaint.strokeWidth = 1.5f
-                canvas.drawCircle(centerX, centerY, stoneRadius - 0.75f, strokePaint)
-                
-                val hlPaint = Paint().apply {
-                    color = Color.argb(100, 255, 255, 255)
-                    style = Paint.Style.FILL
-                    isAntiAlias = true
-                }
-                canvas.drawCircle(
-                    centerX - stoneRadius * 0.35f,
-                    centerY - stoneRadius * 0.35f,
-                    stoneRadius * 0.25f,
-                    hlPaint
-                )
+            canvas.drawCircle(
+                centerX - stoneRadius * 0.35f,
+                centerY - stoneRadius * 0.35f,
+                stoneRadius * 0.2f,
+                hlPaint
+            )
+        } else if (color == StoneColor.WHITE) {
+            canvas.drawCircle(centerX + 2f, centerY + 3f, stoneRadius, shadowPaint)
+            
+            val wGradient = RadialGradient(
+                centerX - stoneRadius * 0.3f, centerY - stoneRadius * 0.3f, stoneRadius * 1.5f,
+                intArrayOf(
+                    Color.WHITE,
+                    Color.parseColor("#F8F8F8"),
+                    Color.parseColor("#E0E0E0")
+                ),
+                floatArrayOf(0f, 0.5f, 1f),
+                Shader.TileMode.CLAMP
+            )
+            
+            whiteStonePaint.shader = wGradient
+            canvas.drawCircle(centerX, centerY, stoneRadius, whiteStonePaint)
+            
+            strokePaint.color = Color.parseColor("#CCCCCC")
+            strokePaint.strokeWidth = 1.5f
+            canvas.drawCircle(centerX, centerY, stoneRadius - 0.75f, strokePaint)
+            
+            val hlPaint = Paint().apply {
+                color = Color.argb(100, 255, 255, 255)
+                style = Paint.Style.FILL
+                isAntiAlias = true
             }
-            StoneColor.EMPTY -> { }
+            canvas.drawCircle(
+                centerX - stoneRadius * 0.35f,
+                centerY - stoneRadius * 0.35f,
+                stoneRadius * 0.25f,
+                hlPaint
+            )
         }
     }
     
@@ -368,10 +348,13 @@ class BoardView @JvmOverloads constructor(
     
     fun getStoneAt(index: Int): StoneColor {
         if (index < 0 || index >= boardString.length) return StoneColor.EMPTY
-        return when (boardString[index]) {
-            'X' -> StoneColor.BLACK
-            'O' -> StoneColor.WHITE
-            else -> StoneColor.EMPTY
+        val ch = boardString[index]
+        return if (ch == 'X') {
+            StoneColor.BLACK
+        } else if (ch == 'O') {
+            StoneColor.WHITE
+        } else {
+            StoneColor.EMPTY
         }
     }
     
