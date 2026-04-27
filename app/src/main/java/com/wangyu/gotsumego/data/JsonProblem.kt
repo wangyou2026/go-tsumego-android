@@ -37,21 +37,5 @@ data class JsonProblem(
     val solutionComment: String?,
     
     @SerializedName("hint")
-    val hint: String?,
-    
-    // 裁剪相关字段
-    @SerializedName("cropLeft")
-    val cropLeft: Int?,
-    
-    @SerializedName("cropRight")
-    val cropRight: Int?,
-    
-    @SerializedName("cropTop")
-    val cropTop: Int?,
-    
-    @SerializedName("cropBottom")
-    val cropBottom: Int?,
-    
-    @SerializedName("cropSize")
-    val cropSize: Int?
+    val hint: String?
 )

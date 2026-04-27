@@ -38,13 +38,7 @@ data class Problem(
     val solutionMoves: List<SolutionMove>,
     val hint: String?,
     val solutionComment: String?,
-    val book: String,
-    // 裁剪相关字段
-    val cropLeft: Int,
-    val cropRight: Int,
-    val cropTop: Int,
-    val cropBottom: Int,
-    val cropSize: Int
+    val book: String
 ) {
     fun toBoardString(): String {
         val sb = StringBuilder()
@@ -55,43 +49,6 @@ data class Problem(
             sb.append(stone?.color?.symbol ?: StoneColor.EMPTY.symbol)
         }
         return sb.toString()
-    }
-    
-    /**
-     * 生成裁剪后的棋盘字符串
-     * 棋盘必须是正方形，大小为cropSize
-     */
-    fun toCroppedBoardString(): String {
-        if (cropSize <= 0 || cropSize >= boardSize) {
-            return toBoardString()
-        }
-        
-        val sb = StringBuilder()
-        // 裁剪后的棋盘大小为 cropSize x cropSize
-        for (row in 0 until cropSize) {
-            for (col in 0 until cropSize) {
-                // 映射到全局坐标
-                val globalRow = cropTop + row
-                val globalCol = cropLeft + col
-                val stone = stones.find { it.row == globalRow && it.col == globalCol }
-                sb.append(stone?.color?.symbol ?: StoneColor.EMPTY.symbol)
-            }
-        }
-        return sb.toString()
-    }
-    
-    /**
-     * 将全局坐标转换为裁剪后棋盘的坐标
-     */
-    fun globalToCropped(col: Int, row: Int): Pair<Int, Int> {
-        return Pair(col - cropLeft, row - cropTop)
-    }
-    
-    /**
-     * 将裁剪后棋盘的坐标转换为全局坐标
-     */
-    fun croppedToGlobal(croppedCol: Int, croppedRow: Int): Pair<Int, Int> {
-        return Pair(croppedCol + cropLeft, croppedRow + cropTop)
     }
     
     val firstCorrectMove: Position?
@@ -106,9 +63,6 @@ data class Problem(
             5 -> "专业"
             else -> "未知"
         }
-    
-    val isCropped: Boolean
-        get() = cropSize > 0 && cropSize < boardSize
 }
 
 data class Position(
@@ -154,7 +108,6 @@ fun JsonProblem.toProblem(): Problem {
         listOf(Position(col = answer[0], row = boardSize - 1 - answer[1]))
     } else emptyList()
     
-    // 解析完整解答序列
     val solutionMoveList = solutionMoves?.mapNotNull { move ->
         if (move.size >= 3) {
             SolutionMove(
@@ -164,13 +117,6 @@ fun JsonProblem.toProblem(): Problem {
             )
         } else null
     } ?: emptyList()
-    
-    // 裁剪参数
-    val cLeft = cropLeft ?: 0
-    val cRight = cropRight ?: (boardSize - 1)
-    val cTop = cropTop ?: 0
-    val cBottom = cropBottom ?: (boardSize - 1)
-    val cSize = cropSize ?: boardSize
     
     return Problem(
         id = id,
@@ -184,11 +130,6 @@ fun JsonProblem.toProblem(): Problem {
         solutionMoves = solutionMoveList,
         hint = hint,
         solutionComment = solutionComment,
-        book = book ?: "其他",
-        cropLeft = cLeft,
-        cropRight = cRight,
-        cropTop = cTop,
-        cropBottom = cBottom,
-        cropSize = cSize
+        book = book ?: "其他"
     )
 }

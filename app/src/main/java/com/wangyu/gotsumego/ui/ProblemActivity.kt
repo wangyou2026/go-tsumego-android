@@ -25,9 +25,6 @@ class ProblemActivity : AppCompatActivity() {
     private var currentSolutionIndex: Int = 0
     private var isSolved: Boolean = false
     
-    // 当前是否使用裁剪模式
-    private var isCroppedMode: Boolean = false
-    
     companion object {
         const val EXTRA_BOOK = "extra_book"
         const val EXTRA_TITLE = "extra_title"
@@ -74,29 +71,16 @@ class ProblemActivity : AppCompatActivity() {
         
         val problem = problemList[currentIndex]
         
-        // 显示题目信息 - 简化版
+        // 显示题目信息
         binding.tvProblemNumber.text = "第 ${currentIndex + 1}/${problemList.size} 题"
         binding.tvToPlay.text = if (problem.toPlay == StoneColor.WHITE) "白先" else "黑先"
         binding.tvToPlay.visibility = View.VISIBLE
         
-        // 判断是否使用裁剪模式
-        isCroppedMode = problem.isCropped
-        
-        if (isCroppedMode) {
-            currentBoardString = problem.toCroppedBoardString()
-            binding.boardView.setCroppedBoard(
-                boardString = currentBoardString,
-                cropSize = problem.cropSize,
-                cropLeft = problem.cropLeft,
-                cropTop = problem.cropTop,
-                fullBoardSize = problem.boardSize
-            )
-        } else {
-            currentBoardString = problem.toBoardString()
-            binding.boardView.setStandardBoard(currentBoardString, problem.boardSize)
-        }
-        
+        // 初始化棋盘 - 不使用裁剪
+        currentBoardString = problem.toBoardString()
+        binding.boardView.boardSize = problem.boardSize
         binding.boardView.currentPlayer = problem.toPlay
+        binding.boardView.updateBoard(currentBoardString)
         
         // 重置状态
         currentSolutionIndex = 0
@@ -108,7 +92,6 @@ class ProblemActivity : AppCompatActivity() {
         binding.btnPrev.isEnabled = currentIndex > 0
         binding.btnNext.isEnabled = currentIndex < problemList.size - 1
         
-        // 显示解答步数
         val moveCount = problem.solutionMoves.size
         binding.btnHint.text = if (moveCount > 0) "提示($moveCount)" else "提示"
     }
@@ -127,12 +110,7 @@ class ProblemActivity : AppCompatActivity() {
         if (currentSolutionIndex >= solutionMoves.size) return
         
         val expectedMove = solutionMoves[currentSolutionIndex]
-        val expectedIndex = if (isCroppedMode) {
-            val (croppedCol, croppedRow) = problem.globalToCropped(expectedMove.col, expectedMove.row)
-            croppedRow * problem.cropSize + croppedCol
-        } else {
-            expectedMove.toIndex(problem.boardSize)
-        }
+        val expectedIndex = expectedMove.toIndex(problem.boardSize)
         
         if (index == expectedIndex) {
             placeStone(index, problem, expectedMove.color)
@@ -161,15 +139,7 @@ class ProblemActivity : AppCompatActivity() {
         
         val problem = problemList[currentIndex]
         val move = solutionMoves[currentSolutionIndex]
-        
-        val index = if (isCroppedMode) {
-            val (croppedCol, croppedRow) = problem.globalToCropped(move.col, move.row)
-            croppedRow * problem.cropSize + croppedCol
-        } else {
-            move.toIndex(problem.boardSize)
-        }
-        
-        val boardSize = if (isCroppedMode) problem.cropSize else problem.boardSize
+        val index = move.toIndex(problem.boardSize)
         
         if (GoBoard.isEmptyAt(currentBoardString, index)) {
             placeStone(index, problem, move.color)
@@ -193,8 +163,7 @@ class ProblemActivity : AppCompatActivity() {
         get() = problemList[currentIndex].solutionMoves
     
     private fun placeStone(index: Int, problem: Problem, color: StoneColor) {
-        val boardSize = if (isCroppedMode) problem.cropSize else problem.boardSize
-        currentBoardString = GoBoard.placeStone(currentBoardString, index, color, boardSize)
+        currentBoardString = GoBoard.placeStone(currentBoardString, index, color, problem.boardSize)
         binding.boardView.lastMoveIndex = index
         binding.boardView.currentPlayer = if (color == StoneColor.BLACK) StoneColor.WHITE else StoneColor.BLACK
         binding.boardView.updateBoard(currentBoardString, index)
@@ -254,16 +223,9 @@ class ProblemActivity : AppCompatActivity() {
             return
         }
         
-        val problem = problemList[currentIndex]
         if (currentSolutionIndex < solutionMoves.size) {
             val move = solutionMoves[currentSolutionIndex]
-            
-            val index = if (isCroppedMode) {
-                val (croppedCol, croppedRow) = problem.globalToCropped(move.col, move.row)
-                croppedRow * problem.cropSize + croppedCol
-            } else {
-                move.toIndex(problem.boardSize)
-            }
+            val index = move.toIndex(problemList[currentIndex].boardSize)
             
             binding.boardView.hintIndex = index
             binding.boardView.showHint = true
