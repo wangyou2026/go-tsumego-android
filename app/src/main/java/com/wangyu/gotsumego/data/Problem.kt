@@ -101,28 +101,33 @@ data class SolutionMove(
 }
 
 fun JsonProblem.toProblem(): Problem {
-    // JSON 里存的是 display 坐标（row 0 在顶部），不需要翻转
+    // SGF 格式：row 0 在底部，answer/solutionMoves 已翻转（顶部=0）
+    // Android 显示：row 0 在顶部
+    // 所以需要将 answer/solutionMoves 的 row 翻转回来以匹配 stones
+    val boardSize = this.boardSize
+    val flippedRow: (Int) -> Int = { y -> boardSize - 1 - y }
+    
     val stoneList = stones.mapNotNull { stoneData ->
         if (stoneData.size >= 3) {
             Stone(
                 col = stoneData[0],
-                row = stoneData[1],  // 直接使用，不翻转
+                row = stoneData[1],  // stones 的 row 是 SGF 原生坐标
                 color = StoneColor.fromValue(stoneData[2])
             )
         } else null
     }
     
-    // 答案坐标也是 display 坐标
+    // answer/solutionMoves 的 row 已翻转，需要翻转回来以匹配 stones
     val moves = if (answer.size >= 2) {
-        listOf(Position(col = answer[0], row = answer[1]))  // 直接使用，不翻转
+        listOf(Position(col = answer[0], row = flippedRow(answer[1])))
     } else emptyList()
     
-    // solutionMoves: [col, row, color] 格式，直接使用不翻转
+    // solutionMoves: [col, row, color] 格式，row 需要翻转
     val solutionMoveList = solutionMoves?.mapNotNull { move ->
         if (move.size >= 3) {
             SolutionMove(
                 col = move[0],
-                row = move[1],  // 直接使用，不翻转
+                row = flippedRow(move[1]),  // 翻转 row 以匹配 stones
                 color = StoneColor.fromValue(move[2])
             )
         } else null
@@ -153,40 +158,71 @@ fun JsonProblem.toProblem(): Problem {
 
 /**
  * 计算局部放大区域（同时包含初始棋子和答案/着法）
+ * 策略：
+ * 1. 始终包含所有初始棋子和答案/着法
+ * 2. 优先以初始棋子区域为主（这是用户看到的主要区域）
+ * 3. 确保答案在可见范围内
  * 返回 (minCol, maxCol, minRow, maxRow)
  */
 private fun calculateZoomArea(problem: JsonProblem): Tuple4<Int, Int, Int, Int> {
     val stones = problem.stones
     if (stones.isEmpty()) return Tuple4(0, problem.boardSize - 1, 0, problem.boardSize - 1)
 
-    // 收集初始棋子的位置（用可变列表以便后续 add）
-    val cols = stones.mapNotNull { if (it.size >= 1) it.get(0) else null }.toMutableList()
-    val rows = stones.mapNotNull { if (it.size >= 2) it.get(1) else null }.toMutableList()
+    val boardSize = problem.boardSize
+    val margin = 3  // 稍微增加边距
 
-    // 加上 answer 坐标
+    // 初始棋子坐标
+    val stoneCols = stones.mapNotNull { if (it.size >= 1) it.get(0) else null }
+    val stoneRows = stones.mapNotNull { if (it.size >= 2) it.get(1) else null }
+    
     val answer = problem.answer
-    if (answer.size >= 2) {
-        cols.add(answer[0])
-        rows.add(answer[1])
-    }
-
-    // 加上前 5 手着法坐标（确保答案和着法序列也在可见区域内）
     val sm = problem.solutionMoves ?: emptyList()
-    for (move in sm.take(5)) {
+    
+    // 收集答案+前3手着法坐标（答案是第一位的）
+    val answerCols = mutableListOf<Int>()
+    val answerRows = mutableListOf<Int>()
+    if (answer.size >= 2) {
+        answerCols.add(answer[0])
+        answerRows.add(answer[1])
+    }
+    for (move in sm.take(3)) {
         if (move.size >= 2) {
-            cols.add(move[0])
-            rows.add(move[1])
+            answerCols.add(move[0])
+            answerRows.add(move[1])
         }
     }
 
-    if (cols.isEmpty() || rows.isEmpty()) return Tuple4(0, problem.boardSize - 1, 0, problem.boardSize - 1)
+    // 如果没有答案数据，返回包含初始棋子的区域
+    if (answerCols.isEmpty()) {
+        val minCol = maxOf(0, stoneCols.minOrNull()!! - margin)
+        val maxCol = minOf(boardSize - 1, stoneCols.maxOrNull()!! + margin)
+        val minRow = maxOf(0, stoneRows.minOrNull()!! - margin)
+        val maxRow = minOf(boardSize - 1, stoneRows.maxOrNull()!! + margin)
+        return Tuple4(minCol, maxCol, minRow, maxRow)
+    }
 
-    val boardSize = problem.boardSize
-    val margin = 2
-    val minCol = maxOf(0, cols.min()!! - margin)
-    val maxCol = minOf(boardSize - 1, cols.max()!! + margin)
-    val minRow = maxOf(0, rows.min()!! - margin)
-    val maxRow = minOf(boardSize - 1, rows.max()!! + margin)
+    // 以初始棋子区域为基础
+    var minCol = stoneCols.minOrNull()!!
+    var maxCol = stoneCols.maxOrNull()!!
+    var minRow = stoneRows.minOrNull()!!
+    var maxRow = stoneRows.maxOrNull()!!
+    
+    // 确保答案在可见范围内
+    val answerMinCol = answerCols.minOrNull()!!
+    val answerMaxCol = answerCols.maxOrNull()!!
+    val answerMinRow = answerRows.minOrNull()!!
+    val answerMaxRow = answerRows.maxOrNull()!!
+    
+    if (answerMinCol < minCol) minCol = answerMinCol
+    if (answerMaxCol > maxCol) maxCol = answerMaxCol
+    if (answerMinRow < minRow) minRow = answerMinRow
+    if (answerMaxRow > maxRow) maxRow = answerMaxRow
+    
+    // 加上边距
+    minCol = maxOf(0, minCol - margin)
+    maxCol = minOf(boardSize - 1, maxCol + margin)
+    minRow = maxOf(0, minRow - margin)
+    maxRow = minOf(boardSize - 1, maxRow + margin)
 
     return Tuple4(minCol, maxCol, minRow, maxRow)
 }
