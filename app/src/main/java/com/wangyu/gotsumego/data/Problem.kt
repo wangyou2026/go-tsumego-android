@@ -171,11 +171,11 @@ private fun calculateZoomArea(problem: JsonProblem): Tuple4<Int, Int, Int, Int> 
     }
 
     // 加上前 5 手着法坐标（确保答案和着法序列也在可见区域内）
-    val solutionMoves = problem.solutionMoves ?: emptyList<Any>()
-    for (move in solutionMoves.take(5)) {
-        if (move is List<*> && move.size >= 2) {
-            (move[0] as? Int)?.let { cols.add(it) }
-            (move[1] as? Int)?.let { rows.add(it) }
+    val sm = problem.solutionMoves ?: emptyList()
+    for (move in sm.take(5)) {
+        if (move.size >= 2) {
+            cols.add(move[0])
+            rows.add(move[1])
         }
     }
 
