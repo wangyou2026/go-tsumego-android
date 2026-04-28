@@ -159,9 +159,9 @@ private fun calculateZoomArea(problem: JsonProblem): Tuple4<Int, Int, Int, Int> 
     val stones = problem.stones
     if (stones.isEmpty()) return Tuple4(0, problem.boardSize - 1, 0, problem.boardSize - 1)
 
-    // 收集初始棋子的位置
-    val cols = stones.mapNotNull { if (it.size >= 1) it[0] as? Int else null }
-    val rows = stones.mapNotNull { if (it.size >= 2) it[1] as? Int else null }
+    // 收集初始棋子的位置（用可变列表以便后续 add）
+    val cols = stones.mapNotNull { if (it.size >= 1) it.get(0) else null }.toMutableList()
+    val rows = stones.mapNotNull { if (it.size >= 2) it.get(1) else null }.toMutableList()
 
     // 加上 answer 坐标
     val answer = problem.answer
