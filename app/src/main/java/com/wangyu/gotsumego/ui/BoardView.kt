@@ -38,6 +38,13 @@ class BoardView @JvmOverloads constructor(
     
     var onStoneClickListener: ((Int) -> Unit)? = null
     
+    // 局部放大参数
+    var zoomEnabled: Boolean = false
+    var zoomMinCol: Int = 0
+    var zoomMaxCol: Int = 18
+    var zoomMinRow: Int = 0
+    var zoomMaxRow: Int = 18
+    
     private val lineColor = context.getColor(R.color.board_line)
     private val hintColor = context.getColor(R.color.hint_point)
     
@@ -90,6 +97,11 @@ class BoardView @JvmOverloads constructor(
     private var stoneRadius = 0f
     private var starPointRadius = 0f
     
+    // 缩放和平移参数
+    private var scale = 1f
+    private var offsetX = 0f
+    private var offsetY = 0f
+    
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val width = MeasureSpec.getSize(widthMeasureSpec)
         val height = MeasureSpec.getSize(heightMeasureSpec)
@@ -103,13 +115,40 @@ class BoardView @JvmOverloads constructor(
     }
     
     private fun calculateDimensions() {
-        val size = min(width, height)
-        val availableSize = size - 2 * padding
-        if (boardSize > 1) {
-            cellSize = availableSize / (boardSize - 1)
+        val viewSize = min(width, height)
+        val availableSize = viewSize - 2 * padding
+        
+        if (zoomEnabled) {
+            // 局部放大模式：计算缩放比例
+            val zoomCols = zoomMaxCol - zoomMinCol + 1
+            val zoomRows = zoomMaxRow - zoomMinRow + 1
+            val zoomSize = maxOf(zoomCols, zoomRows)
+            
+            if (zoomSize > 1) {
+                cellSize = availableSize / (zoomSize - 1)
+                scale = (boardSize - 1).toFloat() / (zoomSize - 1)
+            } else {
+                cellSize = availableSize
+                scale = 1f
+            }
+            
+            // 计算偏移，使局部区域居中
+            val actualSize = (zoomSize - 1) * cellSize
+            val extraSpace = availableSize - actualSize
+            offsetX = padding - zoomMinCol * cellSize + extraSpace / 2
+            offsetY = padding - zoomMinRow * cellSize + extraSpace / 2
         } else {
-            cellSize = availableSize
+            // 标准模式
+            if (boardSize > 1) {
+                cellSize = availableSize / (boardSize - 1)
+            } else {
+                cellSize = availableSize
+            }
+            scale = 1f
+            offsetX = padding
+            offsetY = padding
         }
+        
         stoneRadius = cellSize * 0.45f
         starPointRadius = cellSize * 0.12f
     }
@@ -174,22 +213,35 @@ class BoardView @JvmOverloads constructor(
         linePaint.color = Color.parseColor("#6B4423")
         linePaint.strokeWidth = 2f
         
-        for (i in 0 until boardSize) {
-            val y = padding + i * cellSize
-            canvas.drawLine(padding, y, padding + (boardSize - 1) * cellSize, y, linePaint)
+        // 只绘制可见区域的网格线
+        val visibleMinCol = if (zoomEnabled) zoomMinCol else 0
+        val visibleMaxCol = if (zoomEnabled) zoomMaxCol else boardSize - 1
+        val visibleMinRow = if (zoomEnabled) zoomMinRow else 0
+        val visibleMaxRow = if (zoomEnabled) zoomMaxRow else boardSize - 1
+        
+        for (i in visibleMinRow..visibleMaxRow) {
+            val y = offsetY + i * cellSize
+            canvas.drawLine(offsetX + visibleMinCol * cellSize, y, offsetX + visibleMaxCol * cellSize, y, linePaint)
         }
         
-        for (i in 0 until boardSize) {
-            val x = padding + i * cellSize
-            canvas.drawLine(x, padding, x, padding + (boardSize - 1) * cellSize, linePaint)
+        for (i in visibleMinCol..visibleMaxCol) {
+            val x = offsetX + i * cellSize
+            canvas.drawLine(x, offsetY + visibleMinRow * cellSize, x, offsetY + visibleMaxRow * cellSize, linePaint)
         }
     }
     
     private fun drawStarPoints(canvas: Canvas) {
         val starPoints = GoBoard.getStarPoints(boardSize)
         for (point in starPoints) {
-            val x = padding + point.col * cellSize
-            val y = padding + point.row * cellSize
+            // 只绘制可见区域的星位
+            if (zoomEnabled) {
+                if (point.col < zoomMinCol || point.col > zoomMaxCol ||
+                    point.row < zoomMinRow || point.row > zoomMaxRow) {
+                    continue
+                }
+            }
+            val x = offsetX + point.col * cellSize
+            val y = offsetY + point.row * cellSize
             canvas.drawCircle(x, y, starPointRadius, starPointPaint)
         }
     }
@@ -200,6 +252,15 @@ class BoardView @JvmOverloads constructor(
         for (i in boardString.indices) {
             val row = i / boardSize
             val col = i % boardSize
+            
+            // 局部放大模式下只绘制可见区域的棋子
+            if (zoomEnabled) {
+                if (col < zoomMinCol || col > zoomMaxCol ||
+                    row < zoomMinRow || row > zoomMaxRow) {
+                    continue
+                }
+            }
+            
             val stone = boardString[i]
             
             if (stone == 'X') {
@@ -211,8 +272,8 @@ class BoardView @JvmOverloads constructor(
     }
     
     private fun drawStone(canvas: Canvas, col: Int, row: Int, stoneColor: StoneColor) {
-        val centerX = padding + col * cellSize
-        val centerY = padding + row * cellSize
+        val centerX = offsetX + col * cellSize
+        val centerY = offsetY + row * cellSize
         
         if (stoneColor == StoneColor.BLACK) {
             canvas.drawCircle(centerX + 2f, centerY + 3f, stoneRadius, shadowPaint)
@@ -278,8 +339,8 @@ class BoardView @JvmOverloads constructor(
     private fun drawLastMoveMarker(canvas: Canvas, index: Int) {
         val col = index % boardSize
         val row = index / boardSize
-        val centerX = padding + col * cellSize
-        val centerY = padding + row * cellSize
+        val centerX = offsetX + col * cellSize
+        val centerY = offsetY + row * cellSize
         
         val stoneColor = getStoneAt(index)
         val markerColor = if (stoneColor == StoneColor.BLACK) {
@@ -299,8 +360,8 @@ class BoardView @JvmOverloads constructor(
     private fun drawHintMarker(canvas: Canvas, index: Int) {
         val col = index % boardSize
         val row = index / boardSize
-        val centerX = padding + col * cellSize
-        val centerY = padding + row * cellSize
+        val centerX = offsetX + col * cellSize
+        val centerY = offsetY + row * cellSize
         
         val hintGradient = RadialGradient(
             centerX, centerY, stoneRadius * 0.6f,
@@ -328,8 +389,9 @@ class BoardView @JvmOverloads constructor(
             val touchX = event.x
             val touchY = event.y
             
-            val col = ((touchX - padding) / cellSize + 0.5f).toInt()
-            val row = ((touchY - padding) / cellSize + 0.5f).toInt()
+            // 将触摸坐标转换为棋盘坐标
+            val col = ((touchX - offsetX) / cellSize + 0.5f).toInt()
+            val row = ((touchY - offsetY) / cellSize + 0.5f).toInt()
             
             if (col in 0 until boardSize && row in 0 until boardSize) {
                 val index = row * boardSize + col
@@ -357,6 +419,28 @@ class BoardView @JvmOverloads constructor(
     fun updateBoard(boardStr: String, lastMove: Int = -1) {
         this.boardString = boardStr
         this.lastMoveIndex = lastMove
+        invalidate()
+    }
+    
+    /**
+     * 设置局部放大区域
+     * @param minCol 最小列号
+     * @param maxCol 最大列号
+     * @param minRow 最小行号
+     * @param maxRow 最大行号
+     */
+    fun setZoomArea(minCol: Int, maxCol: Int, minRow: Int, maxRow: Int) {
+        if (minCol == 0 && maxCol == boardSize - 1 && minRow == 0 && maxRow == boardSize - 1) {
+            // 全盘显示
+            zoomEnabled = false
+        } else {
+            zoomEnabled = true
+            zoomMinCol = maxOf(0, minCol)
+            zoomMaxCol = minOf(boardSize - 1, maxCol)
+            zoomMinRow = maxOf(0, minRow)
+            zoomMaxRow = minOf(boardSize - 1, maxRow)
+        }
+        calculateDimensions()
         invalidate()
     }
 }
