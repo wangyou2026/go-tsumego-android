@@ -128,8 +128,8 @@ fun JsonProblem.toProblem(): Problem {
         } else null
     } ?: emptyList()
     
-    // 计算局部放大区域
-    val (zoomMinCol, zoomMaxCol, zoomMinRow, zoomMaxRow) = calculateZoomArea(stoneList, boardSize)
+    // 计算局部放大区域（同时考虑初始棋子和答案/着法）
+    val (zoomMinCol, zoomMaxCol, zoomMinRow, zoomMaxRow) = calculateZoomArea(this)
     
     return Problem(
         id = id,
@@ -152,28 +152,42 @@ fun JsonProblem.toProblem(): Problem {
 }
 
 /**
- * 计算局部放大区域
+ * 计算局部放大区域（同时包含初始棋子和答案/着法）
  * 返回 (minCol, maxCol, minRow, maxRow)
  */
-private fun calculateZoomArea(stones: List<Stone>, boardSize: Int): Tuple4<Int, Int, Int, Int> {
-    if (stones.isEmpty()) return Tuple4(0, boardSize - 1, 0, boardSize - 1)
-    
-    // 找到棋子的边界
-    val cols = stones.map { it.col }
-    val rows = stones.map { it.row }
-    
-    var minCol = cols.min()
-    var maxCol = cols.max()
-    var minRow = rows.min()
-    var maxRow = rows.max()
-    
-    // 添加边距（2格）
+private fun calculateZoomArea(problem: JsonProblem): Tuple4<Int, Int, Int, Int> {
+    val stones = problem.stones
+    if (stones.isEmpty()) return Tuple4(0, problem.boardSize - 1, 0, problem.boardSize - 1)
+
+    // 收集初始棋子的位置
+    val cols = stones.mapNotNull { if (it.size >= 1) it[0] as? Int else null }
+    val rows = stones.mapNotNull { if (it.size >= 2) it[1] as? Int else null }
+
+    // 加上 answer 坐标
+    val answer = problem.answer
+    if (answer.size >= 2) {
+        cols.add(answer[0])
+        rows.add(answer[1])
+    }
+
+    // 加上前 5 手着法坐标（确保答案和着法序列也在可见区域内）
+    val solutionMoves = problem.solutionMoves ?: emptyList<Any>()
+    for (move in solutionMoves.take(5)) {
+        if (move is List<*> && move.size >= 2) {
+            (move[0] as? Int)?.let { cols.add(it) }
+            (move[1] as? Int)?.let { rows.add(it) }
+        }
+    }
+
+    if (cols.isEmpty() || rows.isEmpty()) return Tuple4(0, problem.boardSize - 1, 0, problem.boardSize - 1)
+
+    val boardSize = problem.boardSize
     val margin = 2
-    minCol = maxOf(0, minCol - margin)
-    maxCol = minOf(boardSize - 1, maxCol + margin)
-    minRow = maxOf(0, minRow - margin)
-    maxRow = minOf(boardSize - 1, maxRow + margin)
-    
+    val minCol = maxOf(0, cols.min()!! - margin)
+    val maxCol = minOf(boardSize - 1, cols.max()!! + margin)
+    val minRow = maxOf(0, rows.min()!! - margin)
+    val maxRow = minOf(boardSize - 1, rows.max()!! + margin)
+
     return Tuple4(minCol, maxCol, minRow, maxRow)
 }
 
