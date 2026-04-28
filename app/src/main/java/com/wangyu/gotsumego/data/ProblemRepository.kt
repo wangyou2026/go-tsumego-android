@@ -3,7 +3,10 @@ package com.wangyu.gotsumego.data
 import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import java.io.BufferedReader
 import java.io.IOException
+import java.io.InputStreamReader
+import java.util.zip.GZIPInputStream
 
 class ProblemRepository(private val context: Context) {
     
@@ -31,7 +34,37 @@ class ProblemRepository(private val context: Context) {
         }
     }
     
+    /**
+     * 加载JSON：优先从压缩文件读取，失败则降级到普通JSON
+     */
     private fun loadJsonFromAssets(): String? {
+        // 优先尝试压缩格式
+        loadCompressedJson()?.let { return it }
+        // 降级到普通JSON
+        return loadNormalJson()
+    }
+    
+    /**
+     * 加载压缩格式（problems_compressed.bin）
+     */
+    private fun loadCompressedJson(): String? {
+        return try {
+            context.assets.open("problems_compressed.bin").use { inputStream ->
+                GZIPInputStream(inputStream).use { gzip ->
+                    BufferedReader(InputStreamReader(gzip, "UTF-8")).use { reader ->
+                        reader.readText()
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+    
+    /**
+     * 加载普通JSON格式
+     */
+    private fun loadNormalJson(): String? {
         return try {
             context.assets.open("problems_full.json").bufferedReader().use { it.readText() }
         } catch (e: IOException) {
