@@ -131,25 +131,28 @@ data class SolutionMove(
 }
 
 fun JsonProblem.toProblem(): Problem {
+    // JSON 里存的是 display 坐标（row 0 在顶部），不需要翻转
     val stoneList = stones.mapNotNull { stoneData ->
         if (stoneData.size >= 3) {
             Stone(
                 col = stoneData[0],
-                row = boardSize - 1 - stoneData[1],
+                row = stoneData[1],  // 直接使用，不翻转
                 color = StoneColor.fromValue(stoneData[2])
             )
         } else null
     }
     
+    // 答案坐标也是 display 坐标
     val moves = if (answer.size >= 2) {
-        listOf(Position(col = answer[0], row = boardSize - 1 - answer[1]))
+        listOf(Position(col = answer[0], row = answer[1]))  // 直接使用，不翻转
     } else emptyList()
     
+    // solutionMoves: [col, row, color] 格式，直接使用不翻转
     val solutionMoveList = solutionMoves?.mapNotNull { move ->
         if (move.size >= 3) {
             SolutionMove(
                 col = move[0],
-                row = boardSize - 1 - move[1],
+                row = move[1],  // 直接使用，不翻转
                 color = StoneColor.fromValue(move[2])
             )
         } else null
