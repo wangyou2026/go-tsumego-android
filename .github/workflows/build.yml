@@ -24,7 +24,7 @@ jobs:
     - name: Build Debug APK
       run: |
         export GRADLE_USER_HOME="$HOME/.gradle"
-        ./gradlew assembleDebug --no-daemon --no-build-cache --no-configuration-cache
+        ./gradlew assembleDebug --no-daemon --no-build-cache --no-configuration-cache --info 2>&1 | tail -300
     
     - name: Build Release APK
       run: |
