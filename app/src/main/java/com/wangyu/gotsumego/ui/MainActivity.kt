@@ -29,12 +29,12 @@ class MainActivity : AppCompatActivity() {
     private fun setupViews() {
         // 全部题目
         val total = repository.getTotalCount()
-        binding.tvAllCount.text = "共 ${total} 题"
+        binding.tvAllCount.text = "${String.format("%,d", total)} 道题目"
         binding.cardAllProblems.setOnClickListener {
             openProblemList(null, "全部题目")
         }
         
-        // 书籍分类列表 - 2列网格布局
+        // 书籍分类网格
         val bookStats = repository.getBookStatistics()
         binding.rvDifficulties.layoutManager = GridLayoutManager(this, 2)
         binding.rvDifficulties.adapter = BookAdapter(bookStats) { book ->
@@ -71,7 +71,7 @@ class MainActivity : AppCompatActivity() {
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val (book, count) = books[position]
             holder.tvTitle.text = book
-            holder.tvCount.text = "$count 题"
+            holder.tvCount.text = "${String.format("%,d", count)} 题"
             holder.itemView.setOnClickListener { onItemClick(book) }
         }
         

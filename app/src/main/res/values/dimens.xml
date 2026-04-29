@@ -1,46 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Spacing - 大量留白，呼吸感 -->
-    <dimen name="padding_tiny">4dp</dimen>
     <dimen name="padding_small">8dp</dimen>
     <dimen name="padding_medium">16dp</dimen>
     <dimen name="padding_large">24dp</dimen>
-    <dimen name="padding_xlarge">32dp</dimen>
-    
-    <!-- Card dimensions -->
-    <dimen name="card_margin">8dp</dimen>
-    <dimen name="card_margin_large">16dp</dimen>
-    <dimen name="card_padding">20dp</dimen>
-    <dimen name="card_corner_radius">20dp</dimen>
-    <dimen name="card_elevation">4dp</dimen>
-    
-    <!-- Board -->
-    <dimen name="board_margin">20dp</dimen>
-    <dimen name="board_corner_radius">8dp</dimen>
-    <dimen name="board_elevation">8dp</dimen>
-    
-    <!-- Text sizes -->
+    <dimen name="card_margin">6dp</dimen>
+    <dimen name="card_padding">16dp</dimen>
+    <dimen name="board_margin">12dp</dimen>
     <dimen name="text_size_small">12sp</dimen>
     <dimen name="text_size_medium">14sp</dimen>
     <dimen name="text_size_large">16sp</dimen>
     <dimen name="text_size_title">20sp</dimen>
-    <dimen name="text_size_header">28sp</dimen>
-    
-    <!-- Buttons -->
-    <dimen name="button_height">52dp</dimen>
-    <dimen name="button_corner_radius">26dp</dimen>
-    <dimen name="button_icon_size">24dp</dimen>
-    
-    <!-- Icons -->
+    <dimen name="button_height">48dp</dimen>
     <dimen name="icon_size">24dp</dimen>
-    <dimen name="icon_size_large">48dp</dimen>
-    
-    <!-- Badge -->
-    <dimen name="badge_corner_radius">12dp</dimen>
-    <dimen name="badge_padding_horizontal">12dp</dimen>
-    <dimen name="badge_padding_vertical">6dp</dimen>
-    
-    <!-- Grid -->
-    <dimen name="grid_item_height">140dp</dimen>
-    <dimen name="grid_spacing">12dp</dimen>
+    <dimen name="card_corner_radius">16dp</dimen>
+    <dimen name="badge_corner_radius">8dp</dimen>
 </resources>

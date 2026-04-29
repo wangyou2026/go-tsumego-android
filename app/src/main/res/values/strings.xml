@@ -1,47 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">围棋死活题</string>
-    <string name="app_title">棋</string>
-    <string name="app_subtitle">围棋死活题</string>
-    
-    <!-- Problem types - kept for reference, not used in UI -->
     <string name="life_death">死活题</string>
     <string name="tesuji">手筋题</string>
     <string name="yose">官子题</string>
     <string name="capture">吃子题</string>
-    
-    <!-- Main screen -->
     <string name="all_problems">全部题目</string>
-    <string name="all_books">书籍</string>
     <string name="difficulty">难度</string>
-    <string name="total_count">共 %d 题</string>
-    
-    <!-- Problem screen -->
     <string name="problem_number">第 %d 题</string>
-    <string name="problem_progress">%d / %d</string>
     <string name="hint">提示</string>
-    <string name="show_hint">查看提示</string>
+    <string name="show_hint">提示</string>
     <string name="next_problem">下一题</string>
     <string name="prev_problem">上一题</string>
-    <string name="try_move">试下</string>
-    <string name="correct">正确!</string>
-    <string name="incorrect">不正确，再试一次</string>
-    
-    <!-- To play -->
-    <string name="black_to_play">黑先</string>
-    <string name="white_to_play">白先</string>
+    <string name="correct">正确！</string>
+    <string name="incorrect">再试试</string>
+    <string name="black_to_play">黑方落子</string>
+    <string name="white_to_play">白方落子</string>
     <string name="your_turn">轮到你下</string>
-    <string name="problem_solved">题目已解决</string>
-    
-    <!-- Board -->
+    <string name="problem_solved">题目已解决！</string>
+    <string name="total_problems">共 %d 题</string>
     <string name="board_size">%d 路棋盘</string>
     <string name="back">返回</string>
     <string name="reset">重置</string>
-    <string name="show_answer">显示答案</string>
-    <string name="answer_correct">回答正确</string>
-    <string name="answer_wrong">回答错误</string>
-    
-    <!-- Actions -->
-    <string name="start_practice">开始练习</string>
-    <string name="continue_practice">继续练习</string>
+    <string name="show_answer">答案</string>
+    <string name="answer_correct">正确</string>
+    <string name="answer_wrong">错误</string>
+    <string name="try_play">试下</string>
+    <string name="book_section">题库</string>
 </resources>

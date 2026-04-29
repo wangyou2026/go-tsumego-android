@@ -7,154 +7,132 @@
     android:orientation="vertical"
     android:background="@color/background">
 
-    <!-- 顶部栏 - 半透明毛玻璃效果 -->
+    <!-- 顶部栏 -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="56dp"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:background="@color/glass_background"
-        android:paddingTop="44dp"
-        android:paddingBottom="12dp"
+        android:background="@color/primary_dark"
         android:paddingHorizontal="@dimen/padding_small">
 
         <ImageButton
             android:id="@+id/btnBack"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:src="@drawable/ic_arrow_back"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="@string/back"
-            app:tint="@color/primary" />
+            app:tint="@color/white" />
 
         <TextView
             android:id="@+id/tvTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textSize="17sp"
-            android:textColor="@color/text_primary"
+            android:textSize="@dimen/text_size_title"
+            android:textColor="@color/white"
             android:textStyle="bold"
             android:gravity="center"
-            android:maxLines="1"
-            android:ellipsize="end"
-            tools:text="围棋技巧大全" />
+            tools:text="官子谱" />
 
         <ImageButton
             android:id="@+id/btnReset"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:src="@drawable/ic_refresh"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="@string/reset"
-            app:tint="@color/primary" />
+            app:tint="@color/accent" />
 
     </LinearLayout>
 
-    <!-- 题目信息区 - 精致小徽章风格 -->
+    <!-- 题目信息 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:paddingVertical="@dimen/padding_medium"
         android:paddingHorizontal="@dimen/padding_large"
+        android:paddingVertical="@dimen/padding_medium"
         android:gravity="center_vertical">
 
-        <!-- 题目序号徽章 -->
         <TextView
             android:id="@+id/tvProblemNumber"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="14sp"
-            android:textColor="@color/white"
-            android:background="@drawable/bg_badge_black"
-            android:paddingHorizontal="14dp"
-            android:paddingVertical="6dp"
-            tools:text="1 / 1708" />
+            android:textSize="15sp"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold"
+            tools:text="第 1/1708 题" />
 
         <View
             android:layout_width="0dp"
             android:layout_height="1dp"
             android:layout_weight="1" />
 
-        <!-- 先手方徽章 -->
         <TextView
             android:id="@+id/tvToPlay"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="32dp"
+            android:gravity="center"
+            android:paddingHorizontal="16dp"
             android:textSize="14sp"
-            android:textColor="@color/primary"
-            android:background="@drawable/bg_to_play_badge"
-            android:paddingHorizontal="14dp"
-            android:paddingVertical="6dp"
-            tools:text="白先" />
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:background="@drawable/bg_to_play_badge_dark"
+            tools:text="黑先" />
 
     </LinearLayout>
 
-    <!-- 棋盘区域 - 优雅边框阴影 -->
-    <androidx.cardview.widget.CardView
+    <!-- 棋盘区域 -->
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginHorizontal="@dimen/board_margin"
-        app:cardCornerRadius="@dimen/board_corner_radius"
-        app:cardElevation="@dimen/board_elevation"
-        app:cardBackgroundColor="@color/card_background">
+        android:padding="@dimen/board_margin">
 
         <com.wangyu.gotsumego.ui.BoardView
             android:id="@+id/boardView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:padding="8dp" />
+            android:layout_gravity="center" />
 
-    </androidx.cardview.widget.CardView>
+    </FrameLayout>
 
-    <!-- 反馈区域 - 更生动的反馈 -->
-    <LinearLayout
+    <!-- 反馈区域 -->
+    <TextView
+        android:id="@+id/tvFeedback"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:padding="@dimen/padding_medium"
+        android:textSize="@dimen/text_size_large"
+        android:textStyle="bold"
         android:gravity="center"
-        android:paddingTop="@dimen/padding_medium"
-        android:paddingHorizontal="@dimen/padding_large">
+        android:visibility="gone"
+        tools:text="完成!"
+        tools:visibility="visible" />
 
-        <!-- 答题反馈 -->
-        <TextView
-            android:id="@+id/tvFeedback"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:visibility="gone"
-            tools:text="正确!"
-            tools:textColor="@color/correct_green"
-            tools:visibility="visible" />
+    <!-- 提示文字 -->
+    <TextView
+        android:id="@+id/tvHint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/padding_small"
+        android:textSize="@dimen/text_size_medium"
+        android:textColor="@color/accent"
+        android:gravity="center"
+        android:visibility="gone"
+        tools:text="解答说明"
+        tools:visibility="visible" />
 
-        <!-- 提示文字 -->
-        <TextView
-            android:id="@+id/tvHint"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="14sp"
-            android:textColor="@color/hint_point"
-            android:gravity="center"
-            android:visibility="gone"
-            android:layout_marginTop="@dimen/padding_small"
-            tools:text="从角部开始进攻"
-            tools:visibility="visible" />
-
-    </LinearLayout>
-
-    <!-- 底部按钮区 -->
+    <!-- 底部按钮 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="@dimen/padding_medium"
         android:background="@color/card_background"
-        android:gravity="center">
+        android:gravity="center_vertical">
 
         <Button
             android:id="@+id/btnPrev"
@@ -163,18 +141,20 @@
             android:layout_weight="1"
             android:text="@string/prev_problem"
             android:background="@drawable/button_outline_background"
-            android:textColor="@color/accent"
-            android:layout_marginEnd="6dp" />
+            android:textColor="@color/primary"
+            android:layout_marginEnd="6dp"
+            android:textSize="14sp" />
 
         <Button
             android:id="@+id/btnHint"
             android:layout_width="0dp"
             android:layout_height="@dimen/button_height"
             android:layout_weight="1"
-            android:text="@string/try_move"
-            android:background="@drawable/button_outline_background"
-            android:textColor="@color/accent"
-            android:layout_marginHorizontal="6dp" />
+            android:text="@string/show_hint"
+            android:background="@drawable/bg_to_play_badge"
+            android:textColor="@color/white"
+            android:layout_marginHorizontal="6dp"
+            android:textSize="14sp" />
 
         <Button
             android:id="@+id/btnNext"
@@ -183,8 +163,9 @@
             android:layout_weight="1"
             android:text="@string/next_problem"
             android:background="@drawable/button_background"
-            android:textColor="@color/primary"
-            android:layout_marginStart="6dp" />
+            android:textColor="@color/white"
+            android:layout_marginStart="6dp"
+            android:textSize="14sp" />
 
     </LinearLayout>
 
