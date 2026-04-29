@@ -4,59 +4,51 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="@dimen/card_margin"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="2dp"
+    android:layout_marginBottom="@dimen/grid_spacing"
+    app:cardCornerRadius="@dimen/card_corner_radius"
+    app:cardElevation="@dimen/card_elevation"
     app:cardBackgroundColor="@color/card_background">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:padding="@dimen/card_padding"
-        android:gravity="center_vertical">
+        android:gravity="center">
 
+        <!-- 书籍图标 -->
         <TextView
-            android:id="@+id/tvDifficultyLevel"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:textSize="18sp"
-            android:textColor="@color/white"
-            android:background="@drawable/circle_difficulty"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:text="📚"
+            android:textSize="28sp"
             android:gravity="center"
-            tools:text="1" />
+            android:background="@drawable/bg_badge_gold"
+            android:backgroundTint="@color/background_dark" />
 
-        <LinearLayout
-            android:layout_width="0dp"
+        <!-- 书名 -->
+        <TextView
+            android:id="@+id/tvDifficultyTitle"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_marginStart="@dimen/padding_medium">
+            android:textSize="15sp"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:layout_marginTop="12dp"
+            tools:text="围棋技巧大全" />
 
-            <TextView
-                android:id="@+id/tvDifficultyTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/text_size_medium"
-                android:textColor="@color/text_primary"
-                android:textStyle="bold"
-                tools:text="难度 1" />
-
-            <TextView
-                android:id="@+id/tvProblemCount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/text_size_small"
-                android:textColor="@color/text_secondary"
-                tools:text="共 20 题" />
-
-        </LinearLayout>
-
-        <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_arrow_forward"
-            android:contentDescription="选择" />
+        <!-- 题数 -->
+        <TextView
+            android:id="@+id/tvProblemCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:textColor="@color/text_secondary"
+            android:layout_marginTop="4dp"
+            tools:text="120 题" />
 
     </LinearLayout>
 

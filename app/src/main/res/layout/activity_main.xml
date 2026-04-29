@@ -10,29 +10,53 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="@dimen/padding_medium">
+        android:orientation="vertical">
 
-        <!-- 标题 -->
-        <TextView
+        <!-- 顶部标题区域 - 渐变背景 -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/app_name"
-            android:textSize="28sp"
-            android:textColor="@color/primary_dark"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:layout_marginBottom="@dimen/padding_large" />
+            android:orientation="vertical"
+            android:background="@drawable/bg_gradient_top"
+            android:paddingTop="48dp"
+            android:paddingBottom="32dp"
+            android:paddingHorizontal="@dimen/padding_large">
 
-        <!-- 全部题目卡片 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/app_title"
+                android:textSize="56sp"
+                android:textColor="@color/accent"
+                android:textStyle="bold"
+                android:fontFamily="serif"
+                android:shadowColor="#40000000"
+                android:shadowDx="2"
+                android:shadowDy="2"
+                android:shadowRadius="4" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/app_subtitle"
+                android:textSize="18sp"
+                android:textColor="@color/text_on_primary"
+                android:alpha="0.9"
+                android:layout_marginTop="-8dp"
+                android:letterSpacing="0.15" />
+
+        </LinearLayout>
+
+        <!-- 全部题目卡片 - 更醒目 -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cardAllProblems"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/card_margin"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="4dp"
-            app:cardBackgroundColor="@color/card_background">
+            android:layout_marginHorizontal="@dimen/card_margin_large"
+            android:layout_marginTop="-16dp"
+            app:cardCornerRadius="@dimen/card_corner_radius"
+            app:cardElevation="@dimen/card_elevation"
+            app:cardBackgroundColor="@color/accent">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -41,317 +65,66 @@
                 android:padding="@dimen/card_padding"
                 android:gravity="center_vertical">
 
-                <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_launcher_foreground"
-                    android:contentDescription="@string/all_problems" />
-
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:layout_marginStart="@dimen/padding_medium">
+                    android:orientation="vertical">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/all_problems"
-                        android:textSize="@dimen/text_size_large"
-                        android:textColor="@color/text_primary"
+                        android:textSize="20sp"
+                        android:textColor="@color/primary"
                         android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/tvAllCount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textSize="@dimen/text_size_medium"
-                        android:textColor="@color/text_secondary"
-                        tools:text="共 100 题" />
+                        android:textSize="14sp"
+                        android:textColor="@color/primary"
+                        android:alpha="0.8"
+                        tools:text="共 1708 题" />
 
                 </LinearLayout>
 
                 <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
                     android:src="@drawable/ic_arrow_forward"
+                    app:tint="@color/primary"
                     android:contentDescription="@string/all_problems" />
 
             </LinearLayout>
 
         </androidx.cardview.widget.CardView>
 
-        <!-- 分类标题: 题目类型 -->
+        <!-- 书籍分类标题 -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="题目分类"
-            android:textSize="@dimen/text_size_large"
+            android:text="@string/all_books"
+            android:textSize="16sp"
             android:textColor="@color/text_secondary"
-            android:layout_marginTop="@dimen/padding_medium"
-            android:layout_marginBottom="@dimen/padding_small" />
+            android:layout_marginTop="@dimen/padding_xlarge"
+            android:layout_marginBottom="@dimen/padding_medium"
+            android:layout_marginHorizontal="@dimen/card_margin_large" />
 
-        <!-- 死活题 -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/cardLifeDeath"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/card_margin"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="4dp"
-            app:cardBackgroundColor="@color/card_background">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="@dimen/card_padding"
-                android:gravity="center_vertical">
-
-                <TextView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:text="死"
-                    android:textSize="24sp"
-                    android:textColor="@color/white"
-                    android:background="@drawable/circle_life_death"
-                    android:gravity="center" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:layout_marginStart="@dimen/padding_medium">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/life_death"
-                        android:textSize="@dimen/text_size_large"
-                        android:textColor="@color/text_primary"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/tvLifeDeathCount"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="@dimen/text_size_medium"
-                        android:textColor="@color/text_secondary"
-                        tools:text="共 50 题" />
-
-                </LinearLayout>
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_arrow_forward"
-                    android:contentDescription="@string/life_death" />
-
-            </LinearLayout>
-
-        </androidx.cardview.widget.CardView>
-
-        <!-- 手筋题 -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/cardTesuji"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/card_margin"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="4dp"
-            app:cardBackgroundColor="@color/card_background">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="@dimen/card_padding"
-                android:gravity="center_vertical">
-
-                <TextView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:text="筋"
-                    android:textSize="24sp"
-                    android:textColor="@color/white"
-                    android:background="@drawable/circle_tesuji"
-                    android:gravity="center" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:layout_marginStart="@dimen/padding_medium">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/tesuji"
-                        android:textSize="@dimen/text_size_large"
-                        android:textColor="@color/text_primary"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/tvTesujiCount"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="@dimen/text_size_medium"
-                        android:textColor="@color/text_secondary"
-                        tools:text="共 30 题" />
-
-                </LinearLayout>
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_arrow_forward"
-                    android:contentDescription="@string/tesuji" />
-
-            </LinearLayout>
-
-        </androidx.cardview.widget.CardView>
-
-        <!-- 官子题 -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/cardYose"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/card_margin"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="4dp"
-            app:cardBackgroundColor="@color/card_background">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="@dimen/card_padding"
-                android:gravity="center_vertical">
-
-                <TextView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:text="官"
-                    android:textSize="24sp"
-                    android:textColor="@color/white"
-                    android:background="@drawable/circle_yose"
-                    android:gravity="center" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:layout_marginStart="@dimen/padding_medium">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/yose"
-                        android:textSize="@dimen/text_size_large"
-                        android:textColor="@color/text_primary"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/tvYoseCount"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="@dimen/text_size_medium"
-                        android:textColor="@color/text_secondary"
-                        tools:text="共 20 题" />
-
-                </LinearLayout>
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_arrow_forward"
-                    android:contentDescription="@string/yose" />
-
-            </LinearLayout>
-
-        </androidx.cardview.widget.CardView>
-
-        <!-- 吃子题 -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/cardCapture"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/card_margin"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="4dp"
-            app:cardBackgroundColor="@color/card_background">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="@dimen/card_padding"
-                android:gravity="center_vertical">
-
-                <TextView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:text="吃"
-                    android:textSize="24sp"
-                    android:textColor="@color/white"
-                    android:background="@drawable/circle_capture"
-                    android:gravity="center" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:layout_marginStart="@dimen/padding_medium">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/capture"
-                        android:textSize="@dimen/text_size_large"
-                        android:textColor="@color/text_primary"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/tvCaptureCount"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="@dimen/text_size_medium"
-                        android:textColor="@color/text_secondary"
-                        tools:text="共 20 题" />
-
-                </LinearLayout>
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_arrow_forward"
-                    android:contentDescription="@string/capture" />
-
-            </LinearLayout>
-
-        </androidx.cardview.widget.CardView>
-
-        <!-- 难度分类标题 -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="按难度"
-            android:textSize="@dimen/text_size_large"
-            android:textColor="@color/text_secondary"
-            android:layout_marginTop="@dimen/padding_medium"
-            android:layout_marginBottom="@dimen/padding_small" />
-
-        <!-- 难度选择RecyclerView -->
+        <!-- 书籍分类 RecyclerView - 2列网格 -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvDifficulties"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingHorizontal="@dimen/card_margin_large"
+            android:clipToPadding="false"
             android:nestedScrollingEnabled="false" />
+
+        <!-- 底部安全区 -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="32dp" />
 
     </LinearLayout>
 

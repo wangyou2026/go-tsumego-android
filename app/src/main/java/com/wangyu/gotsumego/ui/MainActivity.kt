@@ -7,7 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.wangyu.gotsumego.R
 import com.wangyu.gotsumego.TsumegoApp
@@ -29,14 +29,14 @@ class MainActivity : AppCompatActivity() {
     private fun setupViews() {
         // 全部题目
         val total = repository.getTotalCount()
-        binding.tvAllCount.text = "共${total}题"
+        binding.tvAllCount.text = "共 ${total} 题"
         binding.cardAllProblems.setOnClickListener {
             openProblemList(null, "全部题目")
         }
         
-        // 书籍分类列表
+        // 书籍分类列表 - 2列网格布局
         val bookStats = repository.getBookStatistics()
-        binding.rvDifficulties.layoutManager = LinearLayoutManager(this)
+        binding.rvDifficulties.layoutManager = GridLayoutManager(this, 2)
         binding.rvDifficulties.adapter = BookAdapter(bookStats) { book ->
             openProblemList(book, book)
         }
@@ -70,8 +70,8 @@ class MainActivity : AppCompatActivity() {
         
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val (book, count) = books[position]
-            holder.tvTitle.text = "📚 $book"
-            holder.tvCount.text = "共${count}题"
+            holder.tvTitle.text = book
+            holder.tvCount.text = "$count 题"
             holder.itemView.setOnClickListener { onItemClick(book) }
         }
         

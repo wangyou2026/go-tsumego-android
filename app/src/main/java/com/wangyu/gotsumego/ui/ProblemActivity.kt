@@ -36,7 +36,7 @@ class ProblemActivity : AppCompatActivity() {
         setContentView(binding.root)
         
         filterBook = intent.getStringExtra(EXTRA_BOOK)
-        binding.tvTitle.text = intent.getStringExtra(EXTRA_TITLE) ?: "做题"
+        binding.tvTitle.text = intent.getStringExtra(EXTRA_TITLE) ?: "围棋死活题"
         
         loadProblems()
         setupViews()
@@ -71,8 +71,8 @@ class ProblemActivity : AppCompatActivity() {
         
         val problem = problemList[currentIndex]
         
-        // 显示题目信息
-        binding.tvProblemNumber.text = "第 ${currentIndex + 1}/${problemList.size} 题"
+        // 显示题目信息 - 新格式
+        binding.tvProblemNumber.text = "${currentIndex + 1} / ${problemList.size}"
         binding.tvToPlay.text = if (problem.toPlay == StoneColor.WHITE) "白先" else "黑先"
         binding.tvToPlay.visibility = View.VISIBLE
         
@@ -135,11 +135,11 @@ class ProblemActivity : AppCompatActivity() {
                 if (nextIsOpponent && currentSolutionIndex < solutionMoves.size) {
                     binding.boardView.postDelayed({ autoPlayOpponent() }, 500)
                 } else {
-                    showFeedback("正确！", true)
+                    showFeedback("正确!", true)
                 }
             }
         } else {
-            showFeedback("错误", false)
+            showFeedback("不正确", false)
         }
     }
     
@@ -181,7 +181,7 @@ class ProblemActivity : AppCompatActivity() {
     }
     
     private fun showSuccess() {
-        binding.tvFeedback.text = "完成！"
+        binding.tvFeedback.text = getString(R.string.problem_solved)
         binding.tvFeedback.setTextColor(ContextCompat.getColor(this, R.color.correct_green))
         binding.tvFeedback.visibility = View.VISIBLE
         
@@ -191,7 +191,7 @@ class ProblemActivity : AppCompatActivity() {
             binding.tvHint.visibility = View.VISIBLE
         }
         
-        binding.btnHint.text = "下一题"
+        binding.btnHint.text = getString(R.string.next_problem)
     }
     
     private fun showFeedback(message: String, isCorrect: Boolean) {
