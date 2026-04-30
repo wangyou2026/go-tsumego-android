@@ -246,6 +246,9 @@ class ProblemActivity : AppCompatActivity() {
         binding.tvTrialMode.visibility = View.VISIBLE
         binding.btnExitTrial.visibility = View.VISIBLE
         binding.btnReset.text = "重置题目"
+        
+        // 显示醒目的Toast提示
+        Toast.makeText(this, "点错了！已进入试下模式，可自由落子", Toast.LENGTH_LONG).show()
     }
     
     private fun exitTrialMode() {

@@ -57,15 +57,35 @@
                     android:textColor="#8E8E93"
                     tools:text="17,618 道题目" />
 
-                <ImageButton
+                <!-- 改进的设置按钮：更大的尺寸 + 圆形背景 + 图标 + 文字 -->
+                <LinearLayout
                     android:id="@+id/btnSettings"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:src="@drawable/ic_settings"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@string/settings"
-                    app:tint="@color/accent"
-                    android:layout_marginEnd="12dp" />
+                    android:layout_width="wrap_content"
+                    android:layout_height="44dp"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:background="@drawable/bg_settings_button"
+                    android:paddingHorizontal="12dp"
+                    android:layout_marginEnd="8dp"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_settings"
+                        app:tint="@color/accent" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="设置"
+                        android:textSize="14sp"
+                        android:textColor="@color/accent"
+                        android:textStyle="bold"
+                        android:layout_marginStart="6dp" />
+
+                </LinearLayout>
 
                 <TextView
                     android:id="@+id/cardAllProblems"
