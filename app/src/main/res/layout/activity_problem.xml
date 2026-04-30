@@ -37,6 +37,15 @@
             tools:text="官子谱" />
 
         <ImageButton
+            android:id="@+id/btnSettings"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_settings"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/settings"
+            app:tint="@color/accent" />
+
+        <ImageButton
             android:id="@+id/btnReset"
             android:layout_width="48dp"
             android:layout_height="48dp"
@@ -46,6 +55,21 @@
             app:tint="@color/accent" />
 
     </LinearLayout>
+
+    <!-- 试下模式指示器 -->
+    <TextView
+        android:id="@+id/tvTrialMode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/accent"
+        android:text="▼ 试下中 - 自由落子模式"
+        android:textSize="14sp"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:paddingVertical="8dp"
+        android:visibility="gone"
+        tools:visibility="visible" />
 
     <!-- 题目信息 -->
     <LinearLayout
@@ -96,6 +120,22 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="center" />
+
+        <!-- 退出试下按钮 -->
+        <Button
+            android:id="@+id/btnExitTrial"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:layout_margin="8dp"
+            android:text="退出试下"
+            android:textSize="12sp"
+            android:textColor="@color/white"
+            android:background="@drawable/button_background"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="6dp"
+            android:visibility="gone"
+            tools:visibility="visible" />
 
     </FrameLayout>
 

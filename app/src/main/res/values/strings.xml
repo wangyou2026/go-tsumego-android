@@ -27,4 +27,12 @@
     <string name="answer_wrong">错误</string>
     <string name="try_play">试下</string>
     <string name="book_section">题库</string>
+    <string name="settings">设置</string>
+    <string name="sound_effects">落子音效</string>
+    <string name="sound_effects_desc">落子时播放音效</string>
+    <string name="trial_mode">试下模式</string>
+    <string name="trial_mode_desc">点错时自动进入试下模式</string>
+    <string name="trial_mode_active">试下中</string>
+    <string name="exit_trial_mode">退出试下</string>
+    <string name="settings_title">设置</string>
 </resources>

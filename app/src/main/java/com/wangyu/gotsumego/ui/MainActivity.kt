@@ -27,6 +27,11 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun setupViews() {
+        // 设置按钮
+        binding.btnSettings.setOnClickListener {
+            startActivity(android.content.Intent(this, SettingsActivity::class.java))
+        }
+        
         // 全部题目
         val total = repository.getTotalCount()
         binding.tvAllCount.text = "${String.format("%,d", total)} 道题目"

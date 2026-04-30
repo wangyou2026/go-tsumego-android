@@ -45,6 +45,19 @@ class BoardView @JvmOverloads constructor(
     var zoomMinRow: Int = 0
     var zoomMaxRow: Int = 18
     
+    // 试下模式参数
+    var trialModeEnabled: Boolean = false
+        set(value) {
+            field = value
+            invalidate()
+        }
+    
+    var trialStoneIndices: Set<Int> = emptySet()
+        set(value) {
+            field = value
+            invalidate()
+        }
+    
     private val lineColor = context.getColor(R.color.board_line)
     private val hintColor = context.getColor(R.color.hint_point)
     
@@ -91,7 +104,7 @@ class BoardView @JvmOverloads constructor(
         isAntiAlias = true
     }
     
-    private val padding = 40f
+    private var padding = 0f  // 动态计算，确保边线棋子完整显示
     
     private var cellSize = 0f
     private var stoneRadius = 0f
@@ -111,6 +124,10 @@ class BoardView @JvmOverloads constructor(
     
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
+        // 动态计算padding：至少半个棋子直径，确保边线棋子完整显示
+        // 同时增加一些额外空间让棋盘更大
+        val viewSize = min(w, h)
+        padding = viewSize * 0.05f  // 5%的边距
         calculateDimensions()
     }
     
@@ -264,16 +281,20 @@ class BoardView @JvmOverloads constructor(
             val stone = boardString[i]
             
             if (stone == 'X') {
-                drawStone(canvas, col, row, StoneColor.BLACK)
+                drawStone(canvas, col, row, StoneColor.BLACK, i in trialStoneIndices)
             } else if (stone == 'O') {
-                drawStone(canvas, col, row, StoneColor.WHITE)
+                drawStone(canvas, col, row, StoneColor.WHITE, i in trialStoneIndices)
             }
         }
     }
     
-    private fun drawStone(canvas: Canvas, col: Int, row: Int, stoneColor: StoneColor) {
+    private fun drawStone(canvas: Canvas, col: Int, row: Int, stoneColor: StoneColor, isTrialStone: Boolean = false) {
         val centerX = offsetX + col * cellSize
         val centerY = offsetY + row * cellSize
+        
+        // 试下棋子半透明和特殊样式
+        val alphaMultiplier = if (isTrialStone) 0.6f else 1.0f
+        val trialMarkerRadius = if (isTrialStone) stoneRadius * 0.15f else 0f
         
         if (stoneColor == StoneColor.BLACK) {
             canvas.drawCircle(centerX + 2f, centerY + 3f, stoneRadius, shadowPaint)
@@ -290,10 +311,11 @@ class BoardView @JvmOverloads constructor(
             )
             
             blackStonePaint.shader = blackGradient
+            blackStonePaint.alpha = (255 * alphaMultiplier).toInt()
             canvas.drawCircle(centerX, centerY, stoneRadius, blackStonePaint)
             
             val hlPaint = Paint()
-            hlPaint.color = Color.argb(80, 255, 255, 255)
+            hlPaint.color = Color.argb((80 * alphaMultiplier).toInt(), 255, 255, 255)
             hlPaint.style = Paint.Style.FILL
             hlPaint.isAntiAlias = true
             canvas.drawCircle(
@@ -302,6 +324,11 @@ class BoardView @JvmOverloads constructor(
                 stoneRadius * 0.2f,
                 hlPaint
             )
+            
+            // 试下棋子标记：金色小三角形
+            if (isTrialStone) {
+                drawTrialMarker(canvas, centerX, centerY)
+            }
         } else if (stoneColor == StoneColor.WHITE) {
             canvas.drawCircle(centerX + 2f, centerY + 3f, stoneRadius, shadowPaint)
             
@@ -317,6 +344,7 @@ class BoardView @JvmOverloads constructor(
             )
             
             whiteStonePaint.shader = wGradient
+            whiteStonePaint.alpha = (255 * alphaMultiplier).toInt()
             canvas.drawCircle(centerX, centerY, stoneRadius, whiteStonePaint)
             
             strokePaint.color = Color.parseColor("#CCCCCC")
@@ -324,7 +352,7 @@ class BoardView @JvmOverloads constructor(
             canvas.drawCircle(centerX, centerY, stoneRadius - 0.75f, strokePaint)
             
             val hlPaint = Paint()
-            hlPaint.color = Color.argb(100, 255, 255, 255)
+            hlPaint.color = Color.argb((100 * alphaMultiplier).toInt(), 255, 255, 255)
             hlPaint.style = Paint.Style.FILL
             hlPaint.isAntiAlias = true
             canvas.drawCircle(
@@ -333,7 +361,31 @@ class BoardView @JvmOverloads constructor(
                 stoneRadius * 0.25f,
                 hlPaint
             )
+            
+            // 试下棋子标记：金色小三角形
+            if (isTrialStone) {
+                drawTrialMarker(canvas, centerX, centerY)
+            }
         }
+    }
+    
+    private fun drawTrialMarker(canvas: Canvas, centerX: Float, centerY: Float) {
+        // 在棋子顶部绘制金色小三角形标记
+        val markerSize = stoneRadius * 0.25f
+        val markerY = centerY - stoneRadius - markerSize
+        
+        val path = Path()
+        path.moveTo(centerX, markerY - markerSize)  // 顶点
+        path.lineTo(centerX - markerSize * 0.866f, markerY + markerSize * 0.5f)  // 左下
+        path.lineTo(centerX + markerSize * 0.866f, markerY + markerSize * 0.5f)  // 右下
+        path.close()
+        
+        val markerPaint = Paint().apply {
+            color = Color.parseColor("#C9A96E")  // 暖金色
+            style = Paint.Style.FILL
+            isAntiAlias = true
+        }
+        canvas.drawPath(path, markerPaint)
     }
     
     private fun drawLastMoveMarker(canvas: Canvas, index: Int) {

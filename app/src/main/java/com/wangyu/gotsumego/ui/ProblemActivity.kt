@@ -1,5 +1,9 @@
 package com.wangyu.gotsumego.ui
 
+import android.content.Context
+import android.content.SharedPreferences
+import android.media.AudioAttributes
+import android.media.SoundPool
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -25,6 +29,21 @@ class ProblemActivity : AppCompatActivity() {
     private var currentSolutionIndex: Int = 0
     private var isSolved: Boolean = false
     
+    // 试下模式状态
+    private var isTrialMode: Boolean = false
+    private var trialBoardString: String = ""
+    private var trialStoneIndices: MutableSet<Int> = mutableSetOf()
+    private var trialCurrentPlayer: StoneColor = StoneColor.BLACK
+    
+    // 设置相关
+    private lateinit var prefs: SharedPreferences
+    private var soundEnabled: Boolean = true
+    private var trialModeEnabled: Boolean = true  // 默认开启试下模式
+    
+    // 音效相关
+    private var soundPool: SoundPool? = null
+    private var stoneSoundId: Int = 0
+    
     companion object {
         const val EXTRA_BOOK = "extra_book"
         const val EXTRA_TITLE = "extra_title"
@@ -35,11 +54,51 @@ class ProblemActivity : AppCompatActivity() {
         binding = ActivityProblemBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
+        // 加载设置
+        prefs = getSharedPreferences("go_tsumego_settings", Context.MODE_PRIVATE)
+        soundEnabled = prefs.getBoolean("sound_enabled", true)
+        trialModeEnabled = prefs.getBoolean("trial_mode_enabled", true)
+        
+        // 初始化音效
+        initSoundPool()
+        
         filterBook = intent.getStringExtra(EXTRA_BOOK)
         binding.tvTitle.text = intent.getStringExtra(EXTRA_TITLE) ?: "围棋死活题"
         
         loadProblems()
         setupViews()
+    }
+    
+    private fun initSoundPool() {
+        val audioAttributes = AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_GAME)
+            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+            .build()
+        
+        soundPool = SoundPool.Builder()
+            .setMaxStreams(3)
+            .setAudioAttributes(audioAttributes)
+            .build()
+        
+        // 加载落子音效
+        try {
+            stoneSoundId = soundPool?.load(this, R.raw.stone_place, 1) ?: 0
+        } catch (e: Exception) {
+            // 音效文件可能不存在
+            stoneSoundId = 0
+        }
+    }
+    
+    private fun playStoneSound() {
+        if (soundEnabled && stoneSoundId > 0) {
+            soundPool?.play(stoneSoundId, 0.8f, 0.8f, 1, 0, 1.0f)
+        }
+    }
+    
+    override fun onDestroy() {
+        super.onDestroy()
+        soundPool?.release()
+        soundPool = null
     }
     
     private fun loadProblems() {
@@ -52,13 +111,25 @@ class ProblemActivity : AppCompatActivity() {
     
     private fun setupViews() {
         binding.btnBack.setOnClickListener { finish() }
-        binding.btnReset.setOnClickListener { resetCurrentProblem() }
+        binding.btnSettings.setOnClickListener { openSettings() }
+        binding.btnReset.setOnClickListener { handleReset() }
         binding.btnPrev.setOnClickListener { showPreviousProblem() }
         binding.btnNext.setOnClickListener { showNextProblem() }
         binding.btnHint.setOnClickListener { showHint() }
+        binding.btnExitTrial.setOnClickListener { exitTrialAndReset() }
         
         binding.boardView.onStoneClickListener = { index -> handleStoneClick(index) }
         
+        showCurrentProblem()
+    }
+    
+    private fun openSettings() {
+        val intent = android.content.Intent(this, SettingsActivity::class.java)
+        startActivity(intent)
+    }
+    
+    private fun exitTrialAndReset() {
+        exitTrialMode()
         showCurrentProblem()
     }
     
@@ -92,6 +163,10 @@ class ProblemActivity : AppCompatActivity() {
         // 重置状态
         currentSolutionIndex = 0
         isSolved = false
+        
+        // 退出试下模式
+        exitTrialMode()
+        
         binding.tvFeedback.visibility = View.GONE
         binding.tvHint.visibility = View.GONE
         
@@ -104,6 +179,12 @@ class ProblemActivity : AppCompatActivity() {
     }
     
     private fun handleStoneClick(index: Int) {
+        // 试下模式下自由落子
+        if (isTrialMode) {
+            handleTrialStoneClick(index)
+            return
+        }
+        
         if (isSolved) return
         
         val problem = problemList[currentIndex]
@@ -124,6 +205,7 @@ class ProblemActivity : AppCompatActivity() {
         if (index == expectedIndex) {
             placeStone(index, problem, expectedMove.color)
             currentSolutionIndex++
+            playStoneSound()
             
             if (currentSolutionIndex >= solutionMoves.size) {
                 isSolved = true
@@ -139,7 +221,83 @@ class ProblemActivity : AppCompatActivity() {
                 }
             }
         } else {
-            showFeedback("不正确", false)
+            // 点错时进入试下模式
+            if (trialModeEnabled) {
+                enterTrialMode()
+                showFeedback("试下中...", false)
+            } else {
+                showFeedback("不正确", false)
+            }
+        }
+    }
+    
+    // 试下模式处理
+    private fun enterTrialMode() {
+        val problem = problemList[currentIndex]
+        
+        isTrialMode = true
+        trialBoardString = currentBoardString
+        trialStoneIndices.clear()
+        trialCurrentPlayer = problem.toPlay
+        
+        // 更新UI
+        binding.boardView.trialModeEnabled = true
+        binding.boardView.trialStoneIndices = emptySet()
+        binding.tvTrialMode.visibility = View.VISIBLE
+        binding.btnExitTrial.visibility = View.VISIBLE
+        binding.btnReset.text = "重置题目"
+    }
+    
+    private fun exitTrialMode() {
+        isTrialMode = false
+        trialBoardString = ""
+        trialStoneIndices.clear()
+        trialCurrentPlayer = StoneColor.BLACK
+        
+        // 更新UI
+        binding.boardView.trialModeEnabled = false
+        binding.boardView.trialStoneIndices = emptySet()
+        binding.tvTrialMode.visibility = View.GONE
+        binding.btnExitTrial.visibility = View.GONE
+        binding.btnReset.text = getString(R.string.reset)
+    }
+    
+    private fun handleTrialStoneClick(index: Int) {
+        val problem = problemList[currentIndex]
+        
+        // 检查位置是否已有棋子
+        if (!GoBoard.isEmptyAt(trialBoardString, index)) {
+            return
+        }
+        
+        // 放置棋子
+        val newBoard = GoBoard.placeStone(trialBoardString, index, trialCurrentPlayer, problem.boardSize)
+        
+        if (newBoard != trialBoardString) {
+            // 成功落子
+            trialBoardString = newBoard
+            trialStoneIndices.add(index)
+            trialCurrentPlayer = if (trialCurrentPlayer == StoneColor.BLACK) StoneColor.WHITE else StoneColor.BLACK
+            
+            // 更新棋盘显示
+            binding.boardView.boardString = trialBoardString
+            binding.boardView.lastMoveIndex = index
+            binding.boardView.currentPlayer = trialCurrentPlayer
+            binding.boardView.trialStoneIndices = trialStoneIndices.toSet()
+            binding.boardView.invalidate()
+            
+            playStoneSound()
+        }
+    }
+    
+    private fun handleReset() {
+        if (isTrialMode) {
+            // 退出试下模式，回到题目初始状态
+            exitTrialMode()
+            showCurrentProblem()
+        } else {
+            // 普通重置
+            resetCurrentProblem()
         }
     }
     
@@ -155,6 +313,7 @@ class ProblemActivity : AppCompatActivity() {
         if (GoBoard.isEmptyAt(currentBoardString, index)) {
             placeStone(index, problem, move.color)
             currentSolutionIndex++
+            playStoneSound()
             
             if (currentSolutionIndex < solutionMoves.size) {
                 val nextMove = solutionMoves[currentSolutionIndex]

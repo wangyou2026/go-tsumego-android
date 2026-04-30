@@ -57,6 +57,16 @@
                     android:textColor="#8E8E93"
                     tools:text="17,618 道题目" />
 
+                <ImageButton
+                    android:id="@+id/btnSettings"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:src="@drawable/ic_settings"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/settings"
+                    app:tint="@color/accent"
+                    android:layout_marginEnd="12dp" />
+
                 <TextView
                     android:id="@+id/cardAllProblems"
                     android:layout_width="wrap_content"
