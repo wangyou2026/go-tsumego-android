@@ -245,7 +245,7 @@ class ProblemActivity : AppCompatActivity() {
         binding.boardView.trialStoneIndices = emptySet()
         binding.tvTrialMode.visibility = View.VISIBLE
         binding.btnExitTrial.visibility = View.VISIBLE
-        binding.btnReset.text = "重置题目"
+        // btnReset is ImageButton, no text
         
         // 显示醒目的Toast提示
         Toast.makeText(this, "点错了！已进入试下模式，可自由落子", Toast.LENGTH_LONG).show()
@@ -262,7 +262,7 @@ class ProblemActivity : AppCompatActivity() {
         binding.boardView.trialStoneIndices = emptySet()
         binding.tvTrialMode.visibility = View.GONE
         binding.btnExitTrial.visibility = View.GONE
-        binding.btnReset.text = getString(R.string.reset)
+        // btnReset is ImageButton, no text
     }
     
     private fun handleTrialStoneClick(index: Int) {
