@@ -66,8 +66,6 @@ data class Problem(
         return sb.toString()
     }
     
-
-    
     val firstCorrectMove: Position?
         get() = correctMoves.firstOrNull()
 }
@@ -100,11 +98,68 @@ data class SolutionMove(
     fun toIndex(boardSize: Int): Int = row * boardSize + col
 }
 
+/**
+ * 自动检测answer/solutionMoves的y坐标是否需要翻转
+ * 
+ * 不同数据源的坐标约定不同：
+ * - 有些数据：answer的y=0是顶部（不需要翻转）
+ * - 有些数据：answer的y=0是底部（需要翻转，和stones一样）
+ * 
+ * 检测方法：构建棋盘后，看answer位置是否在空位上且靠近棋子
+ */
+private fun needsAnswerYFlip(jsonProblem: JsonProblem): Boolean {
+    val boardSize = jsonProblem.boardSize
+    val stones = jsonProblem.stones
+    val answer = jsonProblem.answer
+    
+    if (answer.size < 2 || stones.isEmpty()) return false
+    
+    // 构建棋盘（stones始终y翻转）
+    val board = CharArray(boardSize * boardSize) { '.' }
+    val stoneRows = mutableListOf<Int>()
+    for (s in stones) {
+        if (s.size < 3) continue
+        val col = s[0]
+        val row = boardSize - 1 - s[1]  // stones y翻转
+        val symbol = if (s[2] == 1) 'X' else 'O'
+        val idx = row * boardSize + col
+        if (idx in board.indices) {
+            board[idx] = symbol
+            stoneRows.add(row)
+        }
+    }
+    
+    val ansCol = answer[0]
+    val ansRowNoFlip = answer[1]
+    val ansRowFlip = boardSize - 1 - answer[1]
+    
+    val idxNoFlip = ansRowNoFlip * boardSize + ansCol
+    val idxFlip = ansRowFlip * boardSize + ansCol
+    
+    val noFlipEmpty = idxNoFlip in board.indices && board[idxNoFlip] == '.'
+    val flipEmpty = idxFlip in board.indices && board[idxFlip] == '.'
+    
+    // 只有一个方向是空位
+    if (noFlipEmpty && !flipEmpty) return false
+    if (flipEmpty && !noFlipEmpty) return true
+    
+    // 两个方向都是空位，看哪个更靠近棋子
+    if (noFlipEmpty && flipEmpty && stoneRows.isNotEmpty()) {
+        val midRow = (stoneRows.minOrNull()!! + stoneRows.maxOrNull()!!) / 2.0
+        val distNoFlip = kotlin.math.abs(ansRowNoFlip - midRow)
+        val distFlip = kotlin.math.abs(ansRowFlip - midRow)
+        return distFlip < distNoFlip
+    }
+    
+    // 默认不翻转
+    return false
+}
+
 fun JsonProblem.toProblem(): Problem {
     // JSON 数据中：
     // - stones 的 y 坐标：0=底部，需要翻转 → row = boardSize - 1 - y
-    // - answer/solutionMoves 的 y 坐标：0=顶部，不需要翻转 → row = y
-    // Android 显示：row 0 在顶部
+    // - answer/solutionMoves 的 y 坐标：自动检测是否需要翻转
+    //   不同数据源约定不同，通过检查answer位置是否在棋子附近来判断
     val boardSize = this.boardSize
     
     val stoneList = stones.mapNotNull { stoneData ->
@@ -117,22 +172,26 @@ fun JsonProblem.toProblem(): Problem {
         } else null
     }
     
-    // answer/solutionMoves: y从顶部开始，不需要翻转
+    // 自动检测answer/solutionMoves是否需要y翻转
+    val flipAnswerY = needsAnswerYFlip(this)
+    
     val moves = if (answer.size >= 2) {
-        listOf(Position(col = answer[0], row = answer[1]))
+        val ansRow = if (flipAnswerY) boardSize - 1 - answer[1] else answer[1]
+        listOf(Position(col = answer[0], row = ansRow))
     } else emptyList()
     
     val solutionMoveList = solutionMoves?.mapNotNull { move ->
         if (move.size >= 3) {
+            val moveRow = if (flipAnswerY) boardSize - 1 - move[1] else move[1]
             SolutionMove(
                 col = move[0],
-                row = move[1],  // 不翻转，y从顶部开始
+                row = moveRow,
                 color = StoneColor.fromValue(move[2])
             )
         } else null
     } ?: emptyList()
     
-    // 计算局部放大区域（使用转换后的坐标）
+    // 计算局部放大区域（使用转换后的坐标，包含所有解答步骤）
     val (zoomMinCol, zoomMaxCol, zoomMinRow, zoomMaxRow) = calculateZoomArea(stoneList, moves, solutionMoveList, boardSize)
     
     return Problem(
@@ -157,7 +216,7 @@ fun JsonProblem.toProblem(): Problem {
 
 /**
  * 计算局部放大区域（使用转换后的棋盘坐标）
- * 同时包含初始棋子和答案/着法
+ * 同时包含初始棋子和所有解答步骤
  * 返回 (minCol, maxCol, minRow, maxRow)
  */
 private fun calculateZoomArea(
@@ -182,15 +241,16 @@ private fun calculateZoomArea(
         allCols.add(move.col)
         allRows.add(move.row)
     }
-    for (move in solutionMoves.take(3)) {
+    // 包含所有解答步骤（不只是前3步），确保提示标记在可见区域内
+    for (move in solutionMoves) {
         allCols.add(move.col)
         allRows.add(move.row)
     }
 
-    var minCol = maxOf(0, allCols.minOrNull()!! - margin)
-    var maxCol = minOf(boardSize - 1, allCols.maxOrNull()!! + margin)
-    var minRow = maxOf(0, allRows.minOrNull()!! - margin)
-    var maxRow = minOf(boardSize - 1, allRows.maxOrNull()!! + margin)
+    val minCol = maxOf(0, allCols.minOrNull()!! - margin)
+    val maxCol = minOf(boardSize - 1, allCols.maxOrNull()!! + margin)
+    val minRow = maxOf(0, allRows.minOrNull()!! - margin)
+    val maxRow = minOf(boardSize - 1, allRows.maxOrNull()!! + margin)
 
     return Tuple4(minCol, maxCol, minRow, maxRow)
 }
