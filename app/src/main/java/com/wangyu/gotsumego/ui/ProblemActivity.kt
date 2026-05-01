@@ -29,6 +29,9 @@ class ProblemActivity : AppCompatActivity() {
     private var currentSolutionIndex: Int = 0
     private var isSolved: Boolean = false
     
+    // 自动对弈标志位 - 防止玩家与自动对弈的竞态条件
+    private var isAutoPlaying: Boolean = false
+    
     // 试下模式状态
     private var isTrialMode: Boolean = false
     private var trialBoardString: String = ""
@@ -160,9 +163,10 @@ class ProblemActivity : AppCompatActivity() {
         binding.boardView.currentPlayer = problem.toPlay
         binding.boardView.updateBoard(currentBoardString)
         
-        // 重置状态
+        // 重置所有状态
         currentSolutionIndex = 0
         isSolved = false
+        isAutoPlaying = false  // Bug修复: 重置自动对弈状态
         
         // 退出试下模式
         exitTrialMode()
@@ -179,6 +183,11 @@ class ProblemActivity : AppCompatActivity() {
     }
     
     private fun handleStoneClick(index: Int) {
+        // Bug修复2: 自动对弈期间禁止玩家点击，防止竞态条件
+        if (isAutoPlaying) {
+            return
+        }
+        
         // 试下模式下自由落子
         if (isTrialMode) {
             handleTrialStoneClick(index)
@@ -203,22 +212,32 @@ class ProblemActivity : AppCompatActivity() {
         val expectedIndex = expectedMove.toIndex(problem.boardSize)
         
         if (index == expectedIndex) {
+            // Bug修复3: 验证 placeStone 实际改变了棋盘后才推进
+            val previousBoard = currentBoardString
             placeStone(index, problem, expectedMove.color)
-            currentSolutionIndex++
-            playStoneSound()
             
-            if (currentSolutionIndex >= solutionMoves.size) {
-                isSolved = true
-                showSuccess()
-            } else {
-                val nextMove = solutionMoves[currentSolutionIndex]
-                val nextIsOpponent = nextMove.color != problem.toPlay
+            // 只有当棋盘实际发生变化时才推进solutionIndex
+            if (currentBoardString != previousBoard) {
+                currentSolutionIndex++
+                playStoneSound()
                 
-                if (nextIsOpponent && currentSolutionIndex < solutionMoves.size) {
-                    binding.boardView.postDelayed({ autoPlayOpponent() }, 500)
+                if (currentSolutionIndex >= solutionMoves.size) {
+                    isSolved = true
+                    showSuccess()
                 } else {
-                    showFeedback("正确!", true)
+                    val nextMove = solutionMoves[currentSolutionIndex]
+                    val nextIsOpponent = nextMove.color != problem.toPlay
+                    
+                    if (nextIsOpponent && currentSolutionIndex < solutionMoves.size) {
+                        // Bug修复2: 启动自动对弈前设置标志位
+                        binding.boardView.postDelayed({ autoPlayOpponent() }, 500)
+                    } else {
+                        showFeedback("正确!", true)
+                    }
                 }
+            } else {
+                // placeStone 没有实际落子（比如位置被占），不推进
+                showFeedback("位置无效", false)
             }
         } else {
             // 点错时进入试下模式
@@ -304,31 +323,99 @@ class ProblemActivity : AppCompatActivity() {
         }
     }
     
+    /**
+     * 自动播放对手的步骤
+     * Bug修复:
+     * 1. 处理位置被占的情况（跳过并继续）- 可能是提子后的重下，或数据差异
+     * 2. 添加连续步骤处理
+     * 3. 使用 isAutoPlaying 标志位防止竞态条件
+     * 4. 即使中间步骤失败，也继续尝试后续步骤
+     */
     private fun autoPlayOpponent() {
-        if (currentSolutionIndex >= solutionMoves.size) return
+        val problem = problemList.getOrNull(currentIndex) ?: return
+        val solutionMoves = problem.solutionMoves
         
-        val problem = problemList[currentIndex]
+        if (currentSolutionIndex >= solutionMoves.size) {
+            isAutoPlaying = false
+            return
+        }
+        
+        // 开始自动对弈，设置标志位
+        isAutoPlaying = true
+        
+        // 连续播放所有对手的步骤
+        playOpponentMovesSequentially()
+    }
+    
+    /**
+     * 连续播放对手的步骤（可能有多步）
+     */
+    private fun playOpponentMovesSequentially() {
+        val problem = problemList.getOrNull(currentIndex) ?: run {
+            isAutoPlaying = false
+            return
+        }
+        val solutionMoves = problem.solutionMoves
+        
+        // 如果已经完成，退出
+        if (currentSolutionIndex >= solutionMoves.size) {
+            isAutoPlaying = false
+            return
+        }
+        
         val move = solutionMoves[currentSolutionIndex]
-        
-        // 直接使用棋盘坐标的index
         val index = move.toIndex(problem.boardSize)
         
-        if (GoBoard.isEmptyAt(currentBoardString, index)) {
-            placeStone(index, problem, move.color)
+        // Bug修复1 & 4: 处理位置被占的情况
+        // 即使位置被占，也尝试落子（可能是提子后重新落子）
+        val previousBoard = currentBoardString
+        placeStone(index, problem, move.color)
+        
+        // 检查棋盘是否实际改变
+        if (currentBoardString != previousBoard) {
+            // 成功落子，推进索引
             currentSolutionIndex++
             playStoneSound()
             
-            if (currentSolutionIndex < solutionMoves.size) {
-                val nextMove = solutionMoves[currentSolutionIndex]
-                val nextIsOpponent = nextMove.color != problem.toPlay
-                
-                if (nextIsOpponent) {
-                    binding.boardView.postDelayed({ autoPlayOpponent() }, 300)
-                }
-            } else {
+            if (currentSolutionIndex >= solutionMoves.size) {
+                // 所有步骤完成
                 isSolved = true
+                isAutoPlaying = false
                 showSuccess()
+                return
             }
+            
+            // 检查下一步是否还是对手的步骤
+            val nextMove = solutionMoves[currentSolutionIndex]
+            val nextIsOpponent = nextMove.color != problem.toPlay
+            
+            if (nextIsOpponent) {
+                // 继续播放下一个对手步骤，短暂延迟
+                binding.boardView.postDelayed({
+                    playOpponentMovesSequentially()
+                }, 300)
+            } else {
+                // 轮到玩家了
+                isAutoPlaying = false
+                showFeedback("正确!", true)
+            }
+        } else {
+            // Bug修复1: 位置被占时，跳过该步骤继续推进
+            // 这可能是数据问题（重复坐标）或提子后的重下
+            currentSolutionIndex++
+            playStoneSound()
+            
+            if (currentSolutionIndex >= solutionMoves.size) {
+                isSolved = true
+                isAutoPlaying = false
+                showSuccess()
+                return
+            }
+            
+            // 继续尝试下一步
+            binding.boardView.postDelayed({
+                playOpponentMovesSequentially()
+            }, 300)
         }
     }
     
