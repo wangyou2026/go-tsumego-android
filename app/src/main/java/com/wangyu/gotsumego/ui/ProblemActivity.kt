@@ -166,7 +166,7 @@ class ProblemActivity : AppCompatActivity() {
         // 重置所有状态
         currentSolutionIndex = 0
         isSolved = false
-        isAutoPlaying = false  // Bug修复: 重置自动对弈状态
+        isAutoPlaying = false
         
         // 退出试下模式
         exitTrialMode()
@@ -183,7 +183,7 @@ class ProblemActivity : AppCompatActivity() {
     }
     
     private fun handleStoneClick(index: Int) {
-        // Bug修复2: 自动对弈期间禁止玩家点击，防止竞态条件
+        // 自动对弈期间禁止玩家点击，防止竞态条件
         if (isAutoPlaying) {
             return
         }
@@ -212,12 +212,12 @@ class ProblemActivity : AppCompatActivity() {
         val expectedIndex = expectedMove.toIndex(problem.boardSize)
         
         if (index == expectedIndex) {
-            // Bug修复3: 验证 placeStone 实际改变了棋盘后才推进
+            // 位置正确，尝试落子
             val previousBoard = currentBoardString
             placeStone(index, problem, expectedMove.color)
             
-            // 只有当棋盘实际发生变化时才推进solutionIndex
             if (currentBoardString != previousBoard) {
+                // 落子成功，推进解答步骤
                 currentSolutionIndex++
                 playStoneSound()
                 
@@ -229,15 +229,15 @@ class ProblemActivity : AppCompatActivity() {
                     val nextIsOpponent = nextMove.color != problem.toPlay
                     
                     if (nextIsOpponent && currentSolutionIndex < solutionMoves.size) {
-                        // Bug修复2: 启动自动对弈前设置标志位
+                        // 启动自动对弈
                         binding.boardView.postDelayed({ autoPlayOpponent() }, 500)
                     } else {
                         showFeedback("正确!", true)
                     }
                 }
             } else {
-                // placeStone 没有实际落子（比如位置被占），不推进
-                showFeedback("位置无效", false)
+                // 位置正确但落子失败（位置被占等），进入试下模式继续摆棋
+                enterTrialMode()
             }
         } else {
             // 点错时进入试下模式
@@ -264,10 +264,9 @@ class ProblemActivity : AppCompatActivity() {
         binding.boardView.trialStoneIndices = emptySet()
         binding.tvTrialMode.visibility = View.VISIBLE
         binding.btnExitTrial.visibility = View.VISIBLE
-        // btnReset is ImageButton, no text
         
         // 显示醒目的Toast提示
-        Toast.makeText(this, "点错了！已进入试下模式，可自由落子", Toast.LENGTH_LONG).show()
+        Toast.makeText(this, "已进入试下模式，可自由落子", Toast.LENGTH_LONG).show()
     }
     
     private fun exitTrialMode() {
@@ -281,7 +280,6 @@ class ProblemActivity : AppCompatActivity() {
         binding.boardView.trialStoneIndices = emptySet()
         binding.tvTrialMode.visibility = View.GONE
         binding.btnExitTrial.visibility = View.GONE
-        // btnReset is ImageButton, no text
     }
     
     private fun handleTrialStoneClick(index: Int) {
@@ -325,11 +323,7 @@ class ProblemActivity : AppCompatActivity() {
     
     /**
      * 自动播放对手的步骤
-     * Bug修复:
-     * 1. 处理位置被占的情况（跳过并继续）- 可能是提子后的重下，或数据差异
-     * 2. 添加连续步骤处理
-     * 3. 使用 isAutoPlaying 标志位防止竞态条件
-     * 4. 即使中间步骤失败，也继续尝试后续步骤
+     * 遇到落子失败时进入试下模式，让玩家可以继续摆棋
      */
     private fun autoPlayOpponent() {
         val problem = problemList.getOrNull(currentIndex) ?: return
@@ -343,21 +337,20 @@ class ProblemActivity : AppCompatActivity() {
         // 开始自动对弈，设置标志位
         isAutoPlaying = true
         
-        // 连续播放所有对手的步骤
-        playOpponentMovesSequentially()
+        // 播放对手步骤
+        playOpponentMove()
     }
     
     /**
-     * 连续播放对手的步骤（可能有多步）
+     * 播放单个对手步骤，成功后检查是否还有连续对手步骤
      */
-    private fun playOpponentMovesSequentially() {
+    private fun playOpponentMove() {
         val problem = problemList.getOrNull(currentIndex) ?: run {
             isAutoPlaying = false
             return
         }
         val solutionMoves = problem.solutionMoves
         
-        // 如果已经完成，退出
         if (currentSolutionIndex >= solutionMoves.size) {
             isAutoPlaying = false
             return
@@ -366,14 +359,11 @@ class ProblemActivity : AppCompatActivity() {
         val move = solutionMoves[currentSolutionIndex]
         val index = move.toIndex(problem.boardSize)
         
-        // Bug修复1 & 4: 处理位置被占的情况
-        // 即使位置被占，也尝试落子（可能是提子后重新落子）
         val previousBoard = currentBoardString
         placeStone(index, problem, move.color)
         
-        // 检查棋盘是否实际改变
         if (currentBoardString != previousBoard) {
-            // 成功落子，推进索引
+            // 落子成功
             currentSolutionIndex++
             playStoneSound()
             
@@ -390,9 +380,9 @@ class ProblemActivity : AppCompatActivity() {
             val nextIsOpponent = nextMove.color != problem.toPlay
             
             if (nextIsOpponent) {
-                // 继续播放下一个对手步骤，短暂延迟
+                // 继续播放下一个对手步骤
                 binding.boardView.postDelayed({
-                    playOpponentMovesSequentially()
+                    playOpponentMove()
                 }, 300)
             } else {
                 // 轮到玩家了
@@ -400,22 +390,9 @@ class ProblemActivity : AppCompatActivity() {
                 showFeedback("正确!", true)
             }
         } else {
-            // Bug修复1: 位置被占时，跳过该步骤继续推进
-            // 这可能是数据问题（重复坐标）或提子后的重下
-            currentSolutionIndex++
-            playStoneSound()
-            
-            if (currentSolutionIndex >= solutionMoves.size) {
-                isSolved = true
-                isAutoPlaying = false
-                showSuccess()
-                return
-            }
-            
-            // 继续尝试下一步
-            binding.boardView.postDelayed({
-                playOpponentMovesSequentially()
-            }, 300)
+            // 对手落子失败，停止自动对弈，进入试下模式
+            isAutoPlaying = false
+            enterTrialMode()
         }
     }
     
