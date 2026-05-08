@@ -86,8 +86,7 @@ class ProblemActivity : AppCompatActivity() {
         if (moves.isEmpty()) { Toast.makeText(this, "无答案数据", Toast.LENGTH_SHORT).show(); return }
         if (isShowingAnswer) { isShowingAnswer = false; isAutoPlaying = false; binding.btnShowAnswer.text = "显示答案"; showCurrentProblem(); return }
         currentBoardString = problem.toBoardString()
-        binding.boardView.boardSize = problem.boardSize
-        binding.boardView.setZoomArea(problem.zoomMinCol, problem.zoomMaxCol, problem.zoomMinRow, problem.zoomMaxRow)
+        binding.boardView.boardSize = 13  // 固定13路
         binding.boardView.currentPlayer = problem.toPlay
         binding.boardView.updateBoard(currentBoardString)
         currentSolutionIndex = 0; isShowingAnswer = true; isSolved = true; exitTrialMode()
@@ -105,9 +104,9 @@ class ProblemActivity : AppCompatActivity() {
             binding.tvFeedback.text = "正解"; binding.tvFeedback.setTextColor(ContextCompat.getColor(this, R.color.correct_green))
             return
         }
-        val move = moves[currentSolutionIndex]; val index = move.toIndex(problem.boardSize)
+        val move = moves[currentSolutionIndex]; val index = move.toIndex(13)  // 固定13路
         val prev = currentBoardString
-        currentBoardString = GoBoard.placeStone(currentBoardString, index, move.color, problem.boardSize)
+        currentBoardString = GoBoard.placeStone(currentBoardString, index, move.color, 13)
         if (currentBoardString != prev) {
             currentSolutionIndex++; playStoneSound()
             binding.boardView.lastMoveIndex = index
@@ -124,8 +123,7 @@ class ProblemActivity : AppCompatActivity() {
         binding.tvToPlay.text = if (problem.toPlay == StoneColor.WHITE) "白先" else "黑先"
         binding.tvToPlay.visibility = View.VISIBLE
         currentBoardString = problem.toBoardString()
-        binding.boardView.boardSize = problem.boardSize
-        binding.boardView.setZoomArea(problem.zoomMinCol, problem.zoomMaxCol, problem.zoomMinRow, problem.zoomMaxRow)
+        binding.boardView.boardSize = 13  // 固定13路
         binding.boardView.currentPlayer = problem.toPlay; binding.boardView.updateBoard(currentBoardString)
         currentSolutionIndex = 0; isSolved = false; isAutoPlaying = false; isShowingAnswer = false; exitTrialMode()
         binding.tvFeedback.visibility = View.GONE
@@ -140,7 +138,7 @@ class ProblemActivity : AppCompatActivity() {
         val problem = problemList[currentIndex]; val moves = problem.solutionMoves
         if (moves.isEmpty()) { Toast.makeText(this, "无解答数据", Toast.LENGTH_SHORT).show(); return }
         if (currentSolutionIndex >= moves.size) return
-        val expected = moves[currentSolutionIndex]; val expectedIdx = expected.toIndex(problem.boardSize)
+        val expected = moves[currentSolutionIndex]; val expectedIdx = expected.toIndex(13)  // 固定13路
         if (index == expectedIdx) {
             val prev = currentBoardString; placeStone(index, problem, expected.color)
             if (currentBoardString != prev) {
@@ -168,7 +166,7 @@ class ProblemActivity : AppCompatActivity() {
     private fun handleTrialClick(index: Int) {
         val problem = problemList[currentIndex]
         if (!GoBoard.isEmptyAt(trialBoardString, index)) return
-        val newBoard = GoBoard.placeStone(trialBoardString, index, trialCurrentPlayer, problem.boardSize)
+        val newBoard = GoBoard.placeStone(trialBoardString, index, trialCurrentPlayer, 13)  // 固定13路
         if (newBoard != trialBoardString) {
             trialBoardString = newBoard; trialStoneIndices.add(index)
             trialCurrentPlayer = if (trialCurrentPlayer == StoneColor.BLACK) StoneColor.WHITE else StoneColor.BLACK
@@ -188,7 +186,7 @@ class ProblemActivity : AppCompatActivity() {
         val problem = problemList.getOrNull(currentIndex) ?: run { isAutoPlaying = false; return }
         val moves = problem.solutionMoves
         if (currentSolutionIndex >= moves.size) { isSolved = true; isAutoPlaying = false; showSuccess(); return }
-        val move = moves[currentSolutionIndex]; val index = move.toIndex(problem.boardSize); val prev = currentBoardString
+        val move = moves[currentSolutionIndex]; val index = move.toIndex(13); val prev = currentBoardString  // 固定13路
         placeStone(index, problem, move.color)
         if (currentBoardString != prev) {
             currentSolutionIndex++; playStoneSound()
@@ -200,7 +198,7 @@ class ProblemActivity : AppCompatActivity() {
     }
     
     private fun placeStone(index: Int, problem: Problem, color: StoneColor) {
-        currentBoardString = GoBoard.placeStone(currentBoardString, index, color, problem.boardSize)
+        currentBoardString = GoBoard.placeStone(currentBoardString, index, color, 13)  // 固定13路
         binding.boardView.lastMoveIndex = index; binding.boardView.currentPlayer = if (color == StoneColor.BLACK) StoneColor.WHITE else StoneColor.BLACK
         binding.boardView.updateBoard(currentBoardString, index)
     }
