@@ -1,118 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/background"
-    android:fillViewport="true">
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <!-- 顶部标题区域 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@color/primary_dark"
-            android:paddingHorizontal="@dimen/padding_large"
-            android:paddingTop="@dimen/padding_large"
-            android:paddingBottom="@dimen/padding_medium">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="棋"
-                android:textSize="40sp"
-                android:textColor="@color/accent"
-                android:textStyle="bold"
-                android:layout_gravity="center_horizontal" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="围棋死活题"
-                android:textSize="14sp"
-                android:textColor="#8E8E93"
-                android:letterSpacing="0.3"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="4dp" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="@dimen/padding_medium"
-                android:gravity="center_vertical">
-
-                <TextView
-                    android:id="@+id/tvAllCount"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:textSize="13sp"
-                    android:textColor="#8E8E93"
-                    tools:text="17,618 道题目" />
-
-                <!-- 设置按钮 - 金色醒目标签 -->
-                <TextView
-                    android:id="@+id/btnSettings"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:gravity="center"
-                    android:paddingHorizontal="16dp"
-                    android:text="⚙ 设置"
-                    android:textSize="14sp"
-                    android:textColor="@color/primary_dark"
-                    android:textStyle="bold"
-                    android:background="@drawable/bg_to_play_badge"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:layout_marginEnd="8dp" />
-
-                <TextView
-                    android:id="@+id/cardAllProblems"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:gravity="center"
-                    android:paddingHorizontal="20dp"
-                    android:text="全部题目 →"
-                    android:textSize="13sp"
-                    android:textColor="@color/accent"
-                    android:textStyle="bold"
-                    android:background="@drawable/bg_to_play_badge"
-                    android:clickable="true"
-                    android:focusable="true" />
-
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <!-- 书籍分类标题 -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/book_section"
-            android:textSize="13sp"
-            android:textColor="@color/text_secondary"
-            android:letterSpacing="0.1"
-            android:paddingHorizontal="@dimen/padding_large"
-            android:paddingTop="@dimen/padding_large"
-            android:paddingBottom="@dimen/padding_small" />
-
-        <!-- 书籍分类网格 -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvDifficulties"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingHorizontal="@dimen/padding_medium"
-            android:paddingBottom="@dimen/padding_large"
-            android:nestedScrollingEnabled="false"
-            android:clipToPadding="false" />
-
-    </LinearLayout>
-
-</ScrollView>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@color/background">
+<com.google.android.material.appbar.AppBarLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:background="@color/primary_dark" app:elevation="0dp">
+<LinearLayout android:layout_width="match_parent" android:layout_height="?attr/actionBarSize" android:orientation="horizontal" android:gravity="center_vertical" android:paddingStart="16dp" android:paddingEnd="16dp">
+<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="棋" android:textColor="@color/accent" android:textSize="32sp" android:textStyle="bold" />
+<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="围棋死活题" android:textColor="#AAA" android:textSize="12sp" android:layout_marginStart="8dp" android:layout_marginTop="10dp" />
+<View android:layout_width="0dp" android:layout_height="0dp" android:layout_weight="1" />
+<TextView android:id="@+id/tvTotalProblems" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#888" android:textSize="12sp" />
+</LinearLayout>
+</com.google.android.material.appbar.AppBarLayout>
+<FrameLayout android:id="@+id/fragmentContainer" android:layout_width="match_parent" android:layout_height="match_parent" app:layout_behavior="@string/appbar_scrolling_view_behavior" android:layout_marginBottom="56dp" />
+<com.google.android.material.bottomnavigation.BottomNavigationView android:id="@+id/bottomNav" android:layout_width="match_parent" android:layout_height="56dp" android:layout_gravity="bottom" android:background="@color/primary_dark" app:itemIconTint="@color/accent" app:itemTextColor="@color/accent" app:labelVisibilityMode="labeled" app:menu="@menu/bottom_nav_menu" />
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

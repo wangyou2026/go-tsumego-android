@@ -16,464 +16,202 @@ import com.wangyu.gotsumego.databinding.ActivityProblemBinding
 import com.wangyu.gotsumego.util.GoBoard
 
 class ProblemActivity : AppCompatActivity() {
-    
     private lateinit var binding: ActivityProblemBinding
     private val repository by lazy { TsumegoApp.instance.repository }
-    
     private var filterBook: String? = null
     private var problemList: List<Problem> = emptyList()
     private var currentIndex: Int = 0
-    
-    // 当前棋盘状态
     private var currentBoardString: String = ""
     private var currentSolutionIndex: Int = 0
     private var isSolved: Boolean = false
-    
-    // 自动对弈标志位 - 防止玩家与自动对弈的竞态条件
     private var isAutoPlaying: Boolean = false
-    
-    // 试下模式状态
+    private var isShowingAnswer: Boolean = false
     private var isTrialMode: Boolean = false
     private var trialBoardString: String = ""
     private var trialStoneIndices: MutableSet<Int> = mutableSetOf()
     private var trialCurrentPlayer: StoneColor = StoneColor.BLACK
-    
-    // 设置相关
     private lateinit var prefs: SharedPreferences
     private var soundEnabled: Boolean = true
-    private var trialModeEnabled: Boolean = true  // 默认开启试下模式
-    
-    // 音效相关
     private var soundPool: SoundPool? = null
     private var stoneSoundId: Int = 0
     
     companion object {
         const val EXTRA_BOOK = "extra_book"
         const val EXTRA_TITLE = "extra_title"
+        const val EXTRA_RANDOM = "extra_random"
     }
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityProblemBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        
-        // 加载设置
         prefs = getSharedPreferences("go_tsumego_settings", Context.MODE_PRIVATE)
         soundEnabled = prefs.getBoolean("sound_enabled", true)
-        trialModeEnabled = prefs.getBoolean("trial_mode_enabled", true)
-        
-        // 初始化音效
         initSoundPool()
-        
         filterBook = intent.getStringExtra(EXTRA_BOOK)
+        val isRandom = intent.getBooleanExtra(EXTRA_RANDOM, false)
         binding.tvTitle.text = intent.getStringExtra(EXTRA_TITLE) ?: "围棋死活题"
-        
-        loadProblems()
+        loadProblems(isRandom)
         setupViews()
     }
     
     private fun initSoundPool() {
-        val audioAttributes = AudioAttributes.Builder()
-            .setUsage(AudioAttributes.USAGE_GAME)
-            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-            .build()
-        
-        soundPool = SoundPool.Builder()
-            .setMaxStreams(3)
-            .setAudioAttributes(audioAttributes)
-            .build()
-        
-        // 加载落子音效
-        try {
-            stoneSoundId = soundPool?.load(this, R.raw.stone_place, 1) ?: 0
-        } catch (e: Exception) {
-            // 音效文件可能不存在
-            stoneSoundId = 0
-        }
+        val attr = AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_GAME).setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build()
+        soundPool = SoundPool.Builder().setMaxStreams(3).setAudioAttributes(attr).build()
+        try { stoneSoundId = soundPool?.load(this, R.raw.stone_place, 1) ?: 0 } catch (e: Exception) { stoneSoundId = 0 }
     }
+    private fun playStoneSound() { if (soundEnabled && stoneSoundId > 0) soundPool?.play(stoneSoundId, 0.8f, 0.8f, 1, 0, 1.0f) }
+    override fun onDestroy() { super.onDestroy(); soundPool?.release(); soundPool = null }
     
-    private fun playStoneSound() {
-        if (soundEnabled && stoneSoundId > 0) {
-            soundPool?.play(stoneSoundId, 0.8f, 0.8f, 1, 0, 1.0f)
-        }
-    }
-    
-    override fun onDestroy() {
-        super.onDestroy()
-        soundPool?.release()
-        soundPool = null
-    }
-    
-    private fun loadProblems() {
-        problemList = if (filterBook != null) {
-            repository.getProblemsByBook(filterBook!!)
-        } else {
-            repository.getAllProblems()
-        }
+    private fun loadProblems(random: Boolean) {
+        problemList = if (filterBook != null) repository.getProblemsByBook(filterBook!!) else repository.getAllProblems()
+        if (random && problemList.isNotEmpty()) problemList = problemList.shuffled()
     }
     
     private fun setupViews() {
         binding.btnBack.setOnClickListener { finish() }
-        binding.btnSettings.setOnClickListener { openSettings() }
-        binding.btnReset.setOnClickListener { handleReset() }
-        binding.btnPrev.setOnClickListener { showPreviousProblem() }
-        binding.btnNext.setOnClickListener { showNextProblem() }
-        binding.btnHint.setOnClickListener { showHint() }
-        binding.btnExitTrial.setOnClickListener { exitTrialAndReset() }
-        
+        binding.btnReset.setOnClickListener { exitTrialMode(); showCurrentProblem() }
+        binding.btnPrev.setOnClickListener { if (currentIndex > 0) { currentIndex--; showCurrentProblem() } }
+        binding.btnNext.setOnClickListener { if (currentIndex < problemList.size - 1) { currentIndex++; showCurrentProblem() } }
+        binding.btnShowAnswer.setOnClickListener { showFullAnswer() }
+        binding.btnExitTrial.setOnClickListener { exitTrialMode(); showCurrentProblem() }
         binding.boardView.onStoneClickListener = { index -> handleStoneClick(index) }
-        
         showCurrentProblem()
     }
     
-    private fun openSettings() {
-        val intent = android.content.Intent(this, SettingsActivity::class.java)
-        startActivity(intent)
+    private fun showFullAnswer() {
+        if (problemList.isEmpty()) return
+        val problem = problemList[currentIndex]
+        val moves = problem.solutionMoves
+        if (moves.isEmpty()) { Toast.makeText(this, "无答案数据", Toast.LENGTH_SHORT).show(); return }
+        if (isShowingAnswer) { isShowingAnswer = false; isAutoPlaying = false; binding.btnShowAnswer.text = "显示答案"; showCurrentProblem(); return }
+        currentBoardString = problem.toBoardString()
+        binding.boardView.boardSize = problem.boardSize
+        binding.boardView.setZoomArea(problem.zoomMinCol, problem.zoomMaxCol, problem.zoomMinRow, problem.zoomMaxRow)
+        binding.boardView.currentPlayer = problem.toPlay
+        binding.boardView.updateBoard(currentBoardString)
+        currentSolutionIndex = 0; isShowingAnswer = true; isSolved = true; exitTrialMode()
+        binding.btnShowAnswer.text = "停止播放"
+        binding.tvFeedback.text = "答案播放中..."; binding.tvFeedback.setTextColor(ContextCompat.getColor(this, R.color.accent)); binding.tvFeedback.visibility = View.VISIBLE
+        playNextAnswerStep()
     }
     
-    private fun exitTrialAndReset() {
-        exitTrialMode()
-        showCurrentProblem()
+    private fun playNextAnswerStep() {
+        if (!isShowingAnswer) return
+        val problem = problemList.getOrNull(currentIndex) ?: return
+        val moves = problem.solutionMoves
+        if (currentSolutionIndex >= moves.size) {
+            isShowingAnswer = false; isAutoPlaying = false; binding.btnShowAnswer.text = "显示答案"
+            binding.tvFeedback.text = "正解"; binding.tvFeedback.setTextColor(ContextCompat.getColor(this, R.color.correct_green))
+            return
+        }
+        val move = moves[currentSolutionIndex]; val index = move.toIndex(problem.boardSize)
+        val prev = currentBoardString
+        currentBoardString = GoBoard.placeStone(currentBoardString, index, move.color, problem.boardSize)
+        if (currentBoardString != prev) {
+            currentSolutionIndex++; playStoneSound()
+            binding.boardView.lastMoveIndex = index
+            binding.boardView.currentPlayer = if (move.color == StoneColor.BLACK) StoneColor.WHITE else StoneColor.BLACK
+            binding.boardView.updateBoard(currentBoardString, index)
+        } else { currentSolutionIndex++ }
+        binding.boardView.postDelayed({ playNextAnswerStep() }, 600)
     }
     
     private fun showCurrentProblem() {
-        if (problemList.isEmpty()) {
-            binding.tvProblemNumber.text = "暂无题目"
-            binding.tvToPlay.visibility = View.GONE
-            return
-        }
-        
+        if (problemList.isEmpty()) { binding.tvProblemNumber.text = "暂无题目"; binding.tvToPlay.visibility = View.GONE; return }
         val problem = problemList[currentIndex]
-        
-        // 显示题目信息 - 新格式
         binding.tvProblemNumber.text = "${currentIndex + 1} / ${problemList.size}"
         binding.tvToPlay.text = if (problem.toPlay == StoneColor.WHITE) "白先" else "黑先"
         binding.tvToPlay.visibility = View.VISIBLE
-        
-        // 始终使用完整棋盘数据
         currentBoardString = problem.toBoardString()
         binding.boardView.boardSize = problem.boardSize
-        
-        // 设置局部放大区域
-        binding.boardView.setZoomArea(
-            problem.zoomMinCol, problem.zoomMaxCol,
-            problem.zoomMinRow, problem.zoomMaxRow
-        )
-        
-        binding.boardView.currentPlayer = problem.toPlay
-        binding.boardView.updateBoard(currentBoardString)
-        
-        // 重置所有状态
-        currentSolutionIndex = 0
-        isSolved = false
-        isAutoPlaying = false
-        
-        // 退出试下模式
-        exitTrialMode()
-        
+        binding.boardView.setZoomArea(problem.zoomMinCol, problem.zoomMaxCol, problem.zoomMinRow, problem.zoomMaxRow)
+        binding.boardView.currentPlayer = problem.toPlay; binding.boardView.updateBoard(currentBoardString)
+        currentSolutionIndex = 0; isSolved = false; isAutoPlaying = false; isShowingAnswer = false; exitTrialMode()
         binding.tvFeedback.visibility = View.GONE
-        binding.tvHint.visibility = View.GONE
-        
-        // 更新按钮状态
-        binding.btnPrev.isEnabled = currentIndex > 0
-        binding.btnNext.isEnabled = currentIndex < problemList.size - 1
-        
-        val moveCount = problem.solutionMoves.size
-        binding.btnHint.text = if (moveCount > 0) "提示($moveCount)" else "提示"
+        binding.btnShowAnswer.text = if (problem.solutionMoves.isNotEmpty()) "显示答案(${problem.solutionMoves.size}步)" else "显示答案"
+        binding.btnPrev.isEnabled = currentIndex > 0; binding.btnNext.isEnabled = currentIndex < problemList.size - 1
     }
     
     private fun handleStoneClick(index: Int) {
-        // 自动对弈期间禁止玩家点击，防止竞态条件
-        if (isAutoPlaying) {
-            return
-        }
-        
-        // 试下模式下自由落子
-        if (isTrialMode) {
-            handleTrialStoneClick(index)
-            return
-        }
-        
+        if (isAutoPlaying || isShowingAnswer) return
+        if (isTrialMode) { handleTrialClick(index); return }
         if (isSolved) return
-        
-        val problem = problemList[currentIndex]
-        val solutionMoves = problem.solutionMoves
-        
-        if (solutionMoves.isEmpty()) {
-            Toast.makeText(this, "无解答数据", Toast.LENGTH_SHORT).show()
-            return
-        }
-        
-        if (currentSolutionIndex >= solutionMoves.size) return
-        
-        val expectedMove = solutionMoves[currentSolutionIndex]
-        
-        // 直接使用棋盘坐标的index
-        val expectedIndex = expectedMove.toIndex(problem.boardSize)
-        
-        if (index == expectedIndex) {
-            // 位置正确，尝试落子
-            val previousBoard = currentBoardString
-            placeStone(index, problem, expectedMove.color)
-            
-            if (currentBoardString != previousBoard) {
-                // 落子成功，推进解答步骤
-                currentSolutionIndex++
-                playStoneSound()
-                
-                if (currentSolutionIndex >= solutionMoves.size) {
-                    isSolved = true
-                    showSuccess()
-                } else {
-                    val nextMove = solutionMoves[currentSolutionIndex]
-                    val nextIsOpponent = nextMove.color != problem.toPlay
-                    
-                    if (nextIsOpponent && currentSolutionIndex < solutionMoves.size) {
-                        // 启动自动对弈
-                        binding.boardView.postDelayed({ autoPlayOpponent() }, 500)
-                    } else {
-                        showFeedback("正确!", true)
-                    }
-                }
-            } else {
-                // 位置正确但落子失败（位置被占等），进入试下模式继续摆棋
-                enterTrialMode()
-            }
-        } else {
-            // 点错时进入试下模式
-            if (trialModeEnabled) {
-                enterTrialMode()
-                showFeedback("试下中...", false)
-            } else {
-                showFeedback("不正确", false)
-            }
-        }
+        val problem = problemList[currentIndex]; val moves = problem.solutionMoves
+        if (moves.isEmpty()) { Toast.makeText(this, "无解答数据", Toast.LENGTH_SHORT).show(); return }
+        if (currentSolutionIndex >= moves.size) return
+        val expected = moves[currentSolutionIndex]; val expectedIdx = expected.toIndex(problem.boardSize)
+        if (index == expectedIdx) {
+            val prev = currentBoardString; placeStone(index, problem, expected.color)
+            if (currentBoardString != prev) {
+                currentSolutionIndex++; playStoneSound()
+                if (currentSolutionIndex >= moves.size) { isSolved = true; showSuccess() }
+                else { val next = moves[currentSolutionIndex]; if (next.color != problem.toPlay) binding.boardView.postDelayed({ autoPlayOpponent() }, 500) else showFeedback("正确!", true) }
+            } else enterTrialMode()
+        } else { enterTrialMode(); showFeedback("试下中...", false) }
     }
     
-    // 试下模式处理
     private fun enterTrialMode() {
         val problem = problemList[currentIndex]
-        
-        isTrialMode = true
-        trialBoardString = currentBoardString
-        trialStoneIndices.clear()
-        trialCurrentPlayer = problem.toPlay
-        
-        // 更新UI
-        binding.boardView.trialModeEnabled = true
-        binding.boardView.trialStoneIndices = emptySet()
-        binding.tvTrialMode.visibility = View.VISIBLE
-        binding.btnExitTrial.visibility = View.VISIBLE
-        
-        // 显示醒目的Toast提示
+        isTrialMode = true; trialBoardString = currentBoardString; trialStoneIndices.clear(); trialCurrentPlayer = problem.toPlay
+        binding.boardView.trialModeEnabled = true; binding.boardView.trialStoneIndices = emptySet()
+        binding.tvTrialMode.visibility = View.VISIBLE; binding.btnExitTrial.visibility = View.VISIBLE
         Toast.makeText(this, "已进入试下模式，可自由落子", Toast.LENGTH_LONG).show()
     }
     
     private fun exitTrialMode() {
-        isTrialMode = false
-        trialBoardString = ""
-        trialStoneIndices.clear()
-        trialCurrentPlayer = StoneColor.BLACK
-        
-        // 更新UI
-        binding.boardView.trialModeEnabled = false
-        binding.boardView.trialStoneIndices = emptySet()
-        binding.tvTrialMode.visibility = View.GONE
-        binding.btnExitTrial.visibility = View.GONE
+        isTrialMode = false; trialBoardString = ""; trialStoneIndices.clear()
+        binding.boardView.trialModeEnabled = false; binding.boardView.trialStoneIndices = emptySet()
+        binding.tvTrialMode.visibility = View.GONE; binding.btnExitTrial.visibility = View.GONE
     }
     
-    private fun handleTrialStoneClick(index: Int) {
+    private fun handleTrialClick(index: Int) {
         val problem = problemList[currentIndex]
-        
-        // 检查位置是否已有棋子
-        if (!GoBoard.isEmptyAt(trialBoardString, index)) {
-            return
-        }
-        
-        // 放置棋子
+        if (!GoBoard.isEmptyAt(trialBoardString, index)) return
         val newBoard = GoBoard.placeStone(trialBoardString, index, trialCurrentPlayer, problem.boardSize)
-        
         if (newBoard != trialBoardString) {
-            // 成功落子
-            trialBoardString = newBoard
-            trialStoneIndices.add(index)
+            trialBoardString = newBoard; trialStoneIndices.add(index)
             trialCurrentPlayer = if (trialCurrentPlayer == StoneColor.BLACK) StoneColor.WHITE else StoneColor.BLACK
-            
-            // 更新棋盘显示
-            binding.boardView.boardString = trialBoardString
-            binding.boardView.lastMoveIndex = index
-            binding.boardView.currentPlayer = trialCurrentPlayer
-            binding.boardView.trialStoneIndices = trialStoneIndices.toSet()
-            binding.boardView.invalidate()
-            
-            playStoneSound()
+            binding.boardView.boardString = trialBoardString; binding.boardView.lastMoveIndex = index
+            binding.boardView.currentPlayer = trialCurrentPlayer; binding.boardView.trialStoneIndices = trialStoneIndices.toSet()
+            binding.boardView.invalidate(); playStoneSound()
         }
     }
     
-    private fun handleReset() {
-        if (isTrialMode) {
-            // 退出试下模式，回到题目初始状态
-            exitTrialMode()
-            showCurrentProblem()
-        } else {
-            // 普通重置
-            resetCurrentProblem()
-        }
-    }
-    
-    /**
-     * 自动播放对手的步骤
-     * 遇到落子失败时进入试下模式，让玩家可以继续摆棋
-     */
     private fun autoPlayOpponent() {
         val problem = problemList.getOrNull(currentIndex) ?: return
-        val solutionMoves = problem.solutionMoves
-        
-        if (currentSolutionIndex >= solutionMoves.size) {
-            isAutoPlaying = false
-            return
-        }
-        
-        // 开始自动对弈，设置标志位
-        isAutoPlaying = true
-        
-        // 播放对手步骤
-        playOpponentMove()
+        if (currentSolutionIndex >= problem.solutionMoves.size) { isAutoPlaying = false; return }
+        isAutoPlaying = true; playOpponentMove()
     }
     
-    /**
-     * 播放单个对手步骤，成功后检查是否还有连续对手步骤
-     */
     private fun playOpponentMove() {
-        val problem = problemList.getOrNull(currentIndex) ?: run {
-            isAutoPlaying = false
-            return
-        }
-        val solutionMoves = problem.solutionMoves
-        
-        if (currentSolutionIndex >= solutionMoves.size) {
-            isAutoPlaying = false
-            return
-        }
-        
-        val move = solutionMoves[currentSolutionIndex]
-        val index = move.toIndex(problem.boardSize)
-        
-        val previousBoard = currentBoardString
+        val problem = problemList.getOrNull(currentIndex) ?: run { isAutoPlaying = false; return }
+        val moves = problem.solutionMoves
+        if (currentSolutionIndex >= moves.size) { isSolved = true; isAutoPlaying = false; showSuccess(); return }
+        val move = moves[currentSolutionIndex]; val index = move.toIndex(problem.boardSize); val prev = currentBoardString
         placeStone(index, problem, move.color)
-        
-        if (currentBoardString != previousBoard) {
-            // 落子成功
-            currentSolutionIndex++
-            playStoneSound()
-            
-            if (currentSolutionIndex >= solutionMoves.size) {
-                // 所有步骤完成
-                isSolved = true
-                isAutoPlaying = false
-                showSuccess()
-                return
-            }
-            
-            // 检查下一步是否还是对手的步骤
-            val nextMove = solutionMoves[currentSolutionIndex]
-            val nextIsOpponent = nextMove.color != problem.toPlay
-            
-            if (nextIsOpponent) {
-                // 继续播放下一个对手步骤
-                binding.boardView.postDelayed({
-                    playOpponentMove()
-                }, 300)
-            } else {
-                // 轮到玩家了
-                isAutoPlaying = false
-                showFeedback("正确!", true)
-            }
-        } else {
-            // 对手落子失败，停止自动对弈，进入试下模式
-            isAutoPlaying = false
-            enterTrialMode()
-        }
+        if (currentBoardString != prev) {
+            currentSolutionIndex++; playStoneSound()
+            if (currentSolutionIndex >= moves.size) { isSolved = true; isAutoPlaying = false; showSuccess(); return }
+            val next = moves[currentSolutionIndex]
+            if (next.color != problem.toPlay) binding.boardView.postDelayed({ playOpponentMove() }, 300)
+            else { isAutoPlaying = false; showFeedback("正确!", true) }
+        } else { isAutoPlaying = false; enterTrialMode() }
     }
-    
-    private val solutionMoves: List<SolutionMove>
-        get() = problemList[currentIndex].solutionMoves
     
     private fun placeStone(index: Int, problem: Problem, color: StoneColor) {
         currentBoardString = GoBoard.placeStone(currentBoardString, index, color, problem.boardSize)
-        binding.boardView.lastMoveIndex = index
-        binding.boardView.currentPlayer = if (color == StoneColor.BLACK) StoneColor.WHITE else StoneColor.BLACK
+        binding.boardView.lastMoveIndex = index; binding.boardView.currentPlayer = if (color == StoneColor.BLACK) StoneColor.WHITE else StoneColor.BLACK
         binding.boardView.updateBoard(currentBoardString, index)
     }
     
     private fun showSuccess() {
-        binding.tvFeedback.text = getString(R.string.problem_solved)
-        binding.tvFeedback.setTextColor(ContextCompat.getColor(this, R.color.correct_green))
-        binding.tvFeedback.visibility = View.VISIBLE
-        
-        val problem = problemList[currentIndex]
-        if (!problem.solutionComment.isNullOrBlank()) {
-            binding.tvHint.text = problem.solutionComment
-            binding.tvHint.visibility = View.VISIBLE
-        }
-        
-        binding.btnHint.text = getString(R.string.next_problem)
+        binding.tvFeedback.text = "正解！"; binding.tvFeedback.setTextColor(ContextCompat.getColor(this, R.color.correct_green)); binding.tvFeedback.visibility = View.VISIBLE
+        binding.btnShowAnswer.text = "下一题"; binding.btnShowAnswer.setOnClickListener { if (currentIndex < problemList.size - 1) { currentIndex++; showCurrentProblem() }; binding.btnShowAnswer.setOnClickListener { showFullAnswer() } }
     }
     
-    private fun showFeedback(message: String, isCorrect: Boolean) {
-        binding.tvFeedback.text = message
-        binding.tvFeedback.setTextColor(
-            ContextCompat.getColor(this, 
-                if (isCorrect) R.color.correct_green else R.color.incorrect_red
-            )
-        )
-        binding.tvFeedback.visibility = View.VISIBLE
-        
-        if (!isCorrect) {
-            binding.tvFeedback.postDelayed({
-                binding.tvFeedback.visibility = View.GONE
-            }, 1500)
-        }
-    }
-    
-    private fun resetCurrentProblem() {
-        showCurrentProblem()
-    }
-    
-    private fun showPreviousProblem() {
-        if (currentIndex > 0) {
-            currentIndex--
-            showCurrentProblem()
-        }
-    }
-    
-    private fun showNextProblem() {
-        if (currentIndex < problemList.size - 1) {
-            currentIndex++
-            showCurrentProblem()
-        }
-    }
-    
-    private fun showHint() {
-        if (isSolved) {
-            showNextProblem()
-            return
-        }
-        
-        if (currentSolutionIndex < solutionMoves.size) {
-            val problem = problemList[currentIndex]
-            val move = solutionMoves[currentSolutionIndex]
-            
-            val index = move.toIndex(problem.boardSize)
-            
-            binding.boardView.hintIndex = index
-            binding.boardView.showHint = true
-            binding.boardView.invalidate()
-            
-            binding.boardView.postDelayed({
-                binding.boardView.showHint = false
-                binding.boardView.invalidate()
-            }, 3000)
-        }
+    private fun showFeedback(msg: String, ok: Boolean) {
+        binding.tvFeedback.text = msg; binding.tvFeedback.setTextColor(ContextCompat.getColor(this, if (ok) R.color.correct_green else R.color.incorrect_red)); binding.tvFeedback.visibility = View.VISIBLE
+        if (!ok) binding.tvFeedback.postDelayed({ binding.tvFeedback.visibility = View.GONE }, 1500)
     }
 }

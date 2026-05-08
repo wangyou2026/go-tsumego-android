@@ -10,7 +10,7 @@ import com.wangyu.gotsumego.data.StoneColor
 import com.wangyu.gotsumego.util.GoBoard
 import kotlin.math.min
 
-class BoardView @JvmOverloads constructor(
+class GoBoardView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
