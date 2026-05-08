@@ -86,7 +86,7 @@ class ProblemActivity : AppCompatActivity() {
         if (moves.isEmpty()) { Toast.makeText(this, "无答案数据", Toast.LENGTH_SHORT).show(); return }
         if (isShowingAnswer) { isShowingAnswer = false; isAutoPlaying = false; binding.btnShowAnswer.text = "显示答案"; showCurrentProblem(); return }
         currentBoardString = problem.toBoardString()
-        binding.boardView.boardSize = 13  // 固定13路
+        // boardSize已在GoBoardView中固定为13，无需再赋值
         binding.boardView.currentPlayer = problem.toPlay
         binding.boardView.updateBoard(currentBoardString)
         currentSolutionIndex = 0; isShowingAnswer = true; isSolved = true; exitTrialMode()
@@ -123,7 +123,7 @@ class ProblemActivity : AppCompatActivity() {
         binding.tvToPlay.text = if (problem.toPlay == StoneColor.WHITE) "白先" else "黑先"
         binding.tvToPlay.visibility = View.VISIBLE
         currentBoardString = problem.toBoardString()
-        binding.boardView.boardSize = 13  // 固定13路
+        // boardSize已在GoBoardView中固定为13，无需再赋值
         binding.boardView.currentPlayer = problem.toPlay; binding.boardView.updateBoard(currentBoardString)
         currentSolutionIndex = 0; isSolved = false; isAutoPlaying = false; isShowingAnswer = false; exitTrialMode()
         binding.tvFeedback.visibility = View.GONE
