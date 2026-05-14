@@ -269,7 +269,7 @@ class ProblemActivity : AppCompatActivity() {
             val fadeOut = ObjectAnimator.ofFloat(overlay, "alpha", 1.0f, 0f)
             fadeOut.duration = 600
             fadeOut.addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: android.animation.Animation) {
+                override fun onAnimationEnd(animation: android.animation.Animator) {
                     overlay.visibility = View.GONE
                 }
             })
