@@ -40,6 +40,10 @@
     <color name="incorrect_red">#EF5350</color>
     <color name="incorrect_red_light">#EF9A9A</color>
 
+    <!-- Info bar background -->
+    <color name="info_bar_bg">#0A0A16</color>
+    <color name="nav_button_bg">#1E1E32</color>
+
     <!-- Badge Colors -->
     <color name="badge_black_first">#1A1A2E</color>
     <color name="badge_white_first">#C9A96E</color>
