@@ -1,11 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp" app:cardBackgroundColor="@color/card_background" app:cardCornerRadius="14dp" app:cardElevation="1dp" app:strokeWidth="0dp">
-<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:paddingStart="18dp" android:paddingEnd="18dp" android:paddingTop="16dp" android:paddingBottom="16dp">
-<View android:id="@+id/colorBar" android:layout_width="4dp" android:layout_height="40dp" android:background="@color/accent" />
-<LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:layout_marginStart="14dp">
-<TextView android:id="@+id/tvBookName" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/text_primary" android:textSize="16sp" android:textStyle="bold" />
-<TextView android:id="@+id/tvBookCount" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/text_secondary" android:textSize="13sp" android:paddingTop="2dp" />
-</LinearLayout>
-<ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_arrow_forward" app:tint="#CCC" />
-</LinearLayout>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="1dp"
+    app:strokeWidth="0dp"
+    app:cardBackgroundColor="@color/card_background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="14dp">
+
+        <!-- 顶部色条 -->
+        <View
+            android:id="@+id/colorBar"
+            android:layout_width="32dp"
+            android:layout_height="4dp"
+            android:layout_marginBottom="10dp"
+            android:background="@color/accent" />
+
+        <!-- 书名 -->
+        <TextView
+            android:id="@+id/tvBookName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text_primary"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:maxLines="2"
+            android:ellipsize="end" />
+
+        <!-- 题数 -->
+        <TextView
+            android:id="@+id/tvBookCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:paddingTop="4dp" />
+
+    </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

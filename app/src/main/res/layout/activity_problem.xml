@@ -174,6 +174,13 @@
         android:paddingBottom="12dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
+        <!-- 顶部分隔线 -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#2A2A40"
+            android:layout_marginBottom="8dp" />
+
         <!-- 反馈文字行（正解/错误等） -->
         <TextView
             android:id="@+id/tvFeedback"
@@ -199,7 +206,7 @@
                 android:layout_weight="3"
                 android:text="显示答案"
                 android:textColor="@color/white"
-                android:textSize="16sp"
+                android:textSize="17sp"
                 android:layout_marginEnd="8dp"
                 app:backgroundTint="@color/accent"
                 app:cornerRadius="14dp"
@@ -217,7 +224,7 @@
                 app:backgroundTint="@android:color/transparent"
                 app:cornerRadius="14dp"
                 app:strokeColor="@color/accent"
-                app:strokeWidth="1dp"
+                app:strokeWidth="2dp"
                 app:icon="@drawable/ic_refresh"
                 app:iconGravity="textStart"
                 app:iconTint="@color/accent" />
@@ -232,31 +239,31 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnPrev"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
+                android:layout_height="46dp"
                 android:layout_weight="1"
                 android:text="‹ 上一题"
-                android:textColor="@color/text_secondary"
-                android:textSize="13sp"
+                android:textColor="#BBBBBB"
+                android:textSize="15sp"
                 android:layout_marginEnd="4dp"
-                app:backgroundTint="#1E1E32"
+                app:backgroundTint="#2A2A40"
                 app:cornerRadius="10dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnNext"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
+                android:layout_height="46dp"
                 android:layout_weight="1"
                 android:text="下一题 ›"
-                android:textColor="@color/accent"
-                android:textSize="13sp"
+                android:textColor="#C9A96E"
+                android:textSize="15sp"
                 android:layout_marginStart="4dp"
-                app:backgroundTint="#1E1E32"
+                app:backgroundTint="#2A2A40"
                 app:cornerRadius="10dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnExitTrial"
                 android:layout_width="wrap_content"
-                android:layout_height="40dp"
+                android:layout_height="46dp"
                 android:text="退出试下"
                 android:textColor="#FF9800"
                 android:textSize="13sp"

@@ -1,13 +1,14 @@
 package com.wangyu.gotsumego.ui
 
 import android.content.Intent
+import android.graphics.Rect
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.wangyu.gotsumego.R
 import com.wangyu.gotsumego.TsumegoApp
@@ -26,12 +27,41 @@ class LibraryFragment : Fragment() {
         view.findViewById<TextView>(R.id.tvTotalCount).text = "共 ${allProblems.size} 道题目"
         val bookStats = allProblems.groupBy { it.book }.map { (book, problems) -> BookStat(book, problems.size) }.sortedByDescending { it.count }
         val rv = view.findViewById<RecyclerView>(R.id.rvBooks)
-        rv.layoutManager = LinearLayoutManager(context)
+        rv.layoutManager = GridLayoutManager(context, 2)
+        rv.addItemDecoration(GridSpacingItemDecoration(2, dpToPx(8), true))
         rv.adapter = BookAdapter(bookStats) { bookName ->
             val intent = Intent(requireContext(), ProblemActivity::class.java)
             intent.putExtra(ProblemActivity.EXTRA_BOOK, bookName)
             intent.putExtra(ProblemActivity.EXTRA_TITLE, bookName)
             startActivity(intent)
+        }
+    }
+    
+    private fun dpToPx(dp: Int): Int {
+        return (dp * resources.displayMetrics.density).toInt()
+    }
+    
+    class GridSpacingItemDecoration(
+        private val spanCount: Int,
+        private val spacing: Int,
+        private val includeEdge: Boolean
+    ) : RecyclerView.ItemDecoration() {
+        override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
+            val position = parent.getChildAdapterPosition(view)
+            val column = position % spanCount
+            if (includeEdge) {
+                outRect.left = column * spacing / spanCount
+                outRect.right = spacing - (column + 1) * spacing / spanCount
+                if (position >= spanCount) {
+                    outRect.top = spacing
+                }
+            } else {
+                outRect.left = column * spacing / spanCount
+                outRect.right = spacing - (column + 1) * spacing / spanCount
+                if (position >= spanCount) {
+                    outRect.top = spacing
+                }
+            }
         }
     }
     
