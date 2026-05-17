@@ -32,6 +32,12 @@ class ProblemActivity : AppCompatActivity() {
     private var trialBoardString: String = ""
     private var trialStoneIndices: MutableSet<Int> = mutableSetOf()
     private var trialCurrentPlayer: StoneColor = StoneColor.BLACK
+    
+    // 悔棋历史：记录每步的 (boardString, lastMoveIndex)
+    private var moveHistory: MutableList<Pair<String, Int>> = mutableListOf()
+    // 答案手数映射：棋盘index → 手数编号
+    private var answerMoveMap: MutableMap<Int, Int> = mutableMapOf()
+    
     private lateinit var prefs: SharedPreferences
     private var soundEnabled: Boolean = true
     private var soundPool: SoundPool? = null
@@ -76,6 +82,7 @@ class ProblemActivity : AppCompatActivity() {
         binding.btnPrev.setOnClickListener { if (currentIndex > 0) { currentIndex--; showCurrentProblem() } }
         binding.btnNext.setOnClickListener { if (currentIndex < problemList.size - 1) { currentIndex++; showCurrentProblem() } }
         binding.btnShowAnswer.setOnClickListener { showFullAnswer() }
+        binding.btnUndo.setOnClickListener { handleUndo() }
         binding.btnExitTrial.setOnClickListener { exitTrialMode(); showCurrentProblem() }
         binding.boardView.onStoneClickListener = { index -> handleStoneClick(index) }
         showCurrentProblem()
@@ -86,13 +93,15 @@ class ProblemActivity : AppCompatActivity() {
         val problem = problemList[currentIndex]
         val moves = problem.solutionMoves
         if (moves.isEmpty()) { Toast.makeText(this, "无答案数据", Toast.LENGTH_SHORT).show(); return }
-        if (isShowingAnswer) { isShowingAnswer = false; isAutoPlaying = false; binding.btnShowAnswer.text = "显示答案"; updateProgress(0, 0); showCurrentProblem(); return }
+        if (isShowingAnswer) { isShowingAnswer = false; isAutoPlaying = false; binding.btnShowAnswer.text = "显示答案"; updateProgress(0, 0); answerMoveMap.clear(); binding.boardView.answerMoveIndices = emptyMap(); showCurrentProblem(); return }
         currentBoardString = problem.toBoardString()
         binding.boardView.currentPlayer = problem.toPlay
         binding.boardView.updateBoard(currentBoardString)
         currentSolutionIndex = 0; isShowingAnswer = true; isSolved = true; exitTrialMode()
+        answerMoveMap.clear(); binding.boardView.answerMoveIndices = emptyMap()
         binding.btnShowAnswer.text = "停止播放"
         binding.tvFeedback.visibility = View.GONE
+        updateUndoButton()
         updateProgress(0, moves.size)
         playNextAnswerStep()
     }
@@ -114,6 +123,9 @@ class ProblemActivity : AppCompatActivity() {
             currentSolutionIndex++; playStoneSound()
             binding.boardView.lastMoveIndex = index
             binding.boardView.currentPlayer = if (move.color == StoneColor.BLACK) StoneColor.WHITE else StoneColor.BLACK
+            // 记录答案手数
+            answerMoveMap[index] = currentSolutionIndex
+            binding.boardView.answerMoveIndices = answerMoveMap.toMap()
             binding.boardView.updateBoard(currentBoardString, index)
             updateProgress(currentSolutionIndex, moves.size)
         } else { currentSolutionIndex++ }
@@ -145,12 +157,14 @@ class ProblemActivity : AppCompatActivity() {
         currentBoardString = problem.toBoardString()
         binding.boardView.currentPlayer = problem.toPlay; binding.boardView.updateBoard(currentBoardString)
         currentSolutionIndex = 0; isSolved = false; isAutoPlaying = false; isShowingAnswer = false; exitTrialMode()
+        moveHistory.clear(); answerMoveMap.clear(); binding.boardView.answerMoveIndices = emptyMap()
         binding.tvFeedback.visibility = View.GONE
         binding.tvFeedbackOverlay.visibility = View.GONE
         binding.btnShowAnswer.text = if (moveCount > 0) "显示答案" else "显示答案"
         binding.btnPrev.isEnabled = currentIndex > 0; binding.btnNext.isEnabled = currentIndex < problemList.size - 1
         binding.btnPrev.alpha = if (currentIndex > 0) 1.0f else 0.4f
         binding.btnNext.alpha = if (currentIndex < problemList.size - 1) 1.0f else 0.4f
+        updateUndoButton()
     }
     
     private fun updateProgress(current: Int, total: Int) {
@@ -177,13 +191,16 @@ class ProblemActivity : AppCompatActivity() {
         if (currentSolutionIndex >= moves.size) return
         val expected = moves[currentSolutionIndex]; val expectedIdx = expected.toIndex(13)
         if (index == expectedIdx) {
+            // 记录悔棋历史
+            moveHistory.add(Pair(currentBoardString, binding.boardView.lastMoveIndex))
             val prev = currentBoardString; placeStone(index, problem, expected.color)
             if (currentBoardString != prev) {
                 currentSolutionIndex++; playStoneSound()
                 updateProgress(currentSolutionIndex, moves.size)
+                updateUndoButton()
                 if (currentSolutionIndex >= moves.size) { isSolved = true; showSuccess() }
                 else { val next = moves[currentSolutionIndex]; if (next.color != problem.toPlay) binding.boardView.postDelayed({ autoPlayOpponent() }, 500) else showFeedbackOverlay("正确!", true) }
-            } else enterTrialMode()
+            } else { moveHistory.removeAt(moveHistory.size - 1); enterTrialMode() }
         } else { enterTrialMode(); showFeedbackOverlay("试下中...", false) }
     }
     
@@ -225,21 +242,51 @@ class ProblemActivity : AppCompatActivity() {
         val moves = problem.solutionMoves
         if (currentSolutionIndex >= moves.size) { isSolved = true; isAutoPlaying = false; showSuccess(); return }
         val move = moves[currentSolutionIndex]; val index = move.toIndex(13); val prev = currentBoardString
+        // 记录悔棋历史
+        moveHistory.add(Pair(currentBoardString, binding.boardView.lastMoveIndex))
         placeStone(index, problem, move.color)
         if (currentBoardString != prev) {
             currentSolutionIndex++; playStoneSound()
             updateProgress(currentSolutionIndex, moves.size)
+            updateUndoButton()
             if (currentSolutionIndex >= moves.size) { isSolved = true; isAutoPlaying = false; showSuccess(); return }
             val next = moves[currentSolutionIndex]
             if (next.color != problem.toPlay) binding.boardView.postDelayed({ playOpponentMove() }, 300)
             else { isAutoPlaying = false; showFeedbackOverlay("正确!", true) }
-        } else { isAutoPlaying = false; enterTrialMode() }
+        } else { isAutoPlaying = false; moveHistory.removeAt(moveHistory.size - 1); enterTrialMode() }
     }
     
     private fun placeStone(index: Int, problem: Problem, color: StoneColor) {
         currentBoardString = GoBoard.placeStone(currentBoardString, index, color, 13)
         binding.boardView.lastMoveIndex = index; binding.boardView.currentPlayer = if (color == StoneColor.BLACK) StoneColor.WHITE else StoneColor.BLACK
         binding.boardView.updateBoard(currentBoardString, index)
+    }
+    
+    private fun handleUndo() {
+        if (isShowingAnswer || isAutoPlaying) return
+        if (moveHistory.isEmpty()) return
+        val (prevBoard, prevLastMove) = moveHistory.removeAt(moveHistory.size - 1)
+        currentSolutionIndex--
+        currentBoardString = prevBoard
+        binding.boardView.lastMoveIndex = prevLastMove
+        // 恢复当前玩家
+        val problem = problemList[currentIndex]
+        if (currentSolutionIndex > 0) {
+            val lastMove = problem.solutionMoves[currentSolutionIndex - 1]
+            binding.boardView.currentPlayer = if (lastMove.color == StoneColor.BLACK) StoneColor.WHITE else StoneColor.BLACK
+        } else {
+            binding.boardView.currentPlayer = problem.toPlay
+        }
+        binding.boardView.updateBoard(currentBoardString, prevLastMove)
+        isSolved = false
+        updateUndoButton()
+        updateProgress(currentSolutionIndex, problem.solutionMoves.size)
+    }
+    
+    private fun updateUndoButton() {
+        val canUndo = !isShowingAnswer && !isAutoPlaying && moveHistory.isNotEmpty()
+        binding.btnUndo.isEnabled = canUndo
+        binding.btnUndo.alpha = if (canUndo) 1.0f else 0.4f
     }
     
     private fun showSuccess() {

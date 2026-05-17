@@ -35,6 +35,13 @@ class GoBoardView @JvmOverloads constructor(
     
     var onStoneClickListener: ((Int) -> Unit)? = null
     
+    // 答案手数编号：key=棋盘index, value=手数编号
+    var answerMoveIndices: Map<Int, Int> = emptyMap()
+        set(value) {
+            field = value
+            invalidate()
+        }
+    
     // 试下模式参数
     var trialModeEnabled: Boolean = false
         set(value) {
@@ -135,6 +142,11 @@ class GoBoardView @JvmOverloads constructor(
         drawGridLines(canvas)
         drawStarPoints(canvas)
         drawStones(canvas)
+        
+        // 绘制答案手数编号
+        if (answerMoveIndices.isNotEmpty()) {
+            drawAnswerMoveNumbers(canvas)
+        }
         
         if (lastMoveIndex >= 0 && lastMoveIndex < boardString.length) {
             if (boardString[lastMoveIndex] != '.') {
@@ -322,6 +334,40 @@ class GoBoardView @JvmOverloads constructor(
             isAntiAlias = true
         }
         canvas.drawPath(path, markerPaint)
+    }
+    
+    private fun drawAnswerMoveNumbers(canvas: Canvas) {
+        if (boardString.length != boardSize * boardSize) return
+        
+        val textSize = stoneRadius * 0.8f
+        val numberPaint = Paint().apply {
+            isAntiAlias = true
+            style = Paint.Style.FILL
+            this.textSize = textSize
+            typeface = Typeface.DEFAULT_BOLD
+            textAlign = Paint.Align.CENTER
+        }
+        
+        for ((index, moveNumber) in answerMoveIndices) {
+            if (index < 0 || index >= boardString.length) continue
+            val stone = boardString[index]
+            if (stone != 'X' && stone != 'O') continue
+            
+            val col = index % boardSize
+            val row = index / boardSize
+            val centerX = padding + col * cellSize
+            val centerY = padding + row * cellSize
+            
+            // 黑棋上画白色数字，白棋上画黑色数字
+            numberPaint.color = if (stone == 'X') Color.WHITE else Color.parseColor("#222222")
+            
+            val textBounds = Rect()
+            val text = moveNumber.toString()
+            numberPaint.getTextBounds(text, 0, text.length, textBounds)
+            val textY = centerY + textBounds.height() / 2f
+            
+            canvas.drawText(text, centerX, textY, numberPaint)
+        }
     }
     
     private fun drawLastMoveMarker(canvas: Canvas, index: Int) {
