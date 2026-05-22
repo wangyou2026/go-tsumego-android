@@ -201,34 +201,110 @@ def extract_main_line_moves(node):
     return moves
 
 
+def _has_seisho_name(node):
+    """Check if any node in this subtree has an N property containing '正解'."""
+    name = node.get('N', '')
+    if '正解' in name:
+        return name
+    for c in node.children:
+        result = _has_seisho_name(c)
+        if result:
+            return result
+    return None
+
+
+def _is_seisho_name(name):
+    """Check if a name indicates a correct answer (正解) variation.
+    
+    Matches: 正解, 正解图, 图4 正解, 正解一, 正解二, 正解1, etc.
+    Excludes: 正解变化, 正解变化图 (these are variation diagrams, not the main answer)
+    """
+    if '正解' not in name:
+        return False
+    # Exclude "正解变化" and "正解变化图" - these are variation diagrams
+    if '变化' in name:
+        return False
+    return True
+
+
+def _seisho_priority(name):
+    """Return priority for 正解 names. Lower = higher priority.
+    
+    Priority:
+    1. Pure "正解" or "正解图" (exact match or with colon/space) - THE main answer
+    2. "图N 正解" / "图N、M 正解" (正解 with figure number prefix, no number suffix)
+    3. "正解一" / "正解1" / "正解图1" (first numbered 正解 - used when multiple answers)
+    4. "图N 正解一" (正解一 with figure prefix)
+    5. Other names containing 正解 (including 正解二, etc.)
+    """
+    name_stripped = name.rstrip('。 ')
+    
+    # Pure 正解 / 正解图 (exact match)
+    if name_stripped in ('正解', '正解图', '正解图：'):
+        return 1
+    
+    # 图N 正解 (figure prefix, ends with plain 正解)
+    if '图' in name and name_stripped.endswith('正解'):
+        return 2
+    # 图N、M 正解 (figure range, ends with plain 正解)
+    if '图' in name and '正解' in name and name_stripped.endswith('正解'):
+        return 2
+    
+    # 正解一 / 正解1 / 正解图1 (first numbered, no figure prefix)
+    if name_stripped in ('正解一', '正解1', '正解图1'):
+        return 3
+    # Ends with 正解一/正解1/正解图1 (with figure prefix like 图20 正解一)
+    if name_stripped.endswith('正解一') or name_stripped.endswith('正解1') or name_stripped.endswith('正解图1'):
+        return 4
+    
+    # Any other 正解 (正解二, 正解三, 正解2, etc.)
+    return 5
+
+
 def find_correct_answer_node(root):
     """
     Find the correct answer variation from the root node.
     
-    Strategy:
-    1. Look for a child with N[正解] or N[正解图]
-    2. If not found, look for the first child with a B[] or W[] move
-    3. Skip children that are only comments (审题, 题目说明 etc.)
+    Strategy (in priority order):
+    1. Look for a child variation whose N property (or any descendant's N property) 
+       contains "正解", prioritizing:
+       - Pure "正解" / "正解图" over "正解一" / "正解二"
+       - "正解一" over "正解二" (take first 正解)
+       - Exclude "正解变化" / "正解变化图" (these are variation diagrams)
+    2. If no 正解 found, look for the first child with a B[] or W[] move
+    3. Fallback: first child with moves in its subtree
     
-    Also handles the case where the root node itself has a B[] or W[] move
-    (some SGF formats have the first move in the root sequence).
+    Note: We do NOT follow the first child looking for "main sequence" moves,
+    because in tsumego SGFs, ALL children of root are variations, not continuations
+    of a main line.
     """
-    # Check if root has a move in its sequence (direct continuation)
-    current = root
-    while current:
-        if current.get('B') is not None or current.get('W') is not None:
-            return current  # Found a move in the main sequence
-        if current.children:
-            current = current.children[0]
-        else:
-            break
+    # First pass: look for 正解 variations (checking both direct N and subtree N)
+    best_child = None
+    best_priority = 99  # lower is better
+    best_seisho_name = None
     
-    # No move in main sequence - check root's direct children for variations
-    # First pass: look for 正解/正解图
     for child in root.children:
+        # Check direct N property
         name = child.get('N', '')
-        if name in ('正解', '正解图'):
-            return child
+        if _is_seisho_name(name):
+            priority = _seisho_priority(name)
+            if priority < best_priority:
+                best_priority = priority
+                best_child = child
+                best_seisho_name = name
+            continue
+        
+        # Check subtree for N property with 正解
+        deep_name = _has_seisho_name(child)
+        if deep_name and _is_seisho_name(deep_name):
+            priority = _seisho_priority(deep_name)
+            if priority < best_priority:
+                best_priority = priority
+                best_child = child
+                best_seisho_name = deep_name
+    
+    if best_child is not None:
+        return best_child
     
     # Second pass: look for first child with a move
     for child in root.children:
@@ -316,6 +392,25 @@ def sgf_to_problem(sgf_text, book_name, problem_id):
     
     # Extract all main line moves from the answer node
     moves = extract_main_line_moves(answer_node)
+    
+    # Handle "继续" variations: if a root-level child has N containing "继续",
+    # and it's a continuation of the answer variation, merge its moves.
+    # This handles cases where the SGF has a separate variation for "继续"
+    # that continues from where the answer variation left off.
+    if answer_node in root.children:
+        answer_idx = root.children.index(answer_node)
+        for i in range(answer_idx + 1, len(root.children)):
+            next_child = root.children[i]
+            next_name = next_child.get('N', '')
+            if '继续' in next_name:
+                continue_moves = extract_main_line_moves(next_child)
+                if continue_moves:
+                    # Check color continuity: last move's color should be opposite of first continue move's color
+                    last_color = moves[-1][2] if moves else 0
+                    first_continue_color = continue_moves[0][2]
+                    if last_color != first_continue_color and last_color != 0:
+                        moves = moves + continue_moves
+                break  # Only merge the first "继续" after the answer
     
     if not moves:
         return None, "no_moves_in_answer"

@@ -83,6 +83,14 @@ class ProblemActivity : AppCompatActivity() {
         binding.btnNext.setOnClickListener { if (currentIndex < problemList.size - 1) { currentIndex++; showCurrentProblem() } }
         binding.btnShowAnswer.setOnClickListener { showFullAnswer() }
         binding.btnUndo.setOnClickListener { handleUndo() }
+        binding.btnTrial.setOnClickListener { 
+            if (!isTrialMode) {
+                enterTrialMode()
+            } else {
+                exitTrialMode()
+                showCurrentProblem()
+            }
+        }
         binding.btnExitTrial.setOnClickListener { exitTrialMode(); showCurrentProblem() }
         binding.boardView.onStoneClickListener = { index -> handleStoneClick(index) }
         showCurrentProblem()
@@ -165,6 +173,7 @@ class ProblemActivity : AppCompatActivity() {
         binding.btnPrev.alpha = if (currentIndex > 0) 1.0f else 0.4f
         binding.btnNext.alpha = if (currentIndex < problemList.size - 1) 1.0f else 0.4f
         updateUndoButton()
+        updateTrialButton()
     }
     
     private fun updateProgress(current: Int, total: Int) {
@@ -201,25 +210,31 @@ class ProblemActivity : AppCompatActivity() {
                 if (currentSolutionIndex >= moves.size) { isSolved = true; showSuccess() }
                 else { val next = moves[currentSolutionIndex]; if (next.color != problem.toPlay) binding.boardView.postDelayed({ autoPlayOpponent() }, 500) else showFeedbackOverlay("正确!", true) }
             } else { moveHistory.removeAt(moveHistory.size - 1); enterTrialMode() }
-        } else { enterTrialMode(); showFeedbackOverlay("试下中...", false) }
+        } else { 
+            // 点错了，不自动进入试下模式，只提示错误
+            showFeedbackOverlay("错误", false)
+        }
     }
     
     private fun enterTrialMode() {
         val problem = problemList[currentIndex]
-        isTrialMode = true; trialBoardString = currentBoardString; trialStoneIndices.clear(); trialCurrentPlayer = problem.toPlay
+        isTrialMode = true; trialBoardString = currentBoardString; trialStoneIndices.clear(); trialCurrentPlayer = if (currentSolutionIndex > 0) binding.boardView.currentPlayer else problem.toPlay
         binding.boardView.trialModeEnabled = true; binding.boardView.trialStoneIndices = emptySet()
         binding.tvTrialMode.visibility = View.VISIBLE; binding.btnExitTrial.visibility = View.VISIBLE
-        Toast.makeText(this, "已进入试下模式，可自由落子", Toast.LENGTH_LONG).show()
+        binding.btnTrial.text = "退出试下"
+        binding.btnTrial.setTextColor(ContextCompat.getColor(this, R.color.accent))
+        showFeedbackOverlay("试下模式", false)
     }
     
     private fun exitTrialMode() {
         isTrialMode = false; trialBoardString = ""; trialStoneIndices.clear()
         binding.boardView.trialModeEnabled = false; binding.boardView.trialStoneIndices = emptySet()
         binding.tvTrialMode.visibility = View.GONE; binding.btnExitTrial.visibility = View.GONE
+        binding.btnTrial.text = "试下"
+        binding.btnTrial.setTextColor(ContextCompat.getColor(this, R.color.white))
     }
     
     private fun handleTrialClick(index: Int) {
-        val problem = problemList[currentIndex]
         if (!GoBoard.isEmptyAt(trialBoardString, index)) return
         val newBoard = GoBoard.placeStone(trialBoardString, index, trialCurrentPlayer, 13)
         if (newBoard != trialBoardString) {
@@ -264,6 +279,12 @@ class ProblemActivity : AppCompatActivity() {
     
     private fun handleUndo() {
         if (isShowingAnswer || isAutoPlaying) return
+        if (isTrialMode) {
+            // 试下模式悔棋：恢复到试下前的状态
+            exitTrialMode()
+            showCurrentProblem()
+            return
+        }
         if (moveHistory.isEmpty()) return
         val (prevBoard, prevLastMove) = moveHistory.removeAt(moveHistory.size - 1)
         currentSolutionIndex--
@@ -284,9 +305,19 @@ class ProblemActivity : AppCompatActivity() {
     }
     
     private fun updateUndoButton() {
-        val canUndo = !isShowingAnswer && !isAutoPlaying && moveHistory.isNotEmpty()
+        val canUndo = !isShowingAnswer && !isAutoPlaying && (moveHistory.isNotEmpty() || isTrialMode)
         binding.btnUndo.isEnabled = canUndo
         binding.btnUndo.alpha = if (canUndo) 1.0f else 0.4f
+    }
+    
+    private fun updateTrialButton() {
+        if (isTrialMode) {
+            binding.btnTrial.text = "退出试下"
+            binding.btnTrial.setTextColor(ContextCompat.getColor(this, R.color.accent))
+        } else {
+            binding.btnTrial.text = "试下"
+            binding.btnTrial.setTextColor(ContextCompat.getColor(this, R.color.white))
+        }
     }
     
     private fun showSuccess() {
