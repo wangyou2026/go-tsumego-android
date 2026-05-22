@@ -21,15 +21,25 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     
-    - name: Build Debug APK
+    - name: Build Release APK
       run: |
         export GRADLE_USER_HOME="$HOME/.gradle"
-        ./gradlew assembleDebug --no-daemon --no-build-cache --no-configuration-cache 2>&1 | tail -50
+        ./gradlew assembleRelease --no-daemon --no-build-cache --no-configuration-cache 2>&1 | tail -50
     
-    - name: Upload Debug APK
+    - name: Verify APK signature
+      run: |
+        APK_PATH=$(find app/build/outputs/apk/release -name "*.apk" | head -1)
+        echo "APK: $APK_PATH"
+        if [ -n "$APK_PATH" ]; then
+          unzip -l "$APK_PATH" | grep -E "META-INF.*\.(RSA|SF|MF)" | head -5
+          echo "---"
+          echo "V1 signature (JAR) present: $(unzip -l "$APK_PATH" | grep -c 'META-INF/.*\.RSA') RSA files"
+        fi
+    
+    - name: Upload Release APK
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: app-debug
-        path: app/build/outputs/apk/debug/*.apk
+        name: app-release
+        path: app/build/outputs/apk/release/*.apk
         retention-days: 7

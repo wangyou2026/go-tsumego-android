@@ -19,7 +19,13 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file("debug.keystore")
+            storeFile = file("../debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+        getByName("debug") {
+            storeFile = file("../debug.keystore")
             storePassword = "android"
             keyAlias = "androiddebugkey"
             keyPassword = "android"
@@ -35,6 +41,16 @@ android {
             )
             signingConfig = signingConfigs.getByName("release")
         }
+        debug {
+            signingConfig = signingConfigs.getByName("debug")
+        }
+    }
+
+    // Force V1 (JAR) + V2 (APK Signature Scheme) signing
+    // This ensures compatibility with all Android versions
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
     }
 
     compileOptions {
