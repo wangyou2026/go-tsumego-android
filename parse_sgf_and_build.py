@@ -339,19 +339,17 @@ def sgf_to_problem(sgf_text, book_name, problem_id):
     
     root = trees[0]
     
-    # Collect ALL AB/AW properties from ALL nodes in the setup phase
-    # (before the first move). Some SGF files have AB split across root + setup nodes.
+    # Collect AB/AW properties from the setup phase (before the first move).
+    # Only follow the main line SEQUENCE (chained nodes within the same game tree),
+    # NOT variations (children that are separate game trees with different setups like 参考图).
     stones = []
     
-    # Walk through the sequence from root, collecting AB/AW until we hit a B/W move
-    visited = set()
-    queue = [root]
-    setup_stones_collected = False
-    
-    # First, collect setup stones from the root node and its non-move descendants
+    # Collect setup stones from root node, then follow sequence continuations only.
+    # A sequence continuation is a child node that does NOT have AE (Add Empty) property
+    # and does NOT have a name suggesting it's a variation (参考图, 图N, etc.).
+    # AE indicates a board modification (reference diagram), not additional setup.
     current = root
     while current:
-        node_id = id(current)
         for coord_str in current.get_all('AB'):
             xy = sgf_coord_to_xy(coord_str)
             if xy:
@@ -365,10 +363,14 @@ def sgf_to_problem(sgf_text, book_name, problem_id):
         if current.get('B') is not None or current.get('W') is not None:
             break
         
-        # Continue to first child only (main line setup)
+        # Only continue to first child if it's a sequence continuation (no AE property)
+        # AE = Add Empty means this child modifies the board = variation/reference diagram
         if current.children:
-            # But also check other children for AB/AW (some files put additional setup in variations)
-            current = current.children[0]
+            first_child = current.children[0]
+            if first_child.get_all('AE') or first_child.get_all('DD'):
+                # This child modifies existing stones (reference diagram), stop here
+                break
+            current = first_child
         else:
             break
     
@@ -687,6 +689,40 @@ def calc_offset(min_c, max_c, board_from, board_to):
         new_gap_start = extra // 2
     else:
         new_gap_start = round(extra * gap_start / total_gap)
+    
+    # Preserve edge gap: if original 19-road had at least 1 space from the edge,
+    # ensure the 13-road also has at least 1 space (prevent rounding to 0).
+    min_gap_start = 1 if gap_start >= 1 else 0
+    min_gap_end = 1 if gap_end >= 1 else 0
+    
+    if min_gap_start + min_gap_end <= extra:
+        # Both constraints can be satisfied
+        if new_gap_start < min_gap_start:
+            new_gap_start = min_gap_start
+        new_gap_end = extra - new_gap_start
+        if new_gap_end < min_gap_end:
+            new_gap_start = extra - min_gap_end
+            # Re-check start constraint
+            if new_gap_start < min_gap_start:
+                new_gap_start = min_gap_start
+    elif min_gap_start > 0 or min_gap_end > 0:
+        # Can't satisfy both, but try to satisfy at least one
+        # Prioritize the side whose original gap was proportionally larger
+        if total_gap > 0:
+            start_ratio = gap_start / total_gap
+        else:
+            start_ratio = 0.5
+        
+        if min_gap_start > 0 and (start_ratio >= 0.5 or min_gap_end == 0):
+            # Preserve start (top/left) gap
+            if new_gap_start < min_gap_start and min_gap_start <= extra:
+                new_gap_start = min_gap_start
+        elif min_gap_end > 0:
+            # Preserve end (bottom/right) gap
+            new_gap_end = extra - new_gap_start
+            if new_gap_end < min_gap_end and min_gap_end <= extra:
+                new_gap_start = extra - min_gap_end
+    
     return new_gap_start - min_c
 
 
