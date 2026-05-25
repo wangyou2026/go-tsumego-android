@@ -675,6 +675,7 @@ MAX_13 = 12
 
 BOOKS_TO_DELETE = ['其他', '官子谱', '玄玄棋经', '仙机武库', '郑']
 MIN_BOOK_SIZE = 50
+EXCLUDE_BOOKS = {'死活大全'}
 
 
 def calc_offset(min_c, max_c, board_from, board_to):
@@ -886,7 +887,7 @@ def main():
     print("Step 3: Filter books and convert to 13x13")
     print("=" * 60)
     
-    filtered = [p for p in valid_19 if p.get('book','') not in BOOKS_TO_DELETE]
+    filtered = [p for p in valid_19 if p.get('book','') not in BOOKS_TO_DELETE and p.get('book','') not in EXCLUDE_BOOKS]
     book_counts_filtered = Counter(p.get('book','') for p in filtered)
     valid_books = {b for b, c in book_counts_filtered.items() if c >= MIN_BOOK_SIZE}
     final_19 = [p for p in filtered if p.get('book','') in valid_books]
