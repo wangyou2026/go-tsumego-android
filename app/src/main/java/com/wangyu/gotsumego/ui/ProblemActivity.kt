@@ -74,13 +74,20 @@ class ProblemActivity : AppCompatActivity() {
     private fun loadProblems(random: Boolean) {
         problemList = if (filterBook != null) repository.getProblemsByBook(filterBook!!) else repository.getAllProblems()
         if (random && problemList.isNotEmpty()) problemList = problemList.shuffled()
+        // Restore last viewed position (not for random mode)
+        if (!random && filterBook != null) {
+            val savedIndex = prefs.getInt("progress_$filterBook", 0)
+            if (savedIndex in 0 until problemList.size) {
+                currentIndex = savedIndex
+            }
+        }
     }
     
     private fun setupViews() {
-        binding.btnBack.setOnClickListener { finish() }
+        binding.btnBack.setOnClickListener { saveProgress(); finish() }
         binding.btnReset.setOnClickListener { exitTrialMode(); showCurrentProblem() }
-        binding.btnPrev.setOnClickListener { if (currentIndex > 0) { currentIndex--; showCurrentProblem() } }
-        binding.btnNext.setOnClickListener { if (currentIndex < problemList.size - 1) { currentIndex++; showCurrentProblem() } }
+        binding.btnPrev.setOnClickListener { if (currentIndex > 0) { currentIndex--; saveProgress(); showCurrentProblem() } }
+        binding.btnNext.setOnClickListener { if (currentIndex < problemList.size - 1) { currentIndex++; saveProgress(); showCurrentProblem() } }
         binding.btnShowAnswer.setOnClickListener { showFullAnswer() }
         binding.btnUndo.setOnClickListener { handleUndo() }
         binding.btnTrial.setOnClickListener { 
@@ -94,6 +101,17 @@ class ProblemActivity : AppCompatActivity() {
         binding.btnExitTrial.setOnClickListener { exitTrialMode(); showCurrentProblem() }
         binding.boardView.onStoneClickListener = { index -> handleStoneClick(index) }
         showCurrentProblem()
+    }
+    
+    private fun saveProgress() {
+        if (filterBook != null && currentIndex >= 0) {
+            prefs.edit().putInt("progress_$filterBook", currentIndex).apply()
+        }
+    }
+    
+    override fun onPause() {
+        super.onPause()
+        saveProgress()
     }
     
     private fun showFullAnswer() {

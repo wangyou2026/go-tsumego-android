@@ -727,11 +727,67 @@ def calc_offset(min_c, max_c, board_from, board_to):
     return new_gap_start - min_c
 
 
+def normalize_orientation(stones_td, answer_td, moves_td):
+    """
+    Normalize problem orientation so all corner problems appear in the bottom-left.
+    
+    In top-down coordinates (y=0 is top):
+    - Bottom-left (target): low x, high y → no transformation
+    - Bottom-right: high x, high y → flip x
+    - Top-left: low x, low y → flip y
+    - Top-right: high x, low y → flip both x and y
+    
+    Uses centroid of stones to determine the quadrant.
+    """
+    if not stones_td:
+        return stones_td, answer_td, moves_td, []
+    
+    # Compute centroid of stones
+    cx = sum(s[0] for s in stones_td) / len(stones_td)
+    cy = sum(s[1] for s in stones_td) / len(stones_td)
+    
+    # Center of 19x19 board
+    mid = 9.0
+    
+    flip_x = cx >= mid  # stones in right half → flip x to move to left
+    flip_y = cy < mid   # stones in top half → flip y to move to bottom
+    
+    if not flip_x and not flip_y:
+        # Already in bottom-left, no change needed
+        return stones_td, answer_td, moves_td, []
+    
+    # Apply reflections
+    new_stones = []
+    for s in stones_td:
+        nx = (MAX_19 - s[0]) if flip_x else s[0]
+        ny = (MAX_19 - s[1]) if flip_y else s[1]
+        new_stones.append([nx, ny, s[2]])
+    
+    ax = (MAX_19 - answer_td[0]) if flip_x else answer_td[0]
+    ay = (MAX_19 - answer_td[1]) if flip_y else answer_td[1]
+    new_answer = [ax, ay]
+    
+    new_moves = []
+    for m in moves_td:
+        mx = (MAX_19 - m[0]) if flip_x else m[0]
+        my = (MAX_19 - m[1]) if flip_y else m[1]
+        new_moves.append([mx, my, m[2]])
+    
+    transforms = []
+    if flip_x: transforms.append('flip_x')
+    if flip_y: transforms.append('flip_y')
+    
+    return new_stones, new_answer, new_moves, transforms
+
+
 def convert_problem_to_13(problem):
     # Unify to top-down coordinate system
     stones_td = [[s[0], MAX_19 - s[1], s[2]] for s in problem['stones']]
     answer_td = [problem['answer'][0], problem['answer'][1]]
     moves_td = [[m[0], m[1], m[2]] for m in problem.get('solutionMoves', [])]
+    
+    # Normalize orientation: move all corner problems to bottom-left
+    stones_td, answer_td, moves_td, _ = normalize_orientation(stones_td, answer_td, moves_td)
     
     all_points = [(s[0], s[1]) for s in stones_td] + [tuple(answer_td)]
     for m in moves_td:
