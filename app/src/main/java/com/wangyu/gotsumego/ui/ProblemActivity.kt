@@ -2,12 +2,18 @@ package com.wangyu.gotsumego.ui
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.PointF
 import android.media.AudioAttributes
 import android.media.SoundPool
 import android.os.Bundle
 import android.view.View
+import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.animation.AnimatorListenerAdapter
+import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -16,6 +22,9 @@ import com.wangyu.gotsumego.TsumegoApp
 import com.wangyu.gotsumego.data.*
 import com.wangyu.gotsumego.databinding.ActivityProblemBinding
 import com.wangyu.gotsumego.util.GoBoard
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.random.Random
 
 class ProblemActivity : AppCompatActivity() {
     private lateinit var binding: ActivityProblemBinding
@@ -223,13 +232,21 @@ class ProblemActivity : AppCompatActivity() {
             val prev = currentBoardString; placeStone(index, problem, expected.color)
             if (currentBoardString != prev) {
                 currentSolutionIndex++; playStoneSound()
-                updateProgress(currentSolutionIndex, moves.size)
                 updateUndoButton()
-                if (currentSolutionIndex >= moves.size) { isSolved = true; showSuccess() }
-                else { val next = moves[currentSolutionIndex]; if (next.color != problem.toPlay) binding.boardView.postDelayed({ autoPlayOpponent() }, 500) else showFeedbackOverlay("正确!", true) }
+                if (currentSolutionIndex >= moves.size) {
+                    // 全部答完才显示正解+庆祝动画
+                    isSolved = true; showSuccess()
+                } else {
+                    val next = moves[currentSolutionIndex]
+                    if (next.color != problem.toPlay) {
+                        // 对手应手，不显示"正确"
+                        binding.boardView.postDelayed({ autoPlayOpponent() }, 500)
+                    }
+                    // 自己的下一步，也不显示"正确"，安静等待落子
+                }
             } else { moveHistory.removeAt(moveHistory.size - 1); enterTrialMode() }
         } else { 
-            // 点错了，不自动进入试下模式，只提示错误
+            // 点错了，提示错误
             showFeedbackOverlay("错误", false)
         }
     }
@@ -280,12 +297,11 @@ class ProblemActivity : AppCompatActivity() {
         placeStone(index, problem, move.color)
         if (currentBoardString != prev) {
             currentSolutionIndex++; playStoneSound()
-            updateProgress(currentSolutionIndex, moves.size)
             updateUndoButton()
             if (currentSolutionIndex >= moves.size) { isSolved = true; isAutoPlaying = false; showSuccess(); return }
             val next = moves[currentSolutionIndex]
             if (next.color != problem.toPlay) binding.boardView.postDelayed({ playOpponentMove() }, 300)
-            else { isAutoPlaying = false; showFeedbackOverlay("正确!", true) }
+            else { isAutoPlaying = false /* 不显示"正确"，安静等待 */ }
         } else { isAutoPlaying = false; moveHistory.removeAt(moveHistory.size - 1); enterTrialMode() }
     }
     
@@ -319,7 +335,6 @@ class ProblemActivity : AppCompatActivity() {
         binding.boardView.updateBoard(currentBoardString, prevLastMove)
         isSolved = false
         updateUndoButton()
-        updateProgress(currentSolutionIndex, problem.solutionMoves.size)
     }
     
     private fun updateUndoButton() {
@@ -339,8 +354,128 @@ class ProblemActivity : AppCompatActivity() {
     }
     
     private fun showSuccess() {
-        showFeedbackOverlay("正解！", true)
+        showFeedbackOverlay("✨ 正解！", true)
+        showCelebration()
         binding.btnShowAnswer.text = "下一题"; binding.btnShowAnswer.setOnClickListener { if (currentIndex < problemList.size - 1) { currentIndex++; showCurrentProblem() }; binding.btnShowAnswer.setOnClickListener { showFullAnswer() } }
+    }
+    
+    /**
+     * 庆祝动画：粒子星星散落
+     */
+    private fun showCelebration() {
+        val container = binding.boardContainer
+        val celebration = CelebrationView(this)
+        container.addView(celebration, FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.MATCH_PARENT,
+            FrameLayout.LayoutParams.MATCH_PARENT
+        ))
+        // 3秒后自动移除
+        celebration.postDelayed({ container.removeView(celebration) }, 3000)
+    }
+    
+    /**
+     * 粒子庆祝动画View - 星星散落效果
+     */
+    private class CelebrationView(context: Context) : View(context) {
+        private data class Particle(
+            var x: Float, var y: Float,
+            var vx: Float, var vy: Float,
+            var size: Float, var alpha: Float,
+            var color: Int, var rotation: Float,
+            var rotationSpeed: Float
+        )
+        
+        private val particles = mutableListOf<Particle>()
+        private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+        private var startTime = System.currentTimeMillis()
+        private val duration = 2500L // ms
+        
+        private val starColors = intArrayOf(
+            0xFFC9A96E.toInt(), // 金色
+            0xFF66BB6A.toInt(), // 绿色
+            0xFFE91E63.toInt(), // 粉红
+            0xFFFFD54F.toInt(), // 黄色
+            0xFF42A5F5.toInt(), // 蓝色
+            0xFFFFFFFF.toInt()  // 白色
+        )
+        
+        init {
+            // 从中心点向外散射粒子
+            val random = Random.Default
+            for (i in 0..49) {
+                val angle = random.nextDouble() * Math.PI * 2
+                val speed = (random.nextDouble() * 6 + 2).toFloat()
+                particles.add(Particle(
+                    x = 0.5f, y = 0.5f, // normalized center
+                    vx = (cos(angle) * speed).toFloat(),
+                    vy = (sin(angle) * speed - 3).toFloat(), // slightly upward bias
+                    size = random.nextDouble().toFloat() * 6 + 4,
+                    alpha = 1.0f,
+                    color = starColors[random.nextInt(starColors.size)],
+                    rotation = random.nextDouble().toFloat() * 360,
+                    rotationSpeed = (random.nextDouble() * 6 - 3).toFloat()
+                ))
+            }
+        }
+        
+        override fun onDraw(canvas: Canvas) {
+            super.onDraw(canvas)
+            val elapsed = System.currentTimeMillis() - startTime
+            if (elapsed > duration) return
+            
+            val progress = elapsed.toFloat() / duration
+            val w = width.toFloat()
+            val h = height.toFloat()
+            val gravity = 0.15f
+            
+            for (p in particles) {
+                // Update physics
+                p.x += p.vx / w
+                p.vy += gravity
+                p.y += p.vy / h
+                p.rotation += p.rotationSpeed
+                p.alpha = 1.0f - progress * progress // ease out fade
+                
+                if (p.alpha <= 0) continue
+                
+                val px = p.x * w
+                val py = p.y * h
+                
+                canvas.save()
+                canvas.translate(px, py)
+                canvas.rotate(p.rotation)
+                
+                paint.color = p.color
+                paint.alpha = (p.alpha * 255).toInt().coerceIn(0, 255)
+                
+                drawStar(canvas, paint, p.size)
+                
+                canvas.restore()
+            }
+            
+            if (elapsed < duration) {
+                invalidate()
+            }
+        }
+        
+        private fun drawStar(canvas: Canvas, paint: Paint, size: Float) {
+            // 四角星
+            val path = android.graphics.Path()
+            val outerR = size
+            val innerR = size * 0.35f
+            for (i in 0..3) {
+                val outerAngle = Math.toRadians(i * 90.0 - 45.0)
+                val innerAngle = Math.toRadians(i * 90.0)
+                if (i == 0) {
+                    path.moveTo((cos(outerAngle) * outerR).toFloat(), (sin(outerAngle) * outerR).toFloat())
+                } else {
+                    path.lineTo((cos(outerAngle) * outerR).toFloat(), (sin(outerAngle) * outerR).toFloat())
+                }
+                path.lineTo((cos(innerAngle) * innerR).toFloat(), (sin(innerAngle) * innerR).toFloat())
+            }
+            path.close()
+            canvas.drawPath(path, paint)
+        }
     }
     
     /**
@@ -354,23 +489,48 @@ class ProblemActivity : AppCompatActivity() {
         overlay.alpha = 1.0f
         overlay.scaleX = 0.5f; overlay.scaleY = 0.5f
         
-        // 放大弹入动画
-        val scaleX = ObjectAnimator.ofFloat(overlay, "scaleX", 0.5f, 1.1f, 1.0f)
-        val scaleY = ObjectAnimator.ofFloat(overlay, "scaleY", 0.5f, 1.1f, 1.0f)
-        scaleX.duration = 300; scaleY.duration = 300
-        scaleX.start(); scaleY.start()
-        
-        // 延迟淡出
-        overlay.postDelayed({
-            val fadeOut = ObjectAnimator.ofFloat(overlay, "alpha", 1.0f, 0f)
-            fadeOut.duration = 600
-            fadeOut.addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: android.animation.Animator) {
-                    overlay.visibility = View.GONE
-                }
-            })
-            fadeOut.start()
-        }, if (isCorrect) 1500 else 1000)
+        if (isCorrect && msg.contains("正解")) {
+            // 正解：更大的弹入动画 + 金色发光
+            overlay.textSize = 34f
+            val scaleX = ObjectAnimator.ofFloat(overlay, "scaleX", 0.3f, 1.2f, 1.0f)
+            val scaleY = ObjectAnimator.ofFloat(overlay, "scaleY", 0.3f, 1.2f, 1.0f)
+            scaleX.duration = 400; scaleY.duration = 400
+            val set = AnimatorSet()
+            set.playTogether(scaleX, scaleY)
+            set.start()
+            
+            // 延迟淡出
+            overlay.postDelayed({
+                val fadeOut = ObjectAnimator.ofFloat(overlay, "alpha", 1.0f, 0f)
+                fadeOut.duration = 800
+                fadeOut.addListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: android.animation.Animator) {
+                        overlay.visibility = View.GONE
+                        overlay.textSize = 28f // reset
+                    }
+                })
+                fadeOut.start()
+            }, 2200)
+        } else {
+            // 错误/试下提示：原来的动画
+            overlay.textSize = 28f
+            val scaleX = ObjectAnimator.ofFloat(overlay, "scaleX", 0.5f, 1.1f, 1.0f)
+            val scaleY = ObjectAnimator.ofFloat(overlay, "scaleY", 0.5f, 1.1f, 1.0f)
+            scaleX.duration = 300; scaleY.duration = 300
+            scaleX.start(); scaleY.start()
+            
+            // 延迟淡出
+            overlay.postDelayed({
+                val fadeOut = ObjectAnimator.ofFloat(overlay, "alpha", 1.0f, 0f)
+                fadeOut.duration = 600
+                fadeOut.addListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: android.animation.Animator) {
+                        overlay.visibility = View.GONE
+                    }
+                })
+                fadeOut.start()
+            }, 1000)
+        }
     }
     
     private fun showFeedback(msg: String, ok: Boolean) {
