@@ -32,7 +32,6 @@ class MainActivity : AppCompatActivity() {
                     startActivity(intent)
                     false
                 }
-                R.id.nav_wrong -> { showFragment(WrongFragment.newInstance()); true }
                 else -> false
             }
         }

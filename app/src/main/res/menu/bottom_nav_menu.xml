@@ -2,5 +2,4 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 <item android:id="@+id/nav_library" android:icon="@drawable/ic_library" android:title="题库" />
 <item android:id="@+id/nav_random" android:icon="@drawable/ic_random" android:title="随机做题" />
-<item android:id="@+id/nav_wrong" android:icon="@drawable/ic_wrong" android:title="错题本" />
 </menu>
