@@ -9,5 +9,5 @@
 </LinearLayout>
 </com.google.android.material.appbar.AppBarLayout>
 <FrameLayout android:id="@+id/fragmentContainer" android:layout_width="match_parent" android:layout_height="match_parent" app:layout_behavior="@string/appbar_scrolling_view_behavior" android:layout_marginBottom="56dp" />
-<com.google.android.material.bottomnavigation.BottomNavigationView android:id="@+id/bottomNav" android:layout_width="match_parent" android:layout_height="56dp" android:layout_gravity="bottom" android:background="@color/primary_dark" app:itemIconTint="@color/accent" app:itemTextColor="@color/accent" app:labelVisibilityMode="labeled" app:menu="@menu/bottom_nav_menu" />
+<com.google.android.material.bottomnavigation.BottomNavigationView android:id="@+id/bottomNav" android:layout_width="match_parent" android:layout_height="56dp" android:layout_gravity="bottom" android:background="@color/primary_dark" app:itemIconTint="@color/bottom_nav_icon_tint" app:itemTextColor="@color/bottom_nav_text_color" app:labelVisibilityMode="labeled" app:menu="@menu/bottom_nav_menu" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
