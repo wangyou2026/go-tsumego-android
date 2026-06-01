@@ -8,6 +8,6 @@
 <TextView android:id="@+id/tvTotalProblems" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#888" android:textSize="12sp" />
 </LinearLayout>
 </com.google.android.material.appbar.AppBarLayout>
-<FrameLayout android:id="@+id/fragmentContainer" android:layout_width="match_parent" android:layout_height="match_parent" app:layout_behavior="@string/appbar_scrolling_view_behavior" android:layout_marginBottom="52dp" />
-<com.google.android.material.bottomnavigation.BottomNavigationView android:id="@+id/bottomNav" android:layout_width="match_parent" android:layout_height="52dp" android:layout_gravity="bottom" android:background="@color/primary_dark" app:itemIconSize="0dp" app:itemTextAppearanceActive="@style/BottomNavTextActive" app:itemTextAppearanceInactive="@style/BottomNavTextInactive" app:itemTextColor="@color/bottom_nav_text_color" app:labelVisibilityMode="labeled" app:menu="@menu/bottom_nav_menu" />
+<FrameLayout android:id="@+id/fragmentContainer" android:layout_width="match_parent" android:layout_height="match_parent" app:layout_behavior="@string/appbar_scrolling_view_behavior" android:layout_marginBottom="56dp" />
+<com.google.android.material.bottomnavigation.BottomNavigationView android:id="@+id/bottomNav" android:layout_width="match_parent" android:layout_height="56dp" android:layout_gravity="bottom" android:background="@color/primary_dark" app:itemIconSize="0dp" app:itemTextAppearanceActive="@style/BottomNavTextActive" app:itemTextAppearanceInactive="@style/BottomNavTextInactive" app:itemTextColor="@color/bottom_nav_text_color" app:labelVisibilityMode="labeled" app:menu="@menu/bottom_nav_menu" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

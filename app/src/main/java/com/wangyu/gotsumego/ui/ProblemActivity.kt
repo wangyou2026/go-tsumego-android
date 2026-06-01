@@ -356,7 +356,15 @@ class ProblemActivity : AppCompatActivity() {
     private fun showSuccess() {
         showFeedbackOverlay("✨ 正解！", true)
         showCelebration()
-        binding.btnShowAnswer.text = "下一题"; binding.btnShowAnswer.setOnClickListener { if (currentIndex < problemList.size - 1) { currentIndex++; showCurrentProblem() }; binding.btnShowAnswer.setOnClickListener { showFullAnswer() } }
+        // 自动跳转下一题
+        binding.boardView.postDelayed({
+            if (currentIndex < problemList.size - 1) {
+                currentIndex++
+                showCurrentProblem()
+            } else {
+                Toast.makeText(this, "已经是最后一题了", Toast.LENGTH_SHORT).show()
+            }
+        }, 2500)
     }
     
     /**

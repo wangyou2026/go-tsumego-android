@@ -201,17 +201,14 @@
                 android:id="@+id/btnShowAnswer"
                 android:layout_width="0dp"
                 android:layout_height="48dp"
-                android:layout_weight="3"
+                android:layout_weight="4"
                 android:text="显示答案"
                 android:textColor="@color/white"
                 android:textSize="15sp"
                 android:textStyle="bold"
                 android:layout_marginEnd="4dp"
                 app:backgroundTint="@color/accent"
-                app:cornerRadius="12dp"
-                app:icon="@drawable/ic_hint"
-                app:iconGravity="textStart" />
-
+                app:cornerRadius="12dp" />
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnTrial"
                 android:layout_width="0dp"
