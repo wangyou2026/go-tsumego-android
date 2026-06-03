@@ -218,6 +218,8 @@
                 android:textColor="@color/white"
                 android:textSize="15sp"
                 android:textStyle="bold"
+                android:minWidth="0dp"
+                android:includeFontPadding="false"
                 android:layout_marginEnd="4dp"
                 app:backgroundTint="#3A3A5C"
                 app:cornerRadius="12dp"
@@ -267,6 +269,8 @@
                 android:textColor="@color/accent"
                 android:textSize="14sp"
                 android:textStyle="bold"
+                android:minWidth="0dp"
+                android:includeFontPadding="false"
                 android:layout_marginStart="4dp"
                 android:layout_marginEnd="4dp"
                 app:backgroundTint="@android:color/transparent"
@@ -275,6 +279,8 @@
                 app:strokeWidth="1dp"
                 app:icon="@drawable/ic_refresh"
                 app:iconGravity="textStart"
+                app:iconSize="16dp"
+                app:iconPadding="2dp"
                 app:iconTint="@color/accent" />
 
             <com.google.android.material.button.MaterialButton
