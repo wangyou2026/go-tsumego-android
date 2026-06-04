@@ -4,49 +4,47 @@ import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.io.BufferedReader
+import java.io.File
 import java.io.IOException
 import java.io.InputStreamReader
 import java.util.zip.GZIPInputStream
 
 class ProblemRepository(private val context: Context) {
     
-    private var problems: List<Problem>? = null
+    private var builtinProblems: List<Problem>? = null
+    private var userProblems: MutableList<Problem> = mutableListOf()
     private val gson = Gson()
+    private val userFile: File
+        get() = File(context.filesDir, "user_problems.json")
     
-    fun loadProblems(): List<Problem> {
-        problems?.let { return it }
-        
-        val json = loadJsonFromAssets()
-        if (json.isNullOrEmpty()) {
-            problems = emptyList()
-            return emptyList()
-        }
-        
-        try {
-            val type = object : TypeToken<List<JsonProblem>>() {}.type
-            val jsonProblems: List<JsonProblem> = gson.fromJson(json, type)
-            problems = jsonProblems.map { it.toProblem() }
-            return problems ?: emptyList()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            problems = emptyList()
-            return emptyList()
-        }
+    init {
+        loadUserProblems()
     }
     
-    /**
-     * 加载JSON：优先从压缩文件读取，失败则降级到普通JSON
-     */
+    fun loadProblems(): List<Problem> {
+        if (builtinProblems == null) {
+            val json = loadJsonFromAssets()
+            if (json.isNullOrEmpty()) {
+                builtinProblems = emptyList()
+            } else {
+                try {
+                    val type = object : TypeToken<List<JsonProblem>>() {}.type
+                    val jsonProblems: List<JsonProblem> = gson.fromJson(json, type)
+                    builtinProblems = jsonProblems.map { it.toProblem() }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    builtinProblems = emptyList()
+                }
+            }
+        }
+        return (builtinProblems ?: emptyList()) + userProblems
+    }
+    
     private fun loadJsonFromAssets(): String? {
-        // 优先尝试压缩格式
         loadCompressedJson()?.let { return it }
-        // 降级到普通JSON
         return loadNormalJson()
     }
     
-    /**
-     * 加载压缩格式（problems_compressed.bin）
-     */
     private fun loadCompressedJson(): String? {
         return try {
             context.assets.open("problems_compressed.bin").use { inputStream ->
@@ -56,26 +54,18 @@ class ProblemRepository(private val context: Context) {
                     }
                 }
             }
-        } catch (e: Exception) {
-            null
-        }
+        } catch (e: Exception) { null }
     }
     
-    /**
-     * 加载普通JSON格式
-     */
     private fun loadNormalJson(): String? {
         return try {
             context.assets.open("problems_full.json").bufferedReader().use { it.readText() }
-        } catch (e: IOException) {
-            e.printStackTrace()
-            null
-        }
+        } catch (e: IOException) { e.printStackTrace(); null }
     }
     
     fun getAllProblems(): List<Problem> {
-        if (problems == null) loadProblems()
-        return problems ?: emptyList()
+        if (builtinProblems == null) loadProblems()
+        return (builtinProblems ?: emptyList()) + userProblems
     }
     
     fun getProblemsByType(type: ProblemType): List<Problem> =
@@ -95,4 +85,54 @@ class ProblemRepository(private val context: Context) {
         getAllProblems().filter { it.difficulty == difficulty }
     
     fun getTotalCount(): Int = getAllProblems().size
+    
+    // === User-created problems ===
+    
+    fun getUserProblems(): List<Problem> = userProblems.toList()
+    
+    fun addUserProblem(problem: Problem) {
+        // Find the next available ID
+        val allIds = (builtinProblems ?: emptyList()).map { it.id } + userProblems.map { it.id }
+        val nextId = (allIds.maxOrNull() ?: 0) + 1
+        val newProblem = problem.copy(id = nextId)
+        userProblems.add(newProblem)
+        saveUserProblems()
+    }
+    
+    fun addUserProblems(problems: List<Problem>) {
+        val allIds = (builtinProblems ?: emptyList()).map { it.id } + userProblems.map { it.id }
+        var nextId = (allIds.maxOrNull() ?: 0) + 1
+        for (p in problems) {
+            userProblems.add(p.copy(id = nextId))
+            nextId++
+        }
+        saveUserProblems()
+    }
+    
+    fun removeUserProblem(id: Int) {
+        userProblems.removeAll { it.id == id }
+        saveUserProblems()
+    }
+    
+    private fun loadUserProblems() {
+        try {
+            if (userFile.exists()) {
+                val json = userFile.readText()
+                val type = object : TypeToken<List<Problem>>() {}.type
+                val loaded: List<Problem> = gson.fromJson(json, type)
+                userProblems = loaded.toMutableList()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            userProblems = mutableListOf()
+        }
+    }
+    
+    private fun saveUserProblems() {
+        try {
+            userFile.writeText(gson.toJson(userProblems))
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
 }
