@@ -24,22 +24,22 @@ jobs:
     - name: Build Release APK
       run: |
         export GRADLE_USER_HOME="$HOME/.gradle"
-        ./gradlew assembleRelease --no-daemon --no-build-cache --no-configuration-cache 2>&1 | { tee /tmp/build_output.txt; }
-        echo "EXIT_CODE=$?"
+        set -o pipefail
+        ./gradlew assembleRelease --no-daemon --no-build-cache --no-configuration-cache 2>&1 | tee /tmp/build_output.txt
     
     - name: Verify build output
       if: always()
       run: |
-        echo "=== Gradle exit ==="
-        tail -20 /tmp/build_output.txt 2>/dev/null || echo "No build output found"
-        echo "=== APK search ==="
-        find app/build -name "*.apk" 2>/dev/null || echo "No APK found"
+        echo "=== Last 30 lines of build ==="
+        tail -30 /tmp/build_output.txt 2>/dev/null || echo "No output"
+        echo "=== APK files ==="
+        find app/build -name "*.apk" 2>/dev/null | head -5 || echo "No APKs"
         echo "=== Build reports ==="
-        ls -la app/build/reports/ 2>/dev/null || echo "No reports"
+        ls -la app/build/reports/ 2>/dev/null | head -10 || echo "No reports dir"
     
     - name: Upload Release APK
       uses: actions/upload-artifact@v4
-      if: always()
+      if: success()
       with:
         name: app-release
         path: app/build/outputs/apk/release/*.apk
