@@ -1,118 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@color/background">
-
-    <com.google.android.material.appbar.AppBarLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/primary_dark"
-        app:elevation="0dp">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="棋"
-                android:textColor="@color/accent"
-                android:textSize="32sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="围棋死活题"
-                android:textColor="#AAA"
-                android:textSize="12sp"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="10dp" />
-
-            <View
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
-
-            <TextView
-                android:id="@+id/tvTotalProblems"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="#888"
-                android:textSize="12sp" />
-        </LinearLayout>
-    </com.google.android.material.appbar.AppBarLayout>
-
-    <FrameLayout
-        android:id="@+id/fragmentContainer"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
-
-    <!-- 自定义底部导航 - 保证文字完美居中 -->
-    <LinearLayout
-        android:id="@+id/bottomBar"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:background="@color/primary_dark">
-
-        <TextView
-            android:id="@+id/navLibrary"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:text="题库"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:textColor="#FFFFFF"
-            android:clickable="true"
-            android:focusable="true"
-            android:background="?attr/selectableItemBackground" />
-
-        <View
-            android:layout_width="1dp"
-            android:layout_height="20dp"
-            android:background="#3A3A5C" />
-
-        <TextView
-            android:id="@+id/navRandom"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:text="随机做题"
-            android:textSize="16sp"
-            android:gravity="center"
-            android:textColor="#E8D5A8"
-            android:clickable="true"
-            android:focusable="true"
-            android:background="?attr/selectableItemBackground" />
-
-        <View
-            android:layout_width="1dp"
-            android:layout_height="20dp"
-            android:background="#3A3A5C" />
-
-        <TextView
-            android:id="@+id/navManage"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:text="管理"
-            android:textSize="16sp"
-            android:gravity="center"
-            android:textColor="#E8D5A8"
-            android:clickable="true"
-            android:focusable="true"
-            android:background="?attr/selectableItemBackground" />
-    </LinearLayout>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@color/background">
+<com.google.android.material.appbar.AppBarLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:background="@color/primary_dark" app:elevation="0dp">
+<LinearLayout android:layout_width="match_parent" android:layout_height="?attr/actionBarSize" android:orientation="horizontal" android:gravity="center_vertical" android:paddingStart="16dp" android:paddingEnd="16dp">
+<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="棋" android:textColor="@color/accent" android:textSize="32sp" android:textStyle="bold" />
+<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="围棋死活题" android:textColor="#AAA" android:textSize="12sp" android:layout_marginStart="8dp" android:layout_marginTop="10dp" />
+<View android:layout_width="0dp" android:layout_height="0dp" android:layout_weight="1" />
+<TextView android:id="@+id/tvTotalProblems" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#888" android:textSize="12sp" />
 </LinearLayout>
+</com.google.android.material.appbar.AppBarLayout>
+<FrameLayout android:id="@+id/fragmentContainer" android:layout_width="match_parent" android:layout_height="match_parent" app:layout_behavior="@string/appbar_scrolling_view_behavior" android:layout_marginBottom="56dp" />
+<com.google.android.material.bottomnavigation.BottomNavigationView android:id="@+id/bottomNav" android:layout_width="match_parent" android:layout_height="56dp" android:layout_gravity="bottom" android:background="@color/primary_dark" app:itemIconSize="0dp" app:itemTextAppearanceActive="@style/BottomNavTextActive" app:itemTextAppearanceInactive="@style/BottomNavTextInactive" app:itemTextColor="@color/bottom_nav_text_color" app:labelVisibilityMode="labeled" app:menu="@menu/bottom_nav_menu" />
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

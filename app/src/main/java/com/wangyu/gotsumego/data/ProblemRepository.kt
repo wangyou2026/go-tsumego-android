@@ -4,40 +4,34 @@ import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.io.BufferedReader
-import java.io.File
 import java.io.IOException
 import java.io.InputStreamReader
 import java.util.zip.GZIPInputStream
 
 class ProblemRepository(private val context: Context) {
     
-    private var builtinProblems: List<Problem>? = null
-    private var userProblems: MutableList<Problem> = mutableListOf()
+    private var problems: List<Problem>? = null
     private val gson = Gson()
-    private val userFile: File
-        get() = File(context.filesDir, "user_problems.json")
-    
-    init {
-        loadUserProblems()
-    }
     
     fun loadProblems(): List<Problem> {
-        if (builtinProblems == null) {
-            val json = loadJsonFromAssets()
-            if (json.isNullOrEmpty()) {
-                builtinProblems = emptyList()
-            } else {
-                try {
-                    val type = object : TypeToken<List<JsonProblem>>() {}.type
-                    val jsonProblems: List<JsonProblem> = gson.fromJson(json, type)
-                    builtinProblems = jsonProblems.map { it.toProblem() }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    builtinProblems = emptyList()
-                }
-            }
+        problems?.let { return it }
+        
+        val json = loadJsonFromAssets()
+        if (json.isNullOrEmpty()) {
+            problems = emptyList()
+            return emptyList()
         }
-        return (builtinProblems ?: emptyList()) + userProblems
+        
+        try {
+            val type = object : TypeToken<List<JsonProblem>>() {}.type
+            val jsonProblems: List<JsonProblem> = gson.fromJson(json, type)
+            problems = jsonProblems.map { it.toProblem() }
+            return problems ?: emptyList()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            problems = emptyList()
+            return emptyList()
+        }
     }
     
     private fun loadJsonFromAssets(): String? {
@@ -64,8 +58,8 @@ class ProblemRepository(private val context: Context) {
     }
     
     fun getAllProblems(): List<Problem> {
-        if (builtinProblems == null) loadProblems()
-        return (builtinProblems ?: emptyList()) + userProblems
+        if (problems == null) loadProblems()
+        return problems ?: emptyList()
     }
     
     fun getProblemsByType(type: ProblemType): List<Problem> =
@@ -85,54 +79,4 @@ class ProblemRepository(private val context: Context) {
         getAllProblems().filter { it.difficulty == difficulty }
     
     fun getTotalCount(): Int = getAllProblems().size
-    
-    // === User-created problems ===
-    
-    fun getUserProblems(): List<Problem> = userProblems.toList()
-    
-    fun addUserProblem(problem: Problem) {
-        // Find the next available ID
-        val allIds = (builtinProblems ?: emptyList()).map { it.id } + userProblems.map { it.id }
-        val nextId = (allIds.maxOrNull() ?: 0) + 1
-        val newProblem = problem.copy(id = nextId)
-        userProblems.add(newProblem)
-        saveUserProblems()
-    }
-    
-    fun addUserProblems(problems: List<Problem>) {
-        val allIds = (builtinProblems ?: emptyList()).map { it.id } + userProblems.map { it.id }
-        var nextId = (allIds.maxOrNull() ?: 0) + 1
-        for (p in problems) {
-            userProblems.add(p.copy(id = nextId))
-            nextId++
-        }
-        saveUserProblems()
-    }
-    
-    fun removeUserProblem(id: Int) {
-        userProblems.removeAll { it.id == id }
-        saveUserProblems()
-    }
-    
-    private fun loadUserProblems() {
-        try {
-            if (userFile.exists()) {
-                val json = userFile.readText()
-                val type = object : TypeToken<List<Problem>>() {}.type
-                val loaded: List<Problem> = gson.fromJson(json, type)
-                userProblems = loaded.toMutableList()
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            userProblems = mutableListOf()
-        }
-    }
-    
-    private fun saveUserProblems() {
-        try {
-            userFile.writeText(gson.toJson(userProblems))
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
 }
