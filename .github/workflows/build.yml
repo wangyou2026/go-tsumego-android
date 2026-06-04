@@ -24,17 +24,18 @@ jobs:
     - name: Build Release APK
       run: |
         export GRADLE_USER_HOME="$HOME/.gradle"
-        ./gradlew assembleRelease --no-daemon --no-build-cache --no-configuration-cache 2>&1 | tail -50
+        ./gradlew assembleRelease --no-daemon --no-build-cache --no-configuration-cache 2>&1 | { tee /tmp/build_output.txt; }
+        echo "EXIT_CODE=$?"
     
-    - name: Verify APK signature
+    - name: Verify build output
+      if: always()
       run: |
-        APK_PATH=$(find app/build/outputs/apk/release -name "*.apk" | head -1)
-        echo "APK: $APK_PATH"
-        if [ -n "$APK_PATH" ]; then
-          unzip -l "$APK_PATH" | grep -E "META-INF.*\.(RSA|SF|MF)" | head -5
-          echo "---"
-          echo "V1 signature (JAR) present: $(unzip -l "$APK_PATH" | grep -c 'META-INF/.*\.RSA') RSA files"
-        fi
+        echo "=== Gradle exit ==="
+        tail -20 /tmp/build_output.txt 2>/dev/null || echo "No build output found"
+        echo "=== APK search ==="
+        find app/build -name "*.apk" 2>/dev/null || echo "No APK found"
+        echo "=== Build reports ==="
+        ls -la app/build/reports/ 2>/dev/null || echo "No reports"
     
     - name: Upload Release APK
       uses: actions/upload-artifact@v4
