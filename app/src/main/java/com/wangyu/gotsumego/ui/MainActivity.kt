@@ -33,6 +33,11 @@ class MainActivity : AppCompatActivity() {
             intent.putExtra(ProblemActivity.EXTRA_TITLE, "随机做题")
             startActivity(intent)
         }
+        binding.navManage.setOnClickListener {
+            highlightNav(binding.navManage)
+            val intent = Intent(this, LibraryManagementActivity::class.java)
+            startActivity(intent)
+        }
     }
     
     private fun highlightNav(selected: android.widget.TextView) {
@@ -42,6 +47,8 @@ class MainActivity : AppCompatActivity() {
         binding.navLibrary.setTypeface(null, if (selected == binding.navLibrary) android.graphics.Typeface.BOLD else android.graphics.Typeface.NORMAL)
         binding.navRandom.setTextColor(if (selected == binding.navRandom) activeColor else normalColor)
         binding.navRandom.setTypeface(null, if (selected == binding.navRandom) android.graphics.Typeface.BOLD else android.graphics.Typeface.NORMAL)
+        binding.navManage.setTextColor(if (selected == binding.navManage) activeColor else normalColor)
+        binding.navManage.setTypeface(null, if (selected == binding.navManage) android.graphics.Typeface.BOLD else android.graphics.Typeface.NORMAL)
     }
     
     private fun showFragment(fragment: Fragment) {

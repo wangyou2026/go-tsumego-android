@@ -97,5 +97,23 @@
             android:clickable="true"
             android:focusable="true"
             android:background="?attr/selectableItemBackground" />
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="20dp"
+            android:background="#3A3A5C" />
+
+        <TextView
+            android:id="@+id/navManage"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="管理"
+            android:textSize="16sp"
+            android:gravity="center"
+            android:textColor="#E8D5A8"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground" />
     </LinearLayout>
 </LinearLayout>
