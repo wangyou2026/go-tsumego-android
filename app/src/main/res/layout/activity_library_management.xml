@@ -77,8 +77,8 @@
             android:layout_marginEnd="8dp"
             app:backgroundTint="@color/accent"
             app:cornerRadius="12dp"
-            app:insetTop="0dp"
-            app:insetBottom="0dp" />
+            android:insetTop="0dp"
+            android:insetBottom="0dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnPasteSgf"
@@ -93,8 +93,8 @@
             app:cornerRadius="12dp"
             app:strokeColor="#555577"
             app:strokeWidth="1dp"
-            app:insetTop="0dp"
-            app:insetBottom="0dp" />
+            android:insetTop="0dp"
+            android:insetBottom="0dp" />
     </LinearLayout>
 
     <!-- 手动添加 -->
@@ -168,8 +168,8 @@
             android:textStyle="bold"
             app:backgroundTint="@color/accent"
             app:cornerRadius="12dp"
-            app:insetTop="0dp"
-            app:insetBottom="0dp" />
+            android:insetTop="0dp"
+            android:insetBottom="0dp" />
     </LinearLayout>
 
     <!-- 导入的题目列表 -->
