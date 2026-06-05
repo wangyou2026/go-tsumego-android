@@ -91,7 +91,7 @@ class LibraryManagementActivity : AppCompatActivity() {
         
         AlertDialog.Builder(this)
             .setTitle("粘贴SGF")
-            .setView(input, 32, 16, 32, 16)
+            .setView(input)
             .setPositiveButton("导入") { _, _ ->
                 val text = input.text.toString().trim()
                 if (text.isEmpty()) {
