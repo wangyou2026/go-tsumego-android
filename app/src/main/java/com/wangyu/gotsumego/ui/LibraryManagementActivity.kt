@@ -20,6 +20,7 @@ import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.util.zip.ZipInputStream
+import kotlin.math.abs
 
 class LibraryManagementActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLibraryManagementBinding
@@ -58,7 +59,6 @@ class LibraryManagementActivity : AppCompatActivity() {
             var totalImported = 0
             var totalErrors = 0
 
-            // Handle multiple files
             val uris = mutableListOf<Uri>()
             data?.data?.let { uris.add(it) }
             data?.clipData?.let { clipData ->
@@ -87,15 +87,9 @@ class LibraryManagementActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * 导入单个文件（支持 .sgf 和 .zip）
-     * @return Pair(成功题数, 错误文件数)
-     */
     private fun importFile(uri: Uri): Pair<Int, Int> {
         return try {
-            val fileName = getFileName(uri) ?: "unknown"
             val inputStream = contentResolver.openInputStream(uri) ?: return Pair(0, 1)
-
             if (isZipFile(inputStream)) {
                 inputStream.close()
                 importZipFile(uri)
@@ -105,16 +99,6 @@ class LibraryManagementActivity : AppCompatActivity() {
             }
         } catch (e: Exception) {
             Pair(0, 1)
-        }
-    }
-
-    private fun getFileName(uri: Uri): String? {
-        val cursor = contentResolver.query(uri, null, null, null, null)
-        return cursor?.use {
-            if (it.moveToFirst()) {
-                val idx = it.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
-                if (idx >= 0) it.getString(idx) else null
-            } else null
         }
     }
 
@@ -237,23 +221,33 @@ class LibraryManagementActivity : AppCompatActivity() {
         refreshProblemList()
     }
 
+    // ============================================================
+    //  SGF 解析器（v2 — 正确提取主线，支持多坐标AB/AW）
+    // ============================================================
+
+    /**
+     * 解析 SGF 文本为 Problem 列表。
+     * 支持多局 SGF（通过顶层括号分割）。
+     */
     private fun parseSgfToProblems(sgfText: String): List<Problem> {
-        val problems = mutableListOf<Problem>()
         val bookName = detectBookName(sgfText)
-        val gameTexts = splitSgfGames(sgfText)
+        val gameTexts = splitTopLevelGames(sgfText)
+        val problems = mutableListOf<Problem>()
 
         for (gameText in gameTexts) {
             try {
                 val problem = parseSingleSgf(gameText.trim(), bookName)
                 if (problem != null) problems.add(problem)
-            } catch (e: Exception) {
-                // Skip invalid entries
-            }
+            } catch (_: Exception) { }
         }
         return problems
     }
 
-    private fun splitSgfGames(text: String): List<String> {
+    /**
+     * 按顶层括号分割多局 SGF。
+     * 仅提取包含 AB 或 AW 的完整 SGF 游戏。
+     */
+    private fun splitTopLevelGames(text: String): List<String> {
         val games = mutableListOf<String>()
         var depth = 0
         var start = -1
@@ -277,93 +271,121 @@ class LibraryManagementActivity : AppCompatActivity() {
             }
         }
 
+        // 没有顶层括号但有 AB/AW → 整段视为一局
         if (games.isEmpty() && (text.contains("AB") || text.contains("AW"))) {
             games.add(text)
         }
         return games
     }
 
-    private fun parseSingleSgf(sgf: String, defaultBook: String): Problem? {
-        val stones = mutableListOf<Stone>()
-        var toPlay = StoneColor.BLACK
-        val solutionRows = mutableListOf<SolutionMove>()
+    /**
+     * 从 SGF 中移除所有变化图分支（(…) 对），只保留主线。
+     * 外层的 (; ... ) 保留。
+     */
+    private fun removeVariations(sgf: String): String {
+        val result = StringBuilder()
+        var depth = 0
+        for (c in sgf) {
+            when (c) {
+                '(' -> depth++
+                ')' -> if (depth > 0) depth--
+                else -> if (depth > 0) result.append(c)
+            }
+        }
+        return result.toString().trim()
+    }
 
-        val abPattern = Regex("AB\\[([a-z]+)\\]", RegexOption.IGNORE_CASE)
-        for (match in abPattern.findAll(sgf)) {
-            val coord = match.groupValues[1]
+    /**
+     * 从 SGF 节点文本中提取属性键值对。
+     * 支持多值属性如 AB[aa][bb] → "AB" -> ["aa", "bb"]
+     */
+    private fun extractProperties(nodeText: String): Map<String, List<String>> {
+        val props = mutableMapOf<String, MutableList<String>>()
+        // 匹配 "KEY[...][...]..." 的模式
+        val propPattern = Regex("([A-Z]+)((?:\\[[^\\]]*\\])+)")
+        for (match in propPattern.findAll(nodeText)) {
+            val key = match.groupValues[1]
+            val values = Regex("\\[([^\\]]*)\\]").findAll(match.groupValues[2])
+                .map { it.groupValues[1] }.toList()
+            props.getOrPut(key) { mutableListOf() }.addAll(values)
+        }
+        return props
+    }
+
+    /**
+     * 解析单局 SGF，提取棋盘、棋子和正解。
+     */
+    private fun parseSingleSgf(sgf: String, defaultBook: String): Problem? {
+        // 1. 移除所有变化图，只剩主线
+        val mainLine = removeVariations(sgf)
+        if (mainLine.isBlank()) return null
+
+        // 2. 提取根节点内容（第一个 ; 到字符串结束）
+        val rootStart = mainLine.indexOf(';')
+        if (rootStart < 0) return null
+        val rootContent = mainLine.substring(rootStart)
+
+        // 3. 解析根节点属性
+        val props = extractProperties(rootContent)
+
+        // 4. 棋盘大小
+        val boardSize = props["SZ"]?.firstOrNull()?.toIntOrNull() ?: 13
+        val maxCoord = boardSize - 1
+        // 如果棋盘大于 19 路，拒绝（超出合理围棋范围）
+        if (boardSize > 19 || boardSize < 9) return null
+
+        // 5. 提取棋子（支持 AB[aa][bb][cc] 多坐标）
+        val stones = mutableListOf<Stone>()
+        for (coord in props["AB"].orEmpty()) {
             if (coord.length >= 2) {
                 val col = coord[0] - 'a'
                 val row = coord[1] - 'a'
-                if (col in 0..12 && row in 0..12) {
+                if (col in 0..maxCoord && row in 0..maxCoord) {
                     stones.add(Stone(col, row, StoneColor.BLACK))
                 }
             }
         }
-
-        val awPattern = Regex("AW\\[([a-z]+)\\]", RegexOption.IGNORE_CASE)
-        for (match in awPattern.findAll(sgf)) {
-            val coord = match.groupValues[1]
+        for (coord in props["AW"].orEmpty()) {
             if (coord.length >= 2) {
                 val col = coord[0] - 'a'
                 val row = coord[1] - 'a'
-                if (col in 0..12 && row in 0..12) {
+                if (col in 0..maxCoord && row in 0..maxCoord) {
                     stones.add(Stone(col, row, StoneColor.WHITE))
                 }
             }
         }
-
         if (stones.isEmpty()) return null
 
-        val plPattern = Regex("PL\\[([BWbw])\\]", RegexOption.IGNORE_CASE)
-        val plMatch = plPattern.find(sgf)
-        toPlay = if (plMatch?.groupValues?.get(1)?.uppercase() == "W") StoneColor.WHITE else StoneColor.BLACK
+        // 6. 谁先走
+        val toPlay = if (props["PL"]?.firstOrNull()?.uppercase() == "W") StoneColor.WHITE else StoneColor.BLACK
 
+        // 7. 提取正解手数（主线中的所有 ;B/W[coord]）
+        val solutionRows = mutableListOf<SolutionMove>()
         val movePattern = Regex(";([BWbw])\\[([a-z]+)\\]")
-        var foundSetup = false
-        for (match in movePattern.findAll(sgf)) {
-            val color = match.groupValues[1].uppercase()
+        for (match in movePattern.findAll(mainLine)) {
             val coord = match.groupValues[2]
-            if (!foundSetup) {
-                foundSetup = true
-                continue
-            }
             if (coord.length >= 2) {
                 val col = coord[0] - 'a'
                 val row = coord[1] - 'a'
-                if (col in 0..12 && row in 0..12) {
-                    val stoneColor = if (color == "B") StoneColor.BLACK else StoneColor.WHITE
-                    solutionRows.add(SolutionMove(col, row, stoneColor))
+                if (col in 0..maxCoord && row in 0..maxCoord) {
+                    val color = if (match.groupValues[1].uppercase() == "B") StoneColor.BLACK else StoneColor.WHITE
+                    solutionRows.add(SolutionMove(col, row, color))
                 }
             }
         }
 
-        if (solutionRows.isEmpty()) {
-            val varPattern = Regex("\\(;[BWbw]\\[([a-z]+)\\]")
-            for (match in varPattern.findAll(sgf)) {
-                val coord = match.groupValues[1]
-                if (coord.length >= 2) {
-                    val col = coord[0] - 'a'
-                    val row = coord[1] - 'a'
-                    if (col in 0..12 && row in 0..12) {
-                        val parenthetical = match.value
-                        val colorChar = parenthetical[2]
-                        val stoneColor = if (colorChar == 'B' || colorChar == 'b') StoneColor.BLACK else StoneColor.WHITE
-                        solutionRows.add(SolutionMove(col, row, stoneColor))
-                        break
-                    }
-                }
-            }
-        }
-
-        val boardSize = 13
-        var id = Math.abs(sgf.hashCode())
+        // 8. 构造 Problem
+        // 使用 hash 和位置确保 ID 唯一且非负
+        val id = abs(sgf.hashCode()) and 0x7FFFFFFF
+        // 显示用的棋盘大小固定为 13（App 只支持 13 路显示）
+        val displaySize = 13
 
         return Problem(
             id = id,
             type = ProblemType.LIFE_DEATH,
             difficulty = 1,
             title = defaultBook,
-            boardSize = boardSize,
+            boardSize = displaySize,
             stones = stones,
             toPlay = toPlay,
             correctMoves = solutionRows.take(1).map { Position(it.col, it.row) },
@@ -374,11 +396,18 @@ class LibraryManagementActivity : AppCompatActivity() {
         )
     }
 
+    /**
+     * 从 SGF 中检测题目名称（GN 标签）。
+     */
     private fun detectBookName(sgfText: String): String {
         val namePattern = Regex("GN\\[([^\\]]+)\\]", RegexOption.IGNORE_CASE)
         val nameMatch = namePattern.find(sgfText)
         return nameMatch?.groupValues?.get(1)?.take(20) ?: "导入题目"
     }
+
+    // ============================================================
+    //  已导入题目列表
+    // ============================================================
 
     private fun refreshProblemList() {
         val userProblems = repository.getUserProblems()
