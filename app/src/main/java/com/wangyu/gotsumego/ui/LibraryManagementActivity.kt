@@ -289,7 +289,7 @@ class LibraryManagementActivity : AppCompatActivity() {
             when (c) {
                 '(' -> depth++
                 ')' -> if (depth > 0) depth--
-                else -> if (depth > 0) result.append(c)
+                else -> if (depth <= 1) result.append(c)
             }
         }
         return result.toString().trim()
