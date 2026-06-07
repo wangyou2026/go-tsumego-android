@@ -279,20 +279,76 @@ class LibraryManagementActivity : AppCompatActivity() {
     }
 
     /**
-     * 从 SGF 中移除所有变化图分支（(…) 对），只保留主线。
-     * 外层的 (; ... ) 保留。
+     * 从 SGF 中提取主线：
+     * 1. 先尝试 depth≤1 的内容（Pattern A：root + 主线走子在根序列中）
+     * 2. 如果 depth≤1 中没有走子，则进一步包含第一个子序列（Pattern B：正解在第一层变化图内）
+     * 
+     * 正确处理：
+     * - C[…] 注释中的括号不干扰树深度计数
+     * - 变化图分支被正确跳过
+     * - 变化图后的主线续走被保留
      */
-    private fun removeVariations(sgf: String): String {
-        val result = StringBuilder()
-        var depth = 0
-        for (c in sgf) {
-            when (c) {
-                '(' -> depth++
-                ')' -> if (depth > 0) depth--
-                else -> if (depth <= 1) result.append(c)
+    private fun extractMainLine(sgf: String): String {
+        // Position helper: track bracket-aware depth and collect content
+        data class ExtractConfig(val maxDepth: Int, val includeFirstVar: Boolean)
+        
+        fun extract(config: ExtractConfig): String {
+            val result = StringBuilder()
+            var depth = 0
+            var inBracket = false
+            
+            // Pass 2 only: first variation tracking
+            var firstVarStarted = false
+            var collectingFirstVar = false
+            val firstVarBuf = StringBuilder()
+            
+            for (c in sgf) {
+                when {
+                    c == '[' -> {
+                        inBracket = true
+                        val keep = depth <= config.maxDepth || (config.includeFirstVar && collectingFirstVar)
+                        if (keep) result.append(c)
+                        if (config.includeFirstVar && collectingFirstVar) firstVarBuf.append(c)
+                    }
+                    c == ']' -> {
+                        inBracket = false
+                        val keep = depth <= config.maxDepth || (config.includeFirstVar && collectingFirstVar)
+                        if (keep) result.append(c)
+                        if (config.includeFirstVar && collectingFirstVar) firstVarBuf.append(c)
+                    }
+                    c == '(' && !inBracket -> {
+                        depth++
+                        if (config.includeFirstVar && depth == 2 && !firstVarStarted) {
+                            firstVarStarted = true
+                            collectingFirstVar = true
+                            firstVarBuf.clear()
+                        }
+                    }
+                    c == ')' && !inBracket -> {
+                        if (config.includeFirstVar && depth == 2 && collectingFirstVar) {
+                            collectingFirstVar = false
+                            result.append(firstVarBuf)
+                        }
+                        if (depth > 0) depth--
+                    }
+                    else -> {
+                        val keep = depth <= config.maxDepth || (config.includeFirstVar && collectingFirstVar)
+                        if (keep) result.append(c)
+                        if (config.includeFirstVar && collectingFirstVar) firstVarBuf.append(c)
+                    }
+                }
             }
+            return result.toString().trim()
         }
-        return result.toString().trim()
+        
+        // Pass 1: depth≤1 only
+        val pass1 = extract(ExtractConfig(maxDepth = 1, includeFirstVar = false))
+        val hasMoves = Regex(";([BWbw])\\[[a-z]+\\]").containsMatchIn(pass1)
+        
+        if (hasMoves) return pass1
+        
+        // Pass 2: no moves in depth≤1 → Pattern B, include first variation
+        return extract(ExtractConfig(maxDepth = 1, includeFirstVar = true))
     }
 
     /**
@@ -316,8 +372,8 @@ class LibraryManagementActivity : AppCompatActivity() {
      * 解析单局 SGF，提取棋盘、棋子和正解。
      */
     private fun parseSingleSgf(sgf: String, defaultBook: String): Problem? {
-        // 1. 移除所有变化图，只剩主线
-        val mainLine = removeVariations(sgf)
+        // 1. 提取主线（处理 Pattern A 和 Pattern B 两种 SGF 结构）
+        val mainLine = extractMainLine(sgf)
         if (mainLine.isBlank()) return null
 
         // 2. 提取根节点内容（第一个 ; 到字符串结束）
