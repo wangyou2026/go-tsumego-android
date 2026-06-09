@@ -302,19 +302,19 @@ class LibraryManagementActivity : AppCompatActivity() {
             var collectingFirstVar = false
             val firstVarBuf = StringBuilder()
             
+            fun inFirstVar(): Boolean = config.includeFirstVar && collectingFirstVar
+            
             for (c in sgf) {
                 when {
                     c == '[' -> {
                         inBracket = true
-                        val keep = depth <= config.maxDepth || (config.includeFirstVar && collectingFirstVar)
-                        if (keep) result.append(c)
-                        if (config.includeFirstVar && collectingFirstVar) firstVarBuf.append(c)
+                        if (depth <= config.maxDepth && !inFirstVar()) result.append(c)
+                        if (inFirstVar()) firstVarBuf.append(c)
                     }
                     c == ']' -> {
                         inBracket = false
-                        val keep = depth <= config.maxDepth || (config.includeFirstVar && collectingFirstVar)
-                        if (keep) result.append(c)
-                        if (config.includeFirstVar && collectingFirstVar) firstVarBuf.append(c)
+                        if (depth <= config.maxDepth && !inFirstVar()) result.append(c)
+                        if (inFirstVar()) firstVarBuf.append(c)
                     }
                     c == '(' && !inBracket -> {
                         depth++
@@ -332,9 +332,8 @@ class LibraryManagementActivity : AppCompatActivity() {
                         if (depth > 0) depth--
                     }
                     else -> {
-                        val keep = depth <= config.maxDepth || (config.includeFirstVar && collectingFirstVar)
-                        if (keep) result.append(c)
-                        if (config.includeFirstVar && collectingFirstVar) firstVarBuf.append(c)
+                        if (depth <= config.maxDepth && !inFirstVar()) result.append(c)
+                        if (inFirstVar()) firstVarBuf.append(c)
                     }
                 }
             }
