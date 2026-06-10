@@ -176,11 +176,19 @@ def sgf_coord_to_xy(coord_str):
     return (x, y)
 
 
-def extract_main_line_moves(node):
-    """
-    Extract moves from the main line (first child at each branch point).
-    Returns list of (x, y, color) where color is 1 (Black) or 2 (White).
-    """
+def _has_seisho_in_subtree(node):
+    """Check if any node in this subtree has a 正解 N property."""
+    n = node.get('N', '')
+    if '正解' in n:
+        return True
+    for c in node.children:
+        if _has_seisho_in_subtree(c):
+            return True
+    return False
+
+
+def _get_subtree_moves(node):
+    """Simple first-child extraction for a subtree."""
     moves = []
     current = node
     while current:
@@ -191,12 +199,83 @@ def extract_main_line_moves(node):
                 if xy:
                     color = 1 if prop_key == 'B' else 2
                     moves.append((xy[0], xy[1], color))
-        
-        # Follow first child (main line)
         if current.children:
             current = current.children[0]
         else:
             current = None
+    return moves
+
+
+def extract_main_line_moves(node):
+    """
+    Extract moves from the main line, with conservative branch improvement.
+    
+    Default behavior: follows the first child at each branch point (standard SGF main line).
+    
+    Improvement: at each branch point, if the first child's branch ends with the opposing
+    player's color (e.g., black-first ends with white move), AND another child branch
+    ends with the first player's color, AND that other branch has a 正解 label or is 
+    significantly longer, switch to that branch.
+    
+    Returns list of (x, y, color) where color is 1 (Black) or 2 (White).
+    """
+    moves = []
+    current = node
+    
+    while current:
+        # Extract move from current node
+        for prop_key in ['B', 'W']:
+            val = current.get(prop_key)
+            if val is not None:
+                xy = sgf_coord_to_xy(val)
+                if xy:
+                    color = 1 if prop_key == 'B' else 2
+                    moves.append((xy[0], xy[1], color))
+        
+        if not current.children:
+            break
+        
+        # Determine first player color
+        first_color = moves[0][2] if moves else 1
+        
+        if len(current.children) > 1:
+            # Get first child's branch info
+            first_moves = _get_subtree_moves(current.children[0])
+            first_last = first_moves[-1][2] if first_moves else None
+            
+            # If first branch ends with opposing color, look for better alternatives
+            if first_last is not None and first_last != first_color:
+                best_child = None
+                best_score = -1
+                
+                for child in current.children:
+                    child_moves = _get_subtree_moves(child)
+                    if not child_moves:
+                        continue
+                    child_last = child_moves[-1][2]
+                    child_len = len(child_moves)
+                    
+                    score = 0
+                    has_seisho = _has_seisho_in_subtree(child)
+                    if has_seisho:
+                        score += 100
+                    if child_last == first_color:
+                        score += 50 + child_len  # prefer ending with first player AND longer
+                    score += child_len
+                    
+                    # Only switch if clearly better
+                    if score > best_score and (has_seisho or child_last == first_color):
+                        best_score = score
+                        best_child = child
+                
+                if best_child:
+                    current = best_child
+                else:
+                    current = current.children[0]
+            else:
+                current = current.children[0]
+        else:
+            current = current.children[0]
     
     return moves
 
