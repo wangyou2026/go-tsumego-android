@@ -116,9 +116,9 @@ class LibraryManagementActivity : AppCompatActivity() {
     private fun importSgfFile(uri: Uri): Pair<Int, Int> {
         return try {
             val inputStream = contentResolver.openInputStream(uri) ?: return Pair(0, 1)
-            val reader = BufferedReader(InputStreamReader(inputStream, "UTF-8"))
-            val sgfText = reader.readText()
-            reader.close()
+            val bytes = inputStream.readBytes()
+            inputStream.close()
+            val sgfText = decodeSgfBytes(bytes)
 
             val problems = parseSgfToProblems(sgfText)
             if (problems.isEmpty()) {
@@ -142,7 +142,8 @@ class LibraryManagementActivity : AppCompatActivity() {
             while (entry != null) {
                 if (!entry.isDirectory && entry.name.lowercase().endsWith(".sgf")) {
                     try {
-                        val sgfText = zis.bufferedReader(Charsets.UTF_8).readText()
+                        val sgfBytes = zis.readBytes()
+                        val sgfText = decodeSgfBytes(sgfBytes)
                         val problems = parseSgfToProblems(sgfText)
                         if (problems.isNotEmpty()) {
                             repository.addUserProblems(problems)
@@ -295,7 +296,7 @@ class LibraryManagementActivity : AppCompatActivity() {
         fun extract(config: ExtractConfig): String {
             val result = StringBuilder()
             var depth = 0
-            var inBracket = false
+            var inBracket = 0
             
             // Pass 2 only: first variation tracking
             var firstVarStarted = false
@@ -307,16 +308,16 @@ class LibraryManagementActivity : AppCompatActivity() {
             for (c in sgf) {
                 when {
                     c == '[' -> {
-                        inBracket = true
+                        inBracket++
                         if (depth <= config.maxDepth && !inFirstVar()) result.append(c)
                         if (inFirstVar()) firstVarBuf.append(c)
                     }
                     c == ']' -> {
-                        inBracket = false
+                        inBracket--
                         if (depth <= config.maxDepth && !inFirstVar()) result.append(c)
                         if (inFirstVar()) firstVarBuf.append(c)
                     }
-                    c == '(' && !inBracket -> {
+                    c == '(' && inBracket == 0 -> {
                         depth++
                         if (config.includeFirstVar && depth == 2 && !firstVarStarted) {
                             firstVarStarted = true
@@ -324,7 +325,7 @@ class LibraryManagementActivity : AppCompatActivity() {
                             firstVarBuf.clear()
                         }
                     }
-                    c == ')' && !inBracket -> {
+                    c == ')' && inBracket == 0 -> {
                         if (config.includeFirstVar && depth == 2 && collectingFirstVar) {
                             collectingFirstVar = false
                             result.append(firstVarBuf)
@@ -429,11 +430,62 @@ class LibraryManagementActivity : AppCompatActivity() {
             }
         }
 
+        // 7.5 坐标转换：如果棋盘 > 13 路，裁切并偏移到 13x13 范围
+        val displaySize = 13
+        val (finalStones, finalSolutionRows) = if (boardSize > displaySize) {
+            val allCoords = mutableListOf<Pair<Int, Int>>()
+            for (s in stones) allCoords.add(Pair(s.col, s.row))
+            for (m in solutionRows) allCoords.add(Pair(m.col, m.row))
+
+            if (allCoords.isEmpty()) {
+                Pair(stones, solutionRows)
+            } else {
+                val minCol = allCoords.minOf { it.first }
+                val minRow = allCoords.minOf { it.second }
+                val maxCol = allCoords.maxOf { it.first }
+                val maxRow = allCoords.maxOf { it.second }
+                val rangeCol = maxCol - minCol
+                val rangeRow = maxRow - minRow
+
+                if (rangeCol < displaySize && rangeRow < displaySize) {
+                    // 偏移使棋子群居中在 13x13 棋盘上
+                    val padX = (displaySize - 1 - rangeCol) / 2
+                    val padY = (displaySize - 1 - rangeRow) / 2
+                    val offsetX = minCol - padX
+                    val offsetY = minRow - padY
+
+                    val ns = stones.map { Stone(it.col - offsetX, it.row - offsetY, it.color) }
+                    val nm = solutionRows.map { SolutionMove(it.col - offsetX, it.row - offsetY, it.color) }
+                    Pair(ns, nm)
+                } else {
+                    // 范围超出 13x13，取中心区域裁切
+                    val centerX = (minCol + maxCol) / 2
+                    val centerY = (minRow + maxRow) / 2
+                    val offsetX = maxOf(0, centerX - 6)
+                    val offsetY = maxOf(0, centerY - 6)
+
+                    val ns = stones.mapNotNull { s ->
+                        val nc = s.col - offsetX
+                        val nr = s.row - offsetY
+                        if (nc in 0 until displaySize && nr in 0 until displaySize)
+                            Stone(nc, nr, s.color) else null
+                    }
+                    val nm = solutionRows.mapNotNull { m ->
+                        val nc = m.col - offsetX
+                        val nr = m.row - offsetY
+                        if (nc in 0 until displaySize && nr in 0 until displaySize)
+                            SolutionMove(nc, nr, m.color) else null
+                    }
+                    Pair(ns, nm)
+                }
+            }
+        } else {
+            Pair(stones, solutionRows)
+        }
+
         // 8. 构造 Problem
         // 使用 hash 和位置确保 ID 唯一且非负
         val id = abs(sgf.hashCode()) and 0x7FFFFFFF
-        // 显示用的棋盘大小固定为 13（App 只支持 13 路显示）
-        val displaySize = 13
 
         return Problem(
             id = id,
@@ -441,10 +493,10 @@ class LibraryManagementActivity : AppCompatActivity() {
             difficulty = 1,
             title = defaultBook,
             boardSize = displaySize,
-            stones = stones,
+            stones = finalStones,
             toPlay = toPlay,
-            correctMoves = solutionRows.take(1).map { Position(it.col, it.row) },
-            solutionMoves = solutionRows,
+            correctMoves = finalSolutionRows.take(1).map { Position(it.col, it.row) },
+            solutionMoves = finalSolutionRows,
             hint = null,
             solutionComment = null,
             book = defaultBook
@@ -507,5 +559,26 @@ class LibraryManagementActivity : AppCompatActivity() {
         }
 
         override fun getItemCount() = problems.size
+    }
+
+    // ============================================================
+    //  编码处理：尝试多种编码解析 SGF 文本
+    // ============================================================
+
+    /**
+     * 尝试多种编码解码字节数组，返回第一个能解析出 SGF 内容的文本。
+     * 优先 UTF-8，fallback 到 GBK、Shift_JIS。
+     */
+    private fun decodeSgfBytes(bytes: ByteArray): String {
+        val encodings = listOf(Charsets.UTF_8, Charsets.ISO_8859_1, Charset.forName("GBK"), Charset.forName("Shift_JIS"))
+        for (charset in encodings) {
+            try {
+                val text = String(bytes, charset)
+                if (text.contains(';') && (text.contains("AB[") || text.contains("AW["))) {
+                    return text
+                }
+            } catch (_: Exception) { }
+        }
+        return String(bytes, Charsets.UTF_8)
     }
 }
