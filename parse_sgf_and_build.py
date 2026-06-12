@@ -57,13 +57,39 @@ def parse_sgf(text):
                 nodes.append(node)
             skip_whitespace()
         
-        # Parse child game trees (variations)
-        child_trees = []
-        while pos[0] < len(text) and text[pos[0]] == '(':
-            child_tree = parse_game_tree()
-            if child_tree:
-                child_trees.append(child_tree)
-            skip_whitespace()
+        # Parse child game trees (variations) and sequence continuations.
+        # Some SGFs have structure like: ;A(B[var]);C;D where ;C;D are
+        # continuation nodes after a variation. Variations belong to the
+        # last sequence node before them, not the last node overall.
+        # We track (node_idx, variations) pairs for correct chaining.
+        node_variations = {}  # node_idx -> list of variation roots
+        
+        while True:
+            # Parse variations after current batch of nodes
+            current_vars = []
+            while pos[0] < len(text) and text[pos[0]] == '(':
+                child_tree = parse_game_tree()
+                if child_tree:
+                    current_vars.append(child_tree)
+                skip_whitespace()
+            
+            if current_vars and nodes:
+                # These variations belong to the last node parsed
+                last_idx = len(nodes) - 1
+                if last_idx not in node_variations:
+                    node_variations[last_idx] = []
+                node_variations[last_idx].extend(current_vars)
+            
+            # After variations, check for more sequence continuation nodes
+            if pos[0] < len(text) and text[pos[0]] == ';':
+                node = parse_node()
+                if node:
+                    nodes.append(node)
+                skip_whitespace()
+                # Continue to check if this new node also has variations
+                continue
+            
+            break
         
         if pos[0] < len(text) and text[pos[0]] == ')':
             pos[0] += 1  # skip ')'
@@ -71,12 +97,15 @@ def parse_sgf(text):
         if not nodes:
             return None
         
-        # Chain the sequence nodes together:
-        # Node1.children = [Node2], Node2.children = [Node3], ...
-        # Last node's children = child_trees (variations)
-        for i in range(len(nodes) - 1):
-            nodes[i].children = [nodes[i + 1]]
-        nodes[-1].children = child_trees
+        # Chain the sequence nodes:
+        # For each node, children = [next_node] + variations at this position
+        for i in range(len(nodes)):
+            children = []
+            if i + 1 < len(nodes):
+                children.append(nodes[i + 1])
+            if i in node_variations:
+                children.extend(node_variations[i])
+            nodes[i].children = children
         
         return nodes[0]  # Return root of this tree
     
