@@ -90,6 +90,17 @@ class ProblemRepository(private val context: Context) {
     
     fun getUserProblems(): List<Problem> = userProblems.toList()
     
+    fun getUserBookNames(): List<String> =
+        userProblems.map { it.book }.distinct().sorted()
+    
+    fun getUserProblemsByBook(book: String): List<Problem> =
+        userProblems.filter { it.book == book }
+    
+    fun removeUserBook(book: String) {
+        userProblems.removeAll { it.book == book }
+        saveUserProblems()
+    }
+    
     fun addUserProblem(problem: Problem) {
         val allIds = (builtinProblems ?: emptyList()).map { it.id } + userProblems.map { it.id }
         val nextId = (allIds.maxOrNull() ?: 0) + 1

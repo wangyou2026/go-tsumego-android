@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="56dp"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:background="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true">
+
+    <View
+        android:id="@+id/vSelectedIndicator"
+        android:layout_width="4dp"
+        android:layout_height="32dp"
+        android:background="@color/accent"
+        android:visibility="gone"
+        android:layout_marginEnd="12dp" />
+
+    <TextView
+        android:id="@+id/tvBookName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textColor="@color/white"
+        android:textSize="15sp"
+        android:maxLines="1"
+        android:ellipsize="end" />
+
+    <TextView
+        android:id="@+id/tvBookCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#888"
+        android:textSize="12sp"
+        android:layout_marginEnd="8dp" />
+
+    <TextView
+        android:id="@+id/tvDeleteHint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="长按删除"
+        android:textColor="#555"
+        android:textSize="11sp" />
+
+</LinearLayout>

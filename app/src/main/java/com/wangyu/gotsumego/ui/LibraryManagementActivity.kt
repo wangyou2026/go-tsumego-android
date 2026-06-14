@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -15,17 +16,23 @@ import androidx.recyclerview.widget.RecyclerView
 import com.wangyu.gotsumego.R
 import com.wangyu.gotsumego.TsumegoApp
 import com.wangyu.gotsumego.data.*
-import com.wangyu.gotsumego.databinding.ActivityLibraryManagementBinding
-import java.io.BufferedReader
 import java.io.InputStream
-import java.io.InputStreamReader
 import java.nio.charset.Charset
 import java.util.zip.ZipInputStream
 import kotlin.math.abs
 
 class LibraryManagementActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityLibraryManagementBinding
     private val repository by lazy { TsumegoApp.instance.repository }
+
+    private lateinit var rvBooks: RecyclerView
+    private lateinit var btnNewBook: com.google.android.material.button.MaterialButton
+    private lateinit var btnImportSgf: com.google.android.material.button.MaterialButton
+    private lateinit var btnPasteSgf: com.google.android.material.button.MaterialButton
+    private lateinit var btnAddManual: com.google.android.material.button.MaterialButton
+    private lateinit var btnBack: android.widget.ImageButton
+
+    private var selectedBook: String? = null
+    private lateinit var bookAdapter: BookAdapter
 
     companion object {
         private const val REQUEST_IMPORT_SGF = 1001
@@ -33,15 +40,96 @@ class LibraryManagementActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityLibraryManagementBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(R.layout.activity_library_management)
 
-        binding.btnBack.setOnClickListener { finish() }
-        binding.btnImportSgf.setOnClickListener { pickSgfFiles() }
-        binding.btnPasteSgf.setOnClickListener { showPasteDialog() }
-        binding.btnAddManual.setOnClickListener { addFromForm() }
+        btnBack = findViewById(R.id.btnBack)
+        btnNewBook = findViewById(R.id.btnNewBook)
+        rvBooks = findViewById(R.id.rvBooks)
+        btnImportSgf = findViewById(R.id.btnImportSgf)
+        btnPasteSgf = findViewById(R.id.btnPasteSgf)
+        btnAddManual = findViewById(R.id.btnAddManual)
 
-        refreshProblemList()
+        btnBack.setOnClickListener { finish() }
+        btnNewBook.setOnClickListener { showNewBookDialog() }
+        btnImportSgf.setOnClickListener { startImport() }
+        btnPasteSgf.setOnClickListener { showPasteDialog() }
+        btnAddManual.setOnClickListener { showManualAddDialog() }
+
+        bookAdapter = BookAdapter(
+            onSelect = { book -> selectedBook = book; bookAdapter.setSelected(book) },
+            onDelete = { book -> confirmDeleteBook(book) }
+        )
+        rvBooks.layoutManager = LinearLayoutManager(this)
+        rvBooks.adapter = bookAdapter
+
+        refreshBookList()
+    }
+
+    private fun refreshBookList() {
+        val books = repository.getUserBookNames()
+        bookAdapter.setBooks(books)
+        if (selectedBook != null && !books.contains(selectedBook)) {
+            selectedBook = null
+        }
+        if (selectedBook == null && books.isNotEmpty()) {
+            selectedBook = books.first()
+            bookAdapter.setSelected(selectedBook!!)
+        }
+    }
+
+    private fun showNewBookDialog() {
+        val input = EditText(this).apply {
+            setHint("输入题库名称")
+            setTextColor(android.graphics.Color.WHITE)
+            setHintTextColor(android.graphics.Color.GRAY)
+            setBackgroundColor(android.graphics.Color.parseColor("#2A2A40"))
+            setPadding(16, 16, 16, 16)
+            textSize = 14f
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("新建题库")
+            .setView(input)
+            .setPositiveButton("创建") { _, _ ->
+                val name = input.text.toString().trim()
+                if (name.isEmpty()) {
+                    Toast.makeText(this, "名称不能为空", Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+                // Create an empty book by adding a dummy and immediately deleting it? No.
+                // Just select it - actual problems will be added on import.
+                selectedBook = name
+                refreshBookList()
+                // Ensure this book appears in the list even if empty
+                bookAdapter.addBook(name)
+                bookAdapter.setSelected(name)
+            }
+            .setNegativeButton("取消", null)
+            .show()
+    }
+
+    private fun confirmDeleteBook(book: String) {
+        val count = repository.getUserProblemsByBook(book).size
+        AlertDialog.Builder(this)
+            .setTitle("删除题库")
+            .setMessage("确定删除「$book」吗？该题库下 $count 道题将被永久删除。")
+            .setPositiveButton("删除") { _, _ ->
+                repository.removeUserBook(book)
+                if (selectedBook == book) selectedBook = null
+                refreshBookList()
+                Toast.makeText(this, "已删除", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("取消", null)
+            .show()
+    }
+
+    private fun startImport() {
+        val targetBook = selectedBook
+        if (targetBook == null) {
+            Toast.makeText(this, "请先新建或选择一个题库", Toast.LENGTH_SHORT).show()
+            return
+        }
+        pickSgfFiles()
     }
 
     private fun pickSgfFiles() {
@@ -57,6 +145,12 @@ class LibraryManagementActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_IMPORT_SGF && resultCode == RESULT_OK) {
+            val targetBook = selectedBook
+            if (targetBook == null) {
+                Toast.makeText(this, "请先选择题库", Toast.LENGTH_SHORT).show()
+                return
+            }
+
             var totalImported = 0
             var totalErrors = 0
 
@@ -74,29 +168,29 @@ class LibraryManagementActivity : AppCompatActivity() {
             }
 
             for (uri in uris) {
-                val result = importFile(uri)
+                val result = importFile(uri, targetBook)
                 totalImported += result.first
                 totalErrors += result.second
             }
 
             val msg = buildString {
-                append("导入完成：$totalImported 道题")
+                append("导入完成：$totalImported 道题 →「$targetBook」")
                 if (totalErrors > 0) append("，$totalErrors 个文件解析失败")
             }
             Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
-            refreshProblemList()
+            refreshBookList()
         }
     }
 
-    private fun importFile(uri: Uri): Pair<Int, Int> {
+    private fun importFile(uri: Uri, bookName: String): Pair<Int, Int> {
         return try {
             val inputStream = contentResolver.openInputStream(uri) ?: return Pair(0, 1)
             if (isZipFile(inputStream)) {
                 inputStream.close()
-                importZipFile(uri)
+                importZipFile(uri, bookName)
             } else {
                 inputStream.close()
-                importSgfFile(uri)
+                importSgfFile(uri, bookName)
             }
         } catch (e: Exception) {
             Pair(0, 1)
@@ -114,14 +208,14 @@ class LibraryManagementActivity : AppCompatActivity() {
         }
     }
 
-    private fun importSgfFile(uri: Uri): Pair<Int, Int> {
+    private fun importSgfFile(uri: Uri, bookName: String): Pair<Int, Int> {
         return try {
             val inputStream = contentResolver.openInputStream(uri) ?: return Pair(0, 1)
             val bytes = inputStream.readBytes()
             inputStream.close()
             val sgfText = decodeSgfBytes(bytes)
 
-            val problems = parseSgfToProblems(sgfText)
+            val problems = parseSgfToProblems(sgfText, bookName)
             if (problems.isEmpty()) {
                 Pair(0, 1)
             } else {
@@ -133,7 +227,7 @@ class LibraryManagementActivity : AppCompatActivity() {
         }
     }
 
-    private fun importZipFile(uri: Uri): Pair<Int, Int> {
+    private fun importZipFile(uri: Uri, bookName: String): Pair<Int, Int> {
         var total = 0
         var errors = 0
         try {
@@ -145,7 +239,7 @@ class LibraryManagementActivity : AppCompatActivity() {
                     try {
                         val sgfBytes = zis.readBytes()
                         val sgfText = decodeSgfBytes(sgfBytes)
-                        val problems = parseSgfToProblems(sgfText)
+                        val problems = parseSgfToProblems(sgfText, bookName)
                         if (problems.isNotEmpty()) {
                             repository.addUserProblems(problems)
                             total += problems.size
@@ -167,7 +261,13 @@ class LibraryManagementActivity : AppCompatActivity() {
     }
 
     private fun showPasteDialog() {
-        val input = android.widget.EditText(this).apply {
+        val targetBook = selectedBook
+        if (targetBook == null) {
+            Toast.makeText(this, "请先新建或选择一个题库", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val input = EditText(this).apply {
             setHint("在此粘贴SGF文本...")
             setTextColor(android.graphics.Color.WHITE)
             setHintTextColor(android.graphics.Color.GRAY)
@@ -179,7 +279,7 @@ class LibraryManagementActivity : AppCompatActivity() {
         }
 
         AlertDialog.Builder(this)
-            .setTitle("粘贴SGF")
+            .setTitle("粘贴SGF →「$targetBook」")
             .setView(input)
             .setPositiveButton("导入") { _, _ ->
                 val text = input.text.toString().trim()
@@ -187,52 +287,62 @@ class LibraryManagementActivity : AppCompatActivity() {
                     Toast.makeText(this, "SGF内容不能为空", Toast.LENGTH_SHORT).show()
                     return@setPositiveButton
                 }
-                val problems = parseSgfToProblems(text)
+                val problems = parseSgfToProblems(text, targetBook)
                 if (problems.isEmpty()) {
                     Toast.makeText(this, "未解析到有效题目", Toast.LENGTH_SHORT).show()
                     return@setPositiveButton
                 }
                 repository.addUserProblems(problems)
-                Toast.makeText(this, "成功导入 ${problems.size} 道题", Toast.LENGTH_SHORT).show()
-                refreshProblemList()
+                Toast.makeText(this, "成功导入 ${problems.size} 道题 →「$targetBook」", Toast.LENGTH_SHORT).show()
+                refreshBookList()
             }
             .setNegativeButton("取消", null)
             .show()
     }
 
-    private fun addFromForm() {
-        val title = binding.etTitle.text.toString().trim()
-        val sgfText = binding.etSgfText.text.toString().trim()
-
-        if (title.isEmpty() || sgfText.isEmpty()) {
-            Toast.makeText(this, "请填写题目名称和SGF内容", Toast.LENGTH_SHORT).show()
+    private fun showManualAddDialog() {
+        val targetBook = selectedBook
+        if (targetBook == null) {
+            Toast.makeText(this, "请先新建或选择一个题库", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val problems = parseSgfToProblems(sgfText)
-        if (problems.isEmpty()) {
-            Toast.makeText(this, "SGF格式有误，请检查后重试", Toast.LENGTH_SHORT).show()
-            return
-        }
+        val layout = LayoutInflater.from(this).inflate(R.layout.dialog_manual_add, null)
+        val etTitle = layout.findViewById<EditText>(R.id.etTitle)
+        val etSgf = layout.findViewById<EditText>(R.id.etSgf)
 
-        val namedProblems = problems.map { it.copy(book = title) }
-        repository.addUserProblems(namedProblems)
-        Toast.makeText(this, "成功添加 ${namedProblems.size} 道题", Toast.LENGTH_SHORT).show()
-        binding.etTitle.text?.clear()
-        binding.etSgfText.text?.clear()
-        refreshProblemList()
+        AlertDialog.Builder(this)
+            .setTitle("手动添加 →「$targetBook」")
+            .setView(layout)
+            .setPositiveButton("添加") { _, _ ->
+                val title = etTitle.text.toString().trim()
+                val sgfText = etSgf.text.toString().trim()
+
+                if (title.isEmpty() || sgfText.isEmpty()) {
+                    Toast.makeText(this, "请填写题目名称和SGF内容", Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+
+                val problems = parseSgfToProblems(sgfText, targetBook)
+                if (problems.isEmpty()) {
+                    Toast.makeText(this, "SGF格式有误，请检查后重试", Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+
+                val namedProblems = problems.map { it.copy(title = title, book = targetBook) }
+                repository.addUserProblems(namedProblems)
+                Toast.makeText(this, "成功添加 ${namedProblems.size} 道题", Toast.LENGTH_SHORT).show()
+                refreshBookList()
+            }
+            .setNegativeButton("取消", null)
+            .show()
     }
 
     // ============================================================
-    //  SGF 解析器（v2 — 正确提取主线，支持多坐标AB/AW）
+    //  SGF 解析器
     // ============================================================
 
-    /**
-     * 解析 SGF 文本为 Problem 列表。
-     * 支持多局 SGF（通过顶层括号分割）。
-     */
-    private fun parseSgfToProblems(sgfText: String): List<Problem> {
-        val bookName = detectBookName(sgfText)
+    private fun parseSgfToProblems(sgfText: String, bookName: String): List<Problem> {
         val gameTexts = splitTopLevelGames(sgfText)
         val problems = mutableListOf<Problem>()
 
@@ -245,10 +355,6 @@ class LibraryManagementActivity : AppCompatActivity() {
         return problems
     }
 
-    /**
-     * 按顶层括号分割多局 SGF。
-     * 仅提取包含 AB 或 AW 的完整 SGF 游戏。
-     */
     private fun splitTopLevelGames(text: String): List<String> {
         val games = mutableListOf<String>()
         var depth = 0
@@ -273,39 +379,26 @@ class LibraryManagementActivity : AppCompatActivity() {
             }
         }
 
-        // 没有顶层括号但有 AB/AW → 整段视为一局
         if (games.isEmpty() && (text.contains("AB") || text.contains("AW"))) {
             games.add(text)
         }
         return games
     }
 
-    /**
-     * 从 SGF 中提取主线：
-     * 1. 先尝试 depth≤1 的内容（Pattern A：root + 主线走子在根序列中）
-     * 2. 如果 depth≤1 中没有走子，则进一步包含第一个子序列（Pattern B：正解在第一层变化图内）
-     * 
-     * 正确处理：
-     * - C[…] 注释中的括号不干扰树深度计数
-     * - 变化图分支被正确跳过
-     * - 变化图后的主线续走被保留
-     */
     private fun extractMainLine(sgf: String): String {
-        // Position helper: track bracket-aware depth and collect content
         data class ExtractConfig(val maxDepth: Int, val includeFirstVar: Boolean)
-        
+
         fun extract(config: ExtractConfig): String {
             val result = StringBuilder()
             var depth = 0
             var inBracket = 0
-            
-            // Pass 2 only: first variation tracking
+
             var firstVarStarted = false
             var collectingFirstVar = false
             val firstVarBuf = StringBuilder()
-            
+
             fun inFirstVar(): Boolean = config.includeFirstVar && collectingFirstVar
-            
+
             for (c in sgf) {
                 when {
                     c == '[' -> {
@@ -341,24 +434,17 @@ class LibraryManagementActivity : AppCompatActivity() {
             }
             return result.toString().trim()
         }
-        
-        // Pass 1: depth≤1 only
+
         val pass1 = extract(ExtractConfig(maxDepth = 1, includeFirstVar = false))
         val hasMoves = Regex(";([BWbw])\\[[a-z]+\\]").containsMatchIn(pass1)
-        
+
         if (hasMoves) return pass1
-        
-        // Pass 2: no moves in depth≤1 → Pattern B, include first variation
+
         return extract(ExtractConfig(maxDepth = 1, includeFirstVar = true))
     }
 
-    /**
-     * 从 SGF 节点文本中提取属性键值对。
-     * 支持多值属性如 AB[aa][bb] → "AB" -> ["aa", "bb"]
-     */
     private fun extractProperties(nodeText: String): Map<String, List<String>> {
         val props = mutableMapOf<String, MutableList<String>>()
-        // 匹配 "KEY[...][...]..." 的模式
         val propPattern = Regex("([A-Z]+)((?:\\[[^\\]]*\\])+)")
         for (match in propPattern.findAll(nodeText)) {
             val key = match.groupValues[1]
@@ -369,29 +455,20 @@ class LibraryManagementActivity : AppCompatActivity() {
         return props
     }
 
-    /**
-     * 解析单局 SGF，提取棋盘、棋子和正解。
-     */
     private fun parseSingleSgf(sgf: String, defaultBook: String): Problem? {
-        // 1. 提取主线（处理 Pattern A 和 Pattern B 两种 SGF 结构）
         val mainLine = extractMainLine(sgf)
         if (mainLine.isBlank()) return null
 
-        // 2. 提取根节点内容（第一个 ; 到字符串结束）
         val rootStart = mainLine.indexOf(';')
         if (rootStart < 0) return null
         val rootContent = mainLine.substring(rootStart)
 
-        // 3. 解析根节点属性
         val props = extractProperties(rootContent)
 
-        // 4. 棋盘大小
         val boardSize = props["SZ"]?.firstOrNull()?.toIntOrNull() ?: 13
         val maxCoord = boardSize - 1
-        // 如果棋盘大于 19 路，拒绝（超出合理围棋范围）
         if (boardSize > 19 || boardSize < 9) return null
 
-        // 5. 提取棋子（支持 AB[aa][bb][cc] 多坐标）
         val stones = mutableListOf<Stone>()
         for (coord in props["AB"].orEmpty()) {
             if (coord.length >= 2) {
@@ -413,10 +490,8 @@ class LibraryManagementActivity : AppCompatActivity() {
         }
         if (stones.isEmpty()) return null
 
-        // 6. 谁先走
         val toPlay = if (props["PL"]?.firstOrNull()?.uppercase() == "W") StoneColor.WHITE else StoneColor.BLACK
 
-        // 7. 提取正解手数（主线中的所有 ;B/W[coord]）
         val solutionRows = mutableListOf<SolutionMove>()
         val movePattern = Regex(";([BWbw])\\[([a-z]+)\\]")
         for (match in movePattern.findAll(mainLine)) {
@@ -431,7 +506,7 @@ class LibraryManagementActivity : AppCompatActivity() {
             }
         }
 
-        // 7.5 坐标转换：如果棋盘 > 13 路，裁切并偏移到 13x13 范围
+        // 19x19 → 13x13 坐标转换
         val displaySize = 13
         val (finalStones, finalSolutionRows) = if (boardSize > displaySize) {
             val allCoords = mutableListOf<Pair<Int, Int>>()
@@ -449,7 +524,6 @@ class LibraryManagementActivity : AppCompatActivity() {
                 val rangeRow = maxRow - minRow
 
                 if (rangeCol < displaySize && rangeRow < displaySize) {
-                    // 偏移使棋子群居中在 13x13 棋盘上
                     val padX = (displaySize - 1 - rangeCol) / 2
                     val padY = (displaySize - 1 - rangeRow) / 2
                     val offsetX = minCol - padX
@@ -459,7 +533,6 @@ class LibraryManagementActivity : AppCompatActivity() {
                     val nm = solutionRows.map { SolutionMove(it.col - offsetX, it.row - offsetY, it.color) }
                     Pair(ns, nm)
                 } else {
-                    // 范围超出 13x13，取中心区域裁切
                     val centerX = (minCol + maxCol) / 2
                     val centerY = (minRow + maxRow) / 2
                     val offsetX = maxOf(0, centerX - 6)
@@ -484,8 +557,6 @@ class LibraryManagementActivity : AppCompatActivity() {
             Pair(stones, solutionRows)
         }
 
-        // 8. 构造 Problem
-        // 使用 hash 和位置确保 ID 唯一且非负
         val id = abs(sgf.hashCode()) and 0x7FFFFFFF
 
         return Problem(
@@ -504,72 +575,6 @@ class LibraryManagementActivity : AppCompatActivity() {
         )
     }
 
-    /**
-     * 从 SGF 中检测题目名称（GN 标签）。
-     */
-    private fun detectBookName(sgfText: String): String {
-        val namePattern = Regex("GN\\[([^\\]]+)\\]", RegexOption.IGNORE_CASE)
-        val nameMatch = namePattern.find(sgfText)
-        return nameMatch?.groupValues?.get(1)?.take(20) ?: "导入题目"
-    }
-
-    // ============================================================
-    //  已导入题目列表
-    // ============================================================
-
-    private fun refreshProblemList() {
-        val userProblems = repository.getUserProblems()
-        binding.rvUserProblems.layoutManager = LinearLayoutManager(this)
-        binding.rvUserProblems.adapter = UserProblemAdapter(userProblems) { problem ->
-            AlertDialog.Builder(this)
-                .setTitle("删除题目")
-                .setMessage("确定删除「${problem.title}」吗？")
-                .setPositiveButton("删除") { _, _ ->
-                    repository.removeUserProblem(problem.id)
-                    refreshProblemList()
-                    Toast.makeText(this, "已删除", Toast.LENGTH_SHORT).show()
-                }
-                .setNegativeButton("取消", null)
-                .show()
-        }
-    }
-
-    class UserProblemAdapter(
-        private val problems: List<Problem>,
-        private val onLongClick: (Problem) -> Unit
-    ) : RecyclerView.Adapter<UserProblemAdapter.ViewHolder>() {
-
-        class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-            val tvName: TextView = view.findViewById(R.id.tvBookName)
-            val tvCount: TextView = view.findViewById(R.id.tvBookCount)
-        }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_book, parent, false)
-            return ViewHolder(view)
-        }
-
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            val problem = problems[position]
-            holder.tvName.text = problem.title
-            holder.tvCount.text = "${problem.solutionMoves.size} 手"
-            holder.itemView.setOnLongClickListener {
-                onLongClick(problem)
-                true
-            }
-        }
-
-        override fun getItemCount() = problems.size
-    }
-
-    // ============================================================
-    //  编码处理：尝试多种编码解析 SGF 文本
-    // ============================================================
-
-    /**
-     * 尝试多种编码解码字节数组，返回第一个能解析出 SGF 内容的文本。
-     * 优先 UTF-8，fallback 到 GBK、Shift_JIS。
-     */
     private fun decodeSgfBytes(bytes: ByteArray): String {
         val encodings = listOf(Charsets.UTF_8, Charsets.ISO_8859_1, Charset.forName("GBK"), Charset.forName("Shift_JIS"))
         for (charset in encodings) {
@@ -581,5 +586,61 @@ class LibraryManagementActivity : AppCompatActivity() {
             } catch (_: Exception) { }
         }
         return String(bytes, Charsets.UTF_8)
+    }
+
+    // ============================================================
+    //  Book Adapter
+    // ============================================================
+
+    class BookAdapter(
+        private val onSelect: (String) -> Unit,
+        private val onDelete: (String) -> Unit
+    ) : RecyclerView.Adapter<BookAdapter.ViewHolder>() {
+
+        private var books: List<String> = emptyList()
+        private var selected: String? = null
+
+        fun setBooks(list: List<String>) {
+            books = list
+            notifyDataSetChanged()
+        }
+
+        fun addBook(name: String) {
+            if (!books.contains(name)) {
+                books = (books + name).sorted()
+                notifyDataSetChanged()
+            }
+        }
+
+        fun setSelected(book: String) {
+            selected = book
+            notifyDataSetChanged()
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_book_manage, parent, false)
+            return ViewHolder(view)
+        }
+
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            val book = books[position]
+            val isSelected = book == selected
+            holder.tvName.text = book
+            holder.vSelected.visibility = if (isSelected) View.VISIBLE else View.GONE
+            holder.itemView.isSelected = isSelected
+            holder.itemView.setOnClickListener { onSelect(book) }
+            holder.itemView.setOnLongClickListener {
+                onDelete(book)
+                true
+            }
+        }
+
+        override fun getItemCount() = books.size
+
+        class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+            val tvName: TextView = view.findViewById(R.id.tvBookName)
+            val vSelected: View = view.findViewById(R.id.vSelectedIndicator)
+        }
     }
 }
