@@ -379,7 +379,11 @@ def find_correct_answer_node(root):
        - Pure "正解" / "正解图" over "正解一" / "正解二"
        - "正解一" over "正解二" (take first 正解)
        - Exclude "正解变化" / "正解变化图" (these are variation diagrams)
-    2. If no 正解 found, look for the first child with a B[] or W[] move
+    2. If no 正解 found, use heuristic scoring based on:
+       - Branch ending with first-player color (strong positive signal)
+       - Longer sequences (more likely to be the full correct answer)
+       - TR mark (often indicates "tempting but wrong" first move → penalty)
+       - Branch ending with opponent color (negative signal → likely failure branch)
     3. Fallback: first child with moves in its subtree
     
     Note: We do NOT follow the first child looking for "main sequence" moves,
@@ -414,12 +418,73 @@ def find_correct_answer_node(root):
     if best_child is not None:
         return best_child
     
-    # Second pass: look for first child with a move
-    for child in root.children:
+    # Second pass: No 正解 tags. Use heuristic scoring.
+    # Determine first player color from root PL property
+    pl = root.get('PL', 'B')
+    first_color = 1 if pl == 'B' else 2
+    
+    # Special case: single child → just use it (SGF author put the answer there)
+    if len(root.children) == 1:
+        child = root.children[0]
         if child.get('B') is not None or child.get('W') is not None:
             return child
     
-    # Third pass: check deeper - some children might have moves in their subtree
+    best_child = None
+    best_score = -1
+    all_end_opponent = True  # Track if ALL branches end with opponent color
+    
+    for child in root.children:
+        b = child.get('B')
+        w = child.get('W')
+        if b is None and w is None:
+            continue
+        
+        moves = _get_subtree_moves(child)
+        if not moves:
+            continue
+        
+        child_last = moves[-1][2]
+        child_len = len(moves)
+        has_tr = bool(child.get('TR', ''))
+        
+        if child_last == first_color:
+            all_end_opponent = False
+        
+        score = 0
+        # Strong preference for ending with first player color
+        if child_last == first_color:
+            score += 100
+        else:
+            score -= 50  # likely a failure branch
+        
+        # Longer sequences are more likely to be the full correct answer
+        score += child_len
+        
+        # TR mark often indicates "tempting but wrong" first move
+        if has_tr:
+            score -= 30
+        
+        if score > best_score:
+            best_score = score
+            best_child = child
+    
+    if best_child is not None:
+        return best_child
+    
+    # If ALL children end with opponent color and we still don't have a pick,
+    # just pick the longest one (the SGF likely includes opponent's responses)
+    if all_end_opponent:
+        best_child = None
+        best_len = -1
+        for child in root.children:
+            moves = _get_subtree_moves(child)
+            if moves and len(moves) > best_len:
+                best_len = len(moves)
+                best_child = child
+        if best_child is not None:
+            return best_child
+    
+    # Third pass: fallback - first child with moves in its subtree
     for child in root.children:
         moves = extract_main_line_moves(child)
         if moves:
